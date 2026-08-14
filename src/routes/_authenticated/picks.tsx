@@ -113,7 +113,9 @@ function PicksPage() {
 
   const deadline = useMemo(() => weekDeadline(games), [games]);
   const msLeft = deadline ? deadline.getTime() - now : 0;
-  const locked = deadline !== null && msLeft <= 0;
+  const deadlinePassed = deadline !== null && msLeft <= 0;
+  const paid = myEntry?.paid === true;
+  const locked = deadlinePassed || !paid;
   const maxPoints = games.length;
   const tiebreakerGame = games.find((g) => g.is_tiebreaker_game) ?? games[games.length - 1];
 
