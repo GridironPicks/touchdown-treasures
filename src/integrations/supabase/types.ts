@@ -14,13 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      entries: {
+        Row: {
+          amount_cents: number
+          id: string
+          method: string
+          paid: boolean
+          paid_at: string | null
+          season: number
+          user_id: string
+          week: number
+        }
+        Insert: {
+          amount_cents?: number
+          id?: string
+          method?: string
+          paid?: boolean
+          paid_at?: string | null
+          season: number
+          user_id: string
+          week: number
+        }
+        Update: {
+          amount_cents?: number
+          id?: string
+          method?: string
+          paid?: boolean
+          paid_at?: string | null
+          season?: number
+          user_id?: string
+          week?: number
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          created_at: string
+          external_id: string | null
+          home_score: number | null
+          home_team: string
+          id: string
+          is_tiebreaker_game: boolean
+          kickoff: string
+          season: number
+          status: string
+          week: number
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          created_at?: string
+          external_id?: string | null
+          home_score?: number | null
+          home_team: string
+          id?: string
+          is_tiebreaker_game?: boolean
+          kickoff: string
+          season: number
+          status?: string
+          week: number
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          created_at?: string
+          external_id?: string | null
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          is_tiebreaker_game?: boolean
+          kickoff?: string
+          season?: number
+          status?: string
+          week?: number
+        }
+        Relationships: []
+      }
+      picks: {
+        Row: {
+          confidence: number
+          created_at: string
+          game_id: string
+          id: string
+          picked_team: string
+          season: number
+          user_id: string
+          week: number
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          game_id: string
+          id?: string
+          picked_team: string
+          season: number
+          user_id: string
+          week: number
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          game_id?: string
+          id?: string
+          picked_team?: string
+          season?: number
+          user_id?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "picks_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          mascot: string
+          primary_color: string
+          team_name: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id: string
+          mascot?: string
+          primary_color?: string
+          team_name?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          mascot?: string
+          primary_color?: string
+          team_name?: string
+        }
+        Relationships: []
+      }
+      tiebreakers: {
+        Row: {
+          created_at: string
+          id: string
+          predicted_total: number
+          season: number
+          user_id: string
+          week: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          predicted_total: number
+          season: number
+          user_id: string
+          week: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          predicted_total?: number
+          season?: number
+          user_id?: string
+          week?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          display_name: string | null
+          mascot: string | null
+          primary_color: string | null
+          season_points: number | null
+          team_name: string | null
+          user_id: string | null
+          weeks_played: number | null
+        }
+        Relationships: []
+      }
+      weekly_scores: {
+        Row: {
+          points: number | null
+          season: number | null
+          user_id: string | null
+          week: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      picks_deadline: {
+        Args: { _season: number; _week: number }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
