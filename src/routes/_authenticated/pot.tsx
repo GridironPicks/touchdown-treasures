@@ -70,6 +70,19 @@ function PotPage() {
   });
   const entries = entriesQuery.data ?? [];
 
+  const { data: results = [] } = useQuery({
+    queryKey: ["weekly-results", WEEK],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_results")
+        .select("*")
+        .eq("season", SEASON)
+        .eq("week", WEEK);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const paidIds = new Set(entries.filter((e) => e.paid).map((e) => e.user_id));
   const potCents = paidIds.size * ENTRY_FEE_CENTS;
   const iPaid = me ? paidIds.has(me.id) : false;
