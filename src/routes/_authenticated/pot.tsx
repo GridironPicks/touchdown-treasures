@@ -139,6 +139,33 @@ function PotPage() {
         </section>
       )}
 
+      {winnerRow && (
+        <section className="field-panel flex items-center gap-4 rounded-2xl border border-primary/50 p-5">
+          <Trophy className="text-primary" size={28} />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Week {WEEK} winner
+            </p>
+            <p className="stadium-heading truncate text-xl">
+              {winnerProfile?.team_name ?? "Winner"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {winnerRow.points} pts
+              {winnerRow.tiebreak_diff !== null
+                ? ` · tiebreaker off by ${winnerRow.tiebreak_diff}`
+                : ""}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Payout owed</p>
+            <p className="stadium-heading text-2xl text-primary">
+              ${(potCents / 100).toFixed(2)}
+            </p>
+          </div>
+        </section>
+      )}
+
+
       <section className="field-panel overflow-hidden rounded-2xl">
         <h2 className="stadium-heading border-b border-border px-4 py-3 text-lg">
           Payment status
