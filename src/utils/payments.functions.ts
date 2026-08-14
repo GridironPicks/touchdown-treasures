@@ -70,7 +70,7 @@ export const createEntryCheckout = createServerFn({ method: "POST" })
       const product = await stripe.products.retrieve(productId);
 
       const customerId = await resolveOrCreateCustomer(stripe, {
-        email: user?.email ?? undefined,
+        ...(user?.email ? { email: user.email } : {}),
         userId,
       });
 
