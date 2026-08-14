@@ -98,6 +98,9 @@ function PotPage() {
     if (sessionId && iPaid) toast.success("Payment confirmed — you're in the pot");
   }, [sessionId, iPaid]);
 
+  const winnerRow = results.find((r) => r.is_winner && r.complete);
+  const winnerProfile = winnerRow ? profiles.find((p) => p.id === winnerRow.user_id) : undefined;
+
   const returnUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/pot?session_id={CHECKOUT_SESSION_ID}`;
 
   return (
