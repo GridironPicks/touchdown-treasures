@@ -1,14 +1,19 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, X, Apple } from "lucide-react";
+import { Check, X, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { SEASON, ENTRY_FEE_CENTS } from "@/lib/league";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
+import { EntryCheckout } from "@/components/EntryCheckout";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 export const Route = createFileRoute("/_authenticated/pot")({
+  validateSearch: (search: Record<string, unknown>): { session_id?: string } =>
+    typeof search['session_id'] === "string" ? { session_id: search['session_id'] } : {},
   head: () => ({
     meta: [
       { title: "Weekly Pot — Gridiron Confidence" },
@@ -21,15 +26,20 @@ export const Route = createFileRoute("/_authenticated/pot")({
         property: "og:description",
         content: "$5 weekly entry, live payment status and the running pot total.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PotPage,
 });
 
 const WEEK = 1;
+const PRICE_ID = "weekly_entry_5";
 
 function PotPage() {
   const queryClient = useQueryClient();
+  const { session_id: sessionId } = Route.useSearch();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const { data: me } = useQuery({
     queryKey: ["me"],
@@ -45,7 +55,7 @@ function PotPage() {
     },
   });
 
-  const { data: entries = [] } = useQuery({
+  const entriesQuery = useQuery({
     queryKey: ["entries", WEEK],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -56,36 +66,31 @@ function PotPage() {
       if (error) throw error;
       return data ?? [];
     },
+    refetchInterval: sessionId ? 3000 : false,
   });
+  const entries = entriesQuery.data ?? [];
 
   const paidIds = new Set(entries.filter((e) => e.paid).map((e) => e.user_id));
   const potCents = paidIds.size * ENTRY_FEE_CENTS;
   const iPaid = me ? paidIds.has(me.id) : false;
 
-  async function payEntry() {
-    if (!me) return;
-    const { error } = await supabase.from("entries").upsert(
-      {
-        user_id: me.id,
-        season: SEASON,
-        week: WEEK,
-        amount_cents: ENTRY_FEE_CENTS,
-        paid: true,
-        paid_at: new Date().toISOString(),
-        method: "apple_pay",
-      },
-      { onConflict: "user_id,season,week" },
-    );
-    if (error) {
-      toast.error(error.message);
-      return;
+  useEffect(() => {
+    if (sessionId) {
+      setCheckoutOpen(false);
+      void queryClient.invalidateQueries({ queryKey: ["entries", WEEK] });
     }
-    await queryClient.invalidateQueries({ queryKey: ["entries", WEEK] });
-    toast.success("Entry recorded — you're in the pot");
-  }
+  }, [sessionId, queryClient]);
+
+  useEffect(() => {
+    if (sessionId && iPaid) toast.success("Payment confirmed — you're in the pot");
+  }, [sessionId, iPaid]);
+
+  const returnUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/pot?session_id={CHECKOUT_SESSION_ID}`;
 
   return (
     <div className="space-y-6">
+      <PaymentTestModeBanner />
+
       <header>
         <h1 className="stadium-heading text-3xl">Week {WEEK} Pot</h1>
         <p className="text-sm text-muted-foreground">$5 buy-in · winner takes the weekly pot</p>
@@ -103,12 +108,20 @@ function PotPage() {
           <span className="inline-flex items-center gap-2 rounded-xl border border-primary/50 px-4 py-3 text-sm font-semibold text-primary">
             <Check size={16} /> Entry paid
           </span>
+        ) : sessionId && !checkoutOpen ? (
+          <span className="text-sm text-muted-foreground">Confirming your payment…</span>
         ) : (
-          <Button size="lg" onClick={payEntry} className="gap-2">
-            <Apple size={18} /> Pay $5 with Apple Pay
+          <Button size="lg" onClick={() => setCheckoutOpen(true)} className="gap-2">
+            <CreditCard size={18} /> Pay $5 (Apple Pay available)
           </Button>
         )}
       </section>
+
+      {checkoutOpen && !iPaid && (
+        <section className="field-panel rounded-2xl p-3">
+          <EntryCheckout priceId={PRICE_ID} season={SEASON} week={WEEK} returnUrl={returnUrl} />
+        </section>
+      )}
 
       <section className="field-panel overflow-hidden rounded-2xl">
         <h2 className="stadium-heading border-b border-border px-4 py-3 text-lg">
