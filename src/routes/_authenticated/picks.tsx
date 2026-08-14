@@ -323,7 +323,13 @@ function PicksPage() {
           disabled={locked || busy || !complete}
           onClick={submit}
         >
-          {locked ? "Picks locked" : complete ? "Submit picks" : "Complete every game to submit"}
+          {!paid
+            ? "Pay your $5 entry to submit"
+            : deadlinePassed
+              ? "Picks locked"
+              : complete
+                ? "Submit picks"
+                : "Complete every game to submit"}
         </Button>
       </div>
     </div>
