@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame } from "lucide-react";
@@ -85,6 +85,22 @@ function PicksPage() {
     },
   });
 
+  const { data: myEntry } = useQuery({
+    queryKey: ["my-entry", WEEK],
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from("entries")
+        .select("paid")
+        .eq("user_id", auth.user!.id)
+        .eq("season", SEASON)
+        .eq("week", WEEK)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (!existing) return;
     const next: Record<string, Selection> = {};
@@ -97,7 +113,9 @@ function PicksPage() {
 
   const deadline = useMemo(() => weekDeadline(games), [games]);
   const msLeft = deadline ? deadline.getTime() - now : 0;
-  const locked = deadline !== null && msLeft <= 0;
+  const deadlinePassed = deadline !== null && msLeft <= 0;
+  const paid = myEntry?.paid === true;
+  const locked = deadlinePassed || !paid;
   const maxPoints = games.length;
   const tiebreakerGame = games.find((g) => g.is_tiebreaker_game) ?? games[games.length - 1];
 
@@ -192,12 +210,12 @@ function PicksPage() {
           </div>
           <div className="text-right">
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
-              {locked ? <Lock size={13} /> : <Timer size={13} />}
-              {locked ? "Picks locked" : "Locks Wed 6:00 PM ET"}
+              {deadlinePassed ? <Lock size={13} /> : <Timer size={13} />}
+              {deadlinePassed ? "Picks locked" : "Locks Wed 6:00 PM ET"}
             </p>
             <p
               className={`stadium-heading text-2xl tabular-nums ${
-                locked ? "text-destructive" : "text-primary"
+                deadlinePassed ? "text-destructive" : "text-primary"
               }`}
             >
               {formatCountdown(msLeft)}
@@ -205,6 +223,24 @@ function PicksPage() {
           </div>
         </div>
       </header>
+
+      {!paid && !deadlinePassed && (
+        <section className="field-panel flex flex-col gap-3 rounded-2xl border border-primary/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="stadium-heading text-lg text-primary">Entry fee required</h2>
+            <p className="text-sm text-muted-foreground">
+              Pay the $5 Week {WEEK} buy-in to unlock your picks.
+            </p>
+          </div>
+          <Link
+            to="/pot"
+            className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+          >
+            Pay $5 entry
+          </Link>
+        </section>
+      )}
+
 
       <ul className="space-y-3">
         {games.map((game) => {
@@ -287,7 +323,13 @@ function PicksPage() {
           disabled={locked || busy || !complete}
           onClick={submit}
         >
-          {locked ? "Picks locked" : complete ? "Submit picks" : "Complete every game to submit"}
+          {!paid
+            ? "Pay your $5 entry to submit"
+            : deadlinePassed
+              ? "Picks locked"
+              : complete
+                ? "Submit picks"
+                : "Complete every game to submit"}
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, X, CreditCard } from "lucide-react";
+import { Check, X, CreditCard, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +70,19 @@ function PotPage() {
   });
   const entries = entriesQuery.data ?? [];
 
+  const { data: results = [] } = useQuery({
+    queryKey: ["weekly-results", WEEK],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_results")
+        .select("*")
+        .eq("season", SEASON)
+        .eq("week", WEEK);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const paidIds = new Set(entries.filter((e) => e.paid).map((e) => e.user_id));
   const potCents = paidIds.size * ENTRY_FEE_CENTS;
   const iPaid = me ? paidIds.has(me.id) : false;
@@ -84,6 +97,9 @@ function PotPage() {
   useEffect(() => {
     if (sessionId && iPaid) toast.success("Payment confirmed — you're in the pot");
   }, [sessionId, iPaid]);
+
+  const winnerRow = results.find((r) => r.is_winner && r.complete);
+  const winnerProfile = winnerRow ? profiles.find((p) => p.id === winnerRow.user_id) : undefined;
 
   const returnUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/pot?session_id={CHECKOUT_SESSION_ID}`;
 
@@ -122,6 +138,33 @@ function PotPage() {
           <EntryCheckout priceId={PRICE_ID} season={SEASON} week={WEEK} returnUrl={returnUrl} />
         </section>
       )}
+
+      {winnerRow && (
+        <section className="field-panel flex items-center gap-4 rounded-2xl border border-primary/50 p-5">
+          <Trophy className="text-primary" size={28} />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Week {WEEK} winner
+            </p>
+            <p className="stadium-heading truncate text-xl">
+              {winnerProfile?.team_name ?? "Winner"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {winnerRow.points} pts
+              {winnerRow.tiebreak_diff !== null
+                ? ` · tiebreaker off by ${winnerRow.tiebreak_diff}`
+                : ""}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Payout owed</p>
+            <p className="stadium-heading text-2xl text-primary">
+              ${(potCents / 100).toFixed(2)}
+            </p>
+          </div>
+        </section>
+      )}
+
 
       <section className="field-panel overflow-hidden rounded-2xl">
         <h2 className="stadium-heading border-b border-border px-4 py-3 text-lg">
