@@ -1,0 +1,122 @@
+// Server-only NFL data sync. Provider: ESPN public NFL scoreboard feed.
+// Swapping providers only requires changing `fetchProviderWeek`.
+import type { Database } from "@/integrations/supabase/types";
+
+export type ProviderGame = {
+  external_id: string;
+  season: number;
+  week: number;
+  kickoff: string;
+  away_team: string;
+  home_team: string;
+  away_score: number | null;
+  home_score: number | null;
+  status: "scheduled" | "in_progress" | "final";
+};
+
+const ESPN_SCOREBOARD =
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+
+function mapStatus(state: string, completed: boolean): ProviderGame["status"] {
+  if (completed || state === "post") return "final";
+  if (state === "in") return "in_progress";
+  return "scheduled";
+}
+
+export async function fetchProviderWeek(season: number, week: number): Promise<ProviderGame[]> {
+  const url = `${ESPN_SCOREBOARD}?dates=${season}&seasontype=2&week=${week}`;
+  const res = await fetch(url, { headers: { accept: "application/json" } });
+  if (!res.ok) throw new Error(`NFL provider responded ${res.status}`);
+
+  const json = (await res.json()) as {
+    events?: Array<{
+      id: string;
+      date: string;
+      status?: { type?: { state?: string; completed?: boolean } };
+      competitions?: Array<{
+        competitors?: Array<{
+          homeAway: string;
+          score?: string;
+          team?: { displayName?: string };
+        }>;
+      }>;
+    }>;
+  };
+
+  const games: ProviderGame[] = [];
+  for (const event of json.events ?? []) {
+    const comp = event.competitions?.[0];
+    const home = comp?.competitors?.find((c) => c.homeAway === "home");
+    const away = comp?.competitors?.find((c) => c.homeAway === "away");
+    if (!home?.team?.displayName || !away?.team?.displayName) continue;
+
+    const state = event.status?.type?.state ?? "pre";
+    const completed = event.status?.type?.completed ?? false;
+    const status = mapStatus(state, completed);
+    const scored = status !== "scheduled";
+
+    games.push({
+      external_id: `espn:${event.id}`,
+      season,
+      week,
+      kickoff: new Date(event.date).toISOString(),
+      away_team: away.team.displayName,
+      home_team: home.team.displayName,
+      away_score: scored ? Number(away.score ?? 0) : null,
+      home_score: scored ? Number(home.score ?? 0) : null,
+      status,
+    });
+  }
+
+  games.sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  return games;
+}
+
+type GameInsert = Database["public"]["Tables"]["games"]["Insert"];
+
+/**
+ * Upserts one week of games keyed on the provider game id, flags the last
+ * kickoff of the week as the Monday-night tiebreaker game, and removes stale
+ * rows (seeded placeholders or games the provider rescheduled away).
+ */
+export async function syncWeek(season: number, week: number) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const games = await fetchProviderWeek(season, week);
+  if (games.length === 0) return { season, week, synced: 0, removed: 0 };
+
+  const rows: GameInsert[] = games.map((g, i) => ({
+    ...g,
+    is_tiebreaker_game: i === games.length - 1,
+  }));
+
+  const { error } = await supabaseAdmin
+    .from("games")
+    .upsert(rows, { onConflict: "external_id" });
+  if (error) throw new Error(error.message);
+
+  const keep = games.map((g) => g.external_id);
+  const { data: stale, error: staleError } = await supabaseAdmin
+    .from("games")
+    .select("id, external_id")
+    .eq("season", season)
+    .eq("week", week);
+  if (staleError) throw new Error(staleError.message);
+
+  const staleIds = (stale ?? [])
+    .filter((g) => !g.external_id || !keep.includes(g.external_id))
+    .map((g) => g.id);
+
+  if (staleIds.length > 0) {
+    const { error: delError } = await supabaseAdmin.from("games").delete().in("id", staleIds);
+    if (delError) throw new Error(delError.message);
+  }
+
+  return { season, week, synced: rows.length, removed: staleIds.length };
+}
+
+/** Current week per the database helper, falling back to week 1. */
+export async function resolveCurrentWeek(season: number): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.rpc("current_week", { _season: season });
+  return typeof data === "number" && data > 0 ? data : 1;
+}

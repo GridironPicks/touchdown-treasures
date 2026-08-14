@@ -16,6 +16,7 @@ import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
 import { Route as AuthenticatedPotRouteImport } from './routes/_authenticated/pot'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicNflSyncRoute = ApiPublicNflSyncRouteImport.update({
+  id: '/api/public/nfl-sync',
+  path: '/api/public/nfl-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/picks': typeof AuthenticatedPicksRoute
   '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/picks': typeof AuthenticatedPicksRoute
   '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,12 +86,27 @@ export interface FileRoutesById {
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
   '/_authenticated/pot': typeof AuthenticatedPotRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/leaderboard' | '/picks' | '/pot' | '/team'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/leaderboard'
+    | '/picks'
+    | '/pot'
+    | '/team'
+    | '/api/public/nfl-sync'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/leaderboard' | '/picks' | '/pot' | '/team'
+  to:
+    | '/'
+    | '/auth'
+    | '/leaderboard'
+    | '/picks'
+    | '/pot'
+    | '/team'
+    | '/api/public/nfl-sync'
   id:
     | '__root__'
     | '/'
@@ -93,12 +116,14 @@ export interface FileRouteTypes {
     | '/_authenticated/picks'
     | '/_authenticated/pot'
     | '/_authenticated/team'
+    | '/api/public/nfl-sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicNflSyncRoute: typeof ApiPublicNflSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/nfl-sync': {
+      id: '/api/public/nfl-sync'
+      path: '/api/public/nfl-sync'
+      fullPath: '/api/public/nfl-sync'
+      preLoaderRoute: typeof ApiPublicNflSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -176,6 +208,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicNflSyncRoute: ApiPublicNflSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
