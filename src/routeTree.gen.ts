@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
+import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
 import { Route as AuthenticatedPotRouteImport } from './routes/_authenticated/pot'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 
@@ -36,6 +37,11 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPicksRoute = AuthenticatedPicksRouteImport.update({
+  id: '/picks',
+  path: '/picks',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPotRoute = AuthenticatedPotRouteImport.update({
   id: '/pot',
   path: '/pot',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/picks': typeof AuthenticatedPicksRoute
   '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
 }
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/picks': typeof AuthenticatedPicksRoute
   '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
 }
@@ -67,20 +75,22 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/_authenticated/picks': typeof AuthenticatedPicksRoute
   '/_authenticated/pot': typeof AuthenticatedPotRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/leaderboard' | '/pot' | '/team'
+  fullPaths: '/' | '/auth' | '/leaderboard' | '/picks' | '/pot' | '/team'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/leaderboard' | '/pot' | '/team'
+  to: '/' | '/auth' | '/leaderboard' | '/picks' | '/pot' | '/team'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/leaderboard'
+    | '/_authenticated/picks'
     | '/_authenticated/pot'
     | '/_authenticated/team'
   fileRoutesById: FileRoutesById
@@ -121,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/picks': {
+      id: '/_authenticated/picks'
+      path: '/picks'
+      fullPath: '/picks'
+      preLoaderRoute: typeof AuthenticatedPicksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pot': {
       id: '/_authenticated/pot'
       path: '/pot'
@@ -140,12 +157,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
+  AuthenticatedPicksRoute: typeof AuthenticatedPicksRoute
   AuthenticatedPotRoute: typeof AuthenticatedPotRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
+  AuthenticatedPicksRoute: AuthenticatedPicksRoute,
   AuthenticatedPotRoute: AuthenticatedPotRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
 }
