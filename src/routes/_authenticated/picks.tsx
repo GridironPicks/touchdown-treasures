@@ -85,6 +85,22 @@ function PicksPage() {
     },
   });
 
+  const { data: myEntry } = useQuery({
+    queryKey: ["my-entry", WEEK],
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from("entries")
+        .select("paid")
+        .eq("user_id", auth.user!.id)
+        .eq("season", SEASON)
+        .eq("week", WEEK)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (!existing) return;
     const next: Record<string, Selection> = {};
