@@ -22,6 +22,7 @@ export type Database = {
           paid: boolean
           paid_at: string | null
           season: number
+          stripe_session_id: string | null
           user_id: string
           week: number
         }
@@ -32,6 +33,7 @@ export type Database = {
           paid?: boolean
           paid_at?: string | null
           season: number
+          stripe_session_id?: string | null
           user_id: string
           week: number
         }
@@ -42,6 +44,7 @@ export type Database = {
           paid?: boolean
           paid_at?: string | null
           season?: number
+          stripe_session_id?: string | null
           user_id?: string
           week?: number
         }
@@ -201,6 +204,20 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_results: {
+        Row: {
+          actual_total: number | null
+          complete: boolean | null
+          is_winner: boolean | null
+          points: number | null
+          predicted_total: number | null
+          season: number | null
+          tiebreak_diff: number | null
+          user_id: string | null
+          week: number | null
+        }
+        Relationships: []
+      }
       weekly_scores: {
         Row: {
           points: number | null
@@ -212,6 +229,7 @@ export type Database = {
       }
     }
     Functions: {
+      current_week: { Args: { _season: number }; Returns: number }
       picks_deadline: {
         Args: { _season: number; _week: number }
         Returns: string
