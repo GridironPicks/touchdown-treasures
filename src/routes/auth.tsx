@@ -66,7 +66,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/team", replace: true });
+      navigate({ to: afterAuth, replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -76,14 +76,14 @@ function AuthPage() {
 
   async function google() {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth?redirect=${encodeURIComponent(afterAuth)}`,
     });
     if (result.error) {
       toast.error("Google sign-in failed");
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/picks", replace: true });
+    navigate({ to: afterAuth, replace: true });
   }
 
   return (
