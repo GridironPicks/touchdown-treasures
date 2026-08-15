@@ -115,6 +115,25 @@ export const leaveLeague = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const deleteLeague = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => leagueIdSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: league, error: readError } = await context.supabase
+      .from("leagues")
+      .select("id, owner_id, is_global_pool")
+      .eq("id", data.leagueId)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (!league) throw new Error("League not found");
+    if (league.is_global_pool) throw new Error("The Global Pool can't be deleted");
+    if (league.owner_id !== context.userId) throw new Error("Only the league owner can delete it");
+
+    const { error } = await context.supabase.from("leagues").delete().eq("id", data.leagueId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
 export const getLeague = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => leagueIdSchema.parse(input))

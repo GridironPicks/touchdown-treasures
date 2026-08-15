@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Copy, Crown, LogOut, Plus, Users } from "lucide-react";
+import { Copy, Crown, LogOut, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { useServerFn } from "@tanstack/react-start";
@@ -10,8 +10,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLeague } from "@/lib/league-context";
-import { createLeague, joinLeague, leaveLeague, type League } from "@/lib/leagues.functions";
+import {
+  createLeague,
+  deleteLeague,
+  joinLeague,
+  leaveLeague,
+  type League,
+} from "@/lib/leagues.functions";
 
 export const Route = createFileRoute("/_authenticated/leagues/")({
   head: () => ({
@@ -40,6 +56,8 @@ function LeaguesPage() {
   const [dropLowest, setDropLowest] = useState(false);
   const [deadlineFirstGame, setDeadlineFirstGame] = useState(false);
   const [customRules, setCustomRules] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<League | null>(null);
+  const [confirmName, setConfirmName] = useState("");
 
   const { data: leagues = [] } = useQuery<League[]>({
     queryKey: ["my-leagues"],
@@ -117,6 +135,23 @@ function LeaguesPage() {
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not leave league"),
   });
+
+  const deleteFn = useServerFn(deleteLeague);
+
+  const remove = useMutation({
+    mutationFn: async (leagueId: string) => {
+      await deleteFn({ data: { leagueId } });
+      return leagueId;
+    },
+    onSuccess: () => {
+      setPendingDelete(null);
+      setConfirmName("");
+      queryClient.invalidateQueries({ queryKey: ["my-leagues"] });
+      toast.success("League deleted");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Could not delete league"),
+  });
+
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/join?code=${code}`);
@@ -253,6 +288,19 @@ function LeaguesPage() {
                         <LogOut size={14} /> Leave
                       </Button>
                     )}
+                    {!league.is_global_pool && league.role === "owner" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPendingDelete(league);
+                          setConfirmName("");
+                        }}
+                        className="gap-1 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant={isActive ? "secondary" : "default"}
@@ -267,6 +315,48 @@ function LeaguesPage() {
           </ul>
         )}
       </section>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDelete(null);
+            setConfirmName("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{pendingDelete?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the league along with every member, pick, survivor pick,
+              tiebreaker and chat message in it. This can’t be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="confirm-name">Type the league name to confirm</Label>
+            <Input
+              id="confirm-name"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={pendingDelete?.name ?? ""}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={remove.isPending || confirmName.trim() !== (pendingDelete?.name ?? "")}
+              onClick={(e) => {
+                e.preventDefault();
+                if (pendingDelete) remove.mutate(pendingDelete.id);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {remove.isPending ? "Deleting…" : "Delete league"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
