@@ -195,7 +195,8 @@ function LeaderboardPage() {
                   </p>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </section>
