@@ -18,6 +18,7 @@ import {
   type SeasonType,
 } from "@/lib/league";
 import { TeamLogo } from "@/components/TeamLogo";
+import { HowToPlay } from "@/components/HowToPlay";
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
@@ -349,10 +350,12 @@ function PicksPage() {
         </section>
       )}
 
-
-
-
-
+      <HowToPlay
+        seasonType={isRegular ? "reg" : "pre"}
+        maxPoints={maxPoints}
+        opensAt={opensAt}
+        deadline={deadline}
+      />
 
       <ul className="space-y-3">
         {games.map((game) => {
@@ -475,7 +478,7 @@ function PicksPage() {
             : "Final Game Tiebreaker"}
         </h2>
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          Total combined score in
+          Total combined score in{" "}
           {tiebreakerGame ? (
             <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
               <TeamLogo team={tiebreakerGame.away_team} size={20} />
