@@ -136,6 +136,23 @@ function LeaguesPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not leave league"),
   });
 
+  const deleteFn = useServerFn(deleteLeague);
+
+  const remove = useMutation({
+    mutationFn: async (leagueId: string) => {
+      await deleteFn({ data: { leagueId } });
+      return leagueId;
+    },
+    onSuccess: () => {
+      setPendingDelete(null);
+      setConfirmName("");
+      queryClient.invalidateQueries({ queryKey: ["my-leagues"] });
+      toast.success("League deleted");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Could not delete league"),
+  });
+
+
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/join?code=${code}`);
     toast.success("Invite link copied");
