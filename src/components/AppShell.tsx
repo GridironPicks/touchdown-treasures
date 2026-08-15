@@ -34,18 +34,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="chrome-text">GRIDIRON</span>{" "}
             <span className="text-primary">CONFIDENCE</span>
           </Link>
-          <nav className="hidden items-center gap-1 sm:flex">
-            {NAV.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "bg-secondary text-primary" }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="hidden items-center gap-3 sm:flex">
+            <LeagueSwitcher />
+            <nav className="flex items-center gap-1">
+              {NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  activeProps={{ className: "bg-secondary text-primary" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
           <button
             onClick={signOut}
             aria-label="Sign out"
