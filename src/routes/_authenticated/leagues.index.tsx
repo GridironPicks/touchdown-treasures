@@ -248,10 +248,11 @@ function LeaguesPage() {
               return (
                 <li
                   key={league.id}
-                  className={`field-panel flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between ${
+                  className={`field-panel rounded-2xl p-4 ${
                     isActive ? "border-primary/50 ring-1 ring-primary/30" : ""
                   }`}
                 >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="flex items-center gap-2 font-semibold">
                       {league.name}
