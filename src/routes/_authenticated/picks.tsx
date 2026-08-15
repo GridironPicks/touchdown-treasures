@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { refreshSlateScores } from "@/lib/scores.functions";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame, Trophy, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
@@ -81,10 +84,22 @@ function PicksPage() {
 
   
 
+  const refreshScores = useServerFn(refreshSlateScores);
+
   const { data: games = [] } = useQuery({
     queryKey: ["games", seasonType, week],
     enabled: !!slate,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     queryFn: async () => {
+      // Pull the newest NFL scores before reading, so a refresh or tab switch
+      // always shows live data.
+      try {
+        await refreshScores({ data: { seasonType, week } });
+      } catch {
+        /* fall back to whatever is already stored */
+      }
       const { data, error } = await supabase
         .from("games")
         .select("*")

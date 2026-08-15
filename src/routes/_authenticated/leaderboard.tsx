@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { refreshSlateScores } from "@/lib/scores.functions";
 import { useMemo, useState } from "react";
 import { Flame, Trophy } from "lucide-react";
 
@@ -36,10 +39,22 @@ function LeaderboardPage() {
   const [picked, setPicked] = useState<Slate | null>(null);
   const slate = picked ?? fallback;
 
+  const refreshScores = useServerFn(refreshSlateScores);
+
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["leaderboard", board, slate?.seasonType, slate?.week],
     enabled: board !== "week" || !!slate,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     queryFn: async () => {
+      if (slate) {
+        try {
+          await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
+        } catch {
+          /* keep showing stored standings */
+        }
+      }
       if (board === "week") {
         const [scores, profiles] = await Promise.all([
           supabase
