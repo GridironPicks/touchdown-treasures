@@ -25,7 +25,7 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 - Update the unique constraints and keys that currently use `(user_id, season, week)` to include `season_type` — picks, tiebreakers, and entries — so preseason Week 1 and regular Week 1 are distinct.
 - Update the paid-entry enforcement so it only applies when `season_type = 'reg'`; preseason picks insert freely.
 - Update `leaderboard`, `weekly_scores`, and `weekly_results` views to filter to `season_type = 'reg'`, and add a preseason-only standings view.
-- Keep the Wednesday 6:00 PM ET lock trigger applying to both.
+- Keep the Wednesday 6:00 PM ET lock trigger applying to both, and extend the pick-lock trigger so any individual pick is rejected once that game's kickoff has passed — this makes "no picks on already-played games" enforced server-side, not just hidden in the UI.
 
 **NFL data sync**
 - Extend the sync to fetch preseason weeks using the provider's preseason season type, tagging those rows `season_type = 'pre'`.
