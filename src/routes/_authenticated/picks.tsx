@@ -12,6 +12,7 @@ import {
   kickoffLabel,
   teamShort,
   tiebreakerGameOf,
+  weekDeadline,
   type Game,
   type SeasonType,
 } from "@/lib/league";
@@ -134,12 +135,20 @@ function PicksPage() {
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
-  // Picks stay editable all week — only games that already kicked off lock.
-  const locked = games.length > 0 && openGames.length === 0;
+  // Regular season locks at Wednesday 6:00 PM ET; preseason stays open per game.
+  const isRegular = slate?.seasonType === "reg";
+  const deadline = useMemo(
+    () => (isRegular ? weekDeadline(games) : null),
+    [isRegular, games],
+  );
+  const deadlinePassed = deadline ? deadline.getTime() <= now : false;
+  const locked = (games.length > 0 && openGames.length === 0) || deadlinePassed;
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
-  const tiebreakerLocked = tiebreakerGame ? hasStarted(tiebreakerGame) : true;
+  const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
   const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
+  const untilDeadline = deadline ? deadline.getTime() - now : 0;
+
 
 
   // Points spent on games that already kicked off can't be reused this week.
@@ -258,14 +267,18 @@ function PicksPage() {
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
               {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
               {status === "open"
-                ? "Next kickoff"
+                ? isRegular
+                  ? "Locks Wed 6:00 PM ET"
+                  : "Next kickoff"
                 : status === "in-progress"
-                  ? "All games started"
+                  ? isRegular && deadlinePassed
+                    ? "Deadline passed"
+                    : "All games started"
                   : "Final"}
             </p>
             {status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
-                {formatCountdown(nextKickoff)}
+                {formatCountdown(isRegular ? untilDeadline : nextKickoff)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
@@ -278,19 +291,26 @@ function PicksPage() {
 
       {status === "open" ? (
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
-          <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
+          <h2 className="stadium-heading text-lg text-primary">
+            {isRegular ? "Picks open" : "Free preseason play"}
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Free all season. Edit your picks any time — each game locks only when it kicks off.
+            {isRegular
+              ? "Free all season. Edit your picks until Wednesday 6:00 PM ET — after that the week is locked."
+              : "No deadline in the preseason. Edit your picks any time — each game locks only when it kicks off."}
           </p>
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
           <h2 className="stadium-heading text-lg">Read only</h2>
           <p className="text-sm text-muted-foreground">
-            Every game this week has kicked off. Your submitted picks are shown below with scores.
+            {isRegular && deadlinePassed
+              ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+              : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
       )}
+
 
 
 
