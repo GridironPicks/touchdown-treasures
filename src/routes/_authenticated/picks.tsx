@@ -135,19 +135,23 @@ function PicksPage() {
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
-  // Regular season locks at Wednesday 6:00 PM ET; preseason stays open per game.
+  // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
+  // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const deadline = useMemo(
-    () => (isRegular ? weekDeadline(games) : null),
-    [isRegular, games],
-  );
+  const deadline = useMemo(() => (isRegular ? weekDeadline(games) : null), [isRegular, games]);
+  const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
-  const locked = (games.length > 0 && openGames.length === 0) || deadlinePassed;
+  const notOpenYet = opensAt ? now < opensAt.getTime() : false;
+  const submitted = !!isRegular && (existing?.picks.length ?? 0) > 0;
+  const locked =
+    (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
   const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
   const untilDeadline = deadline ? deadline.getTime() - now : 0;
+  const untilOpen = opensAt ? opensAt.getTime() - now : 0;
+
 
 
 
