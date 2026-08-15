@@ -231,6 +231,22 @@ export type Database = {
         }
         Returns: string
       }
+      week_submission_status: {
+        Args: {
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          display_name: string
+          mascot: string
+          pick_count: number
+          primary_color: string
+          submitted: boolean
+          team_name: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       season_type: "pre" | "reg"
