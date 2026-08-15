@@ -167,7 +167,8 @@ function PicksPage() {
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
   const hasPicks = (existing?.picks.length ?? 0) > 0;
-  const submitted = !!isRegular && hasPicks;
+  // Picks are final once submitted — preseason included.
+  const submitted = hasPicks;
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
@@ -224,9 +225,8 @@ function PicksPage() {
   async function submit() {
     if (!existing || locked) return;
     if (
-      isRegular &&
       !window.confirm(
-        "Submit your picks? Regular season picks are final — you won't be able to change them.",
+        "Submit your picks? Picks are final — you won't be able to change them.",
       )
     ) {
       return;
@@ -234,7 +234,6 @@ function PicksPage() {
     setBusy(true);
     try {
       const uid = existing.uid;
-      const openIds = openGames.map((g) => g.id);
       const rows = openGames
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
