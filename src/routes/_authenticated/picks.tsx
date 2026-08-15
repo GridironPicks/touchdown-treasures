@@ -237,7 +237,7 @@ function PicksPage() {
   const allFinal = games.length > 0 && games.every((g) => g.status === "final");
   const status: "open" | "in-progress" | "final" = allFinal
     ? "final"
-    : deadlinePassed
+    : locked
       ? "in-progress"
       : "open";
 
@@ -258,14 +258,14 @@ function PicksPage() {
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
               {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
               {status === "open"
-                ? "Locks Wed 6:00 PM ET"
+                ? "Next kickoff"
                 : status === "in-progress"
-                  ? "Locked — games in progress"
+                  ? "All games started"
                   : "Final"}
             </p>
             {status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
-                {formatCountdown(msLeft)}
+                {formatCountdown(nextKickoff)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
@@ -280,17 +280,18 @@ function PicksPage() {
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
           <p className="text-sm text-muted-foreground">
-            Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
+            Free all season. Edit your picks any time — each game locks only when it kicks off.
           </p>
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
           <h2 className="stadium-heading text-lg">Read only</h2>
           <p className="text-sm text-muted-foreground">
-            This week is locked. Your submitted picks are shown below with live scores.
+            Every game this week has kicked off. Your submitted picks are shown below with scores.
           </p>
         </section>
       )}
+
 
 
 
