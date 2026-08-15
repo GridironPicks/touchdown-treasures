@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Plus, Users } from "lucide-react";
+import { ChevronDown, Settings, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 import { useLeague } from "@/lib/league-context";
@@ -50,6 +50,19 @@ export function LeagueSwitcher() {
             className="cursor-pointer justify-between"
           >
             <span className="truncate">{league.name}</span>
+            {league.role === "owner" && !league.is_global_pool && (
+              <Link
+                to="/leagues"
+                aria-label={`Manage ${league.name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(false);
+                }}
+                className="ml-2 shrink-0 text-muted-foreground hover:text-primary"
+              >
+                <Settings size={13} />
+              </Link>
+            )}
             {activeLeague?.id === league.id && (
               <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
                 ACTIVE
@@ -60,7 +73,7 @@ export function LeagueSwitcher() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link to="/leagues" className="flex items-center gap-2">
-            <Plus size={14} /> Create or join league
+            <Settings size={14} /> Manage leagues
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
