@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { refreshSlateScores } from "@/lib/scores.functions";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame, Trophy, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
