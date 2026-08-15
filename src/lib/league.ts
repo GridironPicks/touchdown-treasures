@@ -35,6 +35,14 @@ export const MASCOTS = [
   { id: "titan", label: "Titan" },
   { id: "hornet", label: "Hornet" },
   { id: "bolt", label: "Bolt" },
+  { id: "lion", label: "Lion" },
+  { id: "raven", label: "Raven" },
+  { id: "panther", label: "Panther" },
+  { id: "rhino", label: "Rhino" },
+  { id: "bison", label: "Bison" },
+  { id: "viper", label: "Viper" },
+  { id: "knight", label: "Knight" },
+  { id: "outlaw", label: "Outlaw" },
 ] as const;
 
 export const TEAM_COLORS = [
