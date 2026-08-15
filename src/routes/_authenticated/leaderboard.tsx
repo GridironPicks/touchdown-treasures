@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { refreshSlateScores } from "@/lib/scores.functions";
 import { useMemo, useState } from "react";
-import { Flame, Trophy } from "lucide-react";
+import { Flame, ScrollText, Trophy } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
@@ -107,33 +107,23 @@ function LeaderboardPage() {
     enabled: !!activeLeague,
     queryFn: async () => {
       if (!activeLeague) return {};
-      const { data, error } = await supabase
-        .from("weekly_scores")
-        .select("user_id, week, points")
-        .eq("league_id", activeLeague.id)
-        .eq("season", SEASON)
-        .eq("season_type", streakType);
+      // One winner per completed week, decided by the shared tiebreaker ladder.
+      const { data, error } = await supabase.rpc("league_week_winners", {
+        _season: SEASON,
+        _season_type: streakType,
+        _league_id: activeLeague.id,
+      });
       if (error) throw error;
-      const byWeek = new Map<number, { user_id: string; points: number }[]>();
+      const winnersByWeek = new Map<number, string>();
       for (const r of data ?? []) {
-        if (!byWeek.has(r.week!)) byWeek.set(r.week!, []);
-        byWeek.get(r.week!)!.push({ user_id: r.user_id!, points: r.points ?? 0 });
-      }
-      // Winners per completed week (highest points, ties share the week).
-      const winnersByWeek = new Map<number, Set<string>>();
-      for (const [week, rowsW] of byWeek) {
-        const max = Math.max(...rowsW.map((r) => r.points));
-        if (max <= 0) continue;
-        winnersByWeek.set(week, new Set(rowsW.filter((r) => r.points === max).map((r) => r.user_id)));
+        if (r.week !== null && r.user_id) winnersByWeek.set(r.week, r.user_id);
       }
       const weeks = [...winnersByWeek.keys()].sort((a, b) => b - a);
       const result: Record<string, number> = {};
-      for (const w of weeks) {
-        for (const uid of winnersByWeek.get(w)!) {
-          // Only extend a streak that is still unbroken from the newest week back.
-          const expected = weeks.indexOf(w);
-          if ((result[uid] ?? 0) === expected) result[uid] = expected + 1;
-        }
+      for (const [i, w] of weeks.entries()) {
+        const uid = winnersByWeek.get(w)!;
+        // Only extend a streak that is still unbroken from the newest week back.
+        if ((result[uid] ?? 0) === i) result[uid] = i + 1;
       }
       return result;
     },
@@ -146,16 +136,26 @@ function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="stadium-heading text-3xl">Season Standings</h1>
-        <p className="text-sm text-muted-foreground">
-          {board === "pre"
-            ? "2026 preseason · free-play practice points"
-            : board === "week"
-              ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
-              : "2026 season · cumulative confidence points"}
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="stadium-heading text-3xl">Season Standings</h1>
+          <p className="text-sm text-muted-foreground">
+            {board === "pre"
+              ? "2026 preseason · free-play practice points"
+              : board === "week"
+                ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+                : "2026 season · cumulative confidence points"}
+          </p>
+        </div>
+        <Link
+          to="/recap"
+          search={slate ? { st: slate.seasonType, wk: slate.week } : {}}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ScrollText size={15} className="text-primary" /> Weekly recap
+        </Link>
       </header>
+
 
       <div className="field-panel inline-flex rounded-xl p-1">
         {(["reg", "pre", "week"] as const).map((key) => (

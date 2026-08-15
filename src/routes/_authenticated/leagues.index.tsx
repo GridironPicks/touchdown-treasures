@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { CommissionerPanel } from "@/components/CommissionerPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -248,10 +249,11 @@ function LeaguesPage() {
               return (
                 <li
                   key={league.id}
-                  className={`field-panel flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between ${
+                  className={`field-panel rounded-2xl p-4 ${
                     isActive ? "border-primary/50 ring-1 ring-primary/30" : ""
                   }`}
                 >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="flex items-center gap-2 font-semibold">
                       {league.name}
@@ -312,6 +314,10 @@ function LeaguesPage() {
                       {isActive ? "Active" : "Switch"}
                     </Button>
                   </div>
+                  </div>
+                  {!league.is_global_pool && league.role === "owner" && (
+                    <CommissionerPanel league={league} />
+                  )}
                 </li>
               );
             })}

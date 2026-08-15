@@ -529,6 +529,18 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      league_week_winners: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          points: number
+          user_id: string
+          week: number
+        }[]
+      }
       picks_deadline: {
         Args: {
           _season: number
@@ -563,6 +575,7 @@ export type Database = {
             }
             Returns: boolean
           }
+      regenerate_join_code: { Args: { _league_id: string }; Returns: string }
       survivor_board:
         | {
             Args: { _season: number }
@@ -592,6 +605,50 @@ export type Database = {
               week: number
             }[]
           }
+      transfer_league_ownership: {
+        Args: { _league_id: string; _new_owner: string }
+        Returns: boolean
+      }
+      week_highlights: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          kind: string
+          mascot: string
+          matchup: string
+          picked_team: string
+          points: number
+          primary_color: string
+          team_name: string
+          user_id: string
+        }[]
+      }
+      week_recap: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          correct_count: number
+          decided_by: string
+          display_name: string
+          mascot: string
+          place: number
+          points: number
+          predicted_total: number
+          primary_color: string
+          submitted_at: string
+          team_name: string
+          tiebreak_diff: number
+          user_id: string
+        }[]
+      }
       week_submission_status:
         | {
             Args: {
