@@ -5,8 +5,10 @@ import { SEASON } from "@/lib/league";
 
 const paramsSchema = z.object({
   season: z.coerce.number().int().min(2000).max(2100).default(SEASON),
+  season_type: z.enum(["pre", "reg"]).optional(),
   week: z.coerce.number().int().min(1).max(22).optional(),
 });
+
 
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -31,20 +33,24 @@ async function handle(request: Request) {
     return Response.json({ error: "Invalid parameters" }, { status: 400 });
   }
 
-  const { syncWeek, resolveCurrentWeek } = await import("@/lib/nfl.server");
+  const { syncWeek, resolveCurrentSlate, nextSlate } = await import("@/lib/nfl.server");
   const season = parsed.data.season;
 
   try {
     if (parsed.data.week) {
-      return Response.json(await syncWeek(season, parsed.data.week));
+      return Response.json(
+        await syncWeek(season, parsed.data.week, parsed.data.season_type ?? "reg"),
+      );
     }
-    // Default run: refresh the live week plus the following week's schedule.
-    const current = await resolveCurrentWeek(season);
-    const results = [];
-    for (const week of [current, Math.min(current + 1, 18)]) {
-      results.push(await syncWeek(season, week));
+    // Default run: refresh the live slate plus the following week's schedule.
+    const current = await resolveCurrentSlate(season);
+    const upcoming = nextSlate(current);
+    const results = [await syncWeek(season, current.week, current.seasonType)];
+    if (upcoming.seasonType !== current.seasonType || upcoming.week !== current.week) {
+      results.push(await syncWeek(season, upcoming.week, upcoming.seasonType));
     }
     return Response.json({ season, current, results });
+
   } catch (error) {
     console.error("[nfl-sync]", error);
     return Response.json({ error: "Sync failed" }, { status: 502 });

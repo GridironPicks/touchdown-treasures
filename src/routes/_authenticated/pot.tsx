@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, X, CreditCard, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { SEASON, ENTRY_FEE_CENTS } from "@/lib/league";
+import { useCurrentSlate, slateLabel } from "@/lib/slate";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
 import { EntryCheckout } from "@/components/EntryCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+
 
 export const Route = createFileRoute("/_authenticated/pot")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string } =>
@@ -33,13 +35,17 @@ export const Route = createFileRoute("/_authenticated/pot")({
   component: PotPage,
 });
 
-const WEEK = 1;
 const PRICE_ID = "weekly_entry_5";
 
 function PotPage() {
   const queryClient = useQueryClient();
   const { session_id: sessionId } = Route.useSearch();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  const { data: slate } = useCurrentSlate();
+  const isPreseason = slate?.seasonType === "pre";
+  // The pot always tracks regular-season weeks; preseason is free play.
+  const WEEK = slate && !isPreseason ? slate.week : 1;
 
   const { data: me } = useQuery({
     queryKey: ["me"],
@@ -57,11 +63,13 @@ function PotPage() {
 
   const entriesQuery = useQuery({
     queryKey: ["entries", WEEK],
+    enabled: !!slate,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entries")
         .select("*")
         .eq("season", SEASON)
+        .eq("season_type", "reg")
         .eq("week", WEEK);
       if (error) throw error;
       return data ?? [];
@@ -72,11 +80,13 @@ function PotPage() {
 
   const { data: results = [] } = useQuery({
     queryKey: ["weekly-results", WEEK],
+    enabled: !!slate,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("weekly_results")
         .select("*")
         .eq("season", SEASON)
+        .eq("season_type", "reg")
         .eq("week", WEEK);
       if (error) throw error;
       return data ?? [];
@@ -92,7 +102,7 @@ function PotPage() {
       setCheckoutOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["entries", WEEK] });
     }
-  }, [sessionId, queryClient]);
+  }, [sessionId, queryClient, WEEK]);
 
   useEffect(() => {
     if (sessionId && iPaid) toast.success("Payment confirmed — you're in the pot");
@@ -103,6 +113,33 @@ function PotPage() {
 
   const returnUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/pot?session_id={CHECKOUT_SESSION_ID}`;
 
+  if (isPreseason) {
+    return (
+      <div className="space-y-6">
+        <header>
+          <h1 className="stadium-heading text-3xl">Weekly Pot</h1>
+          <p className="text-sm text-muted-foreground">
+            {slate ? slateLabel(slate) : "Preseason"} · free play
+          </p>
+        </header>
+
+        <section className="field-panel space-y-2 rounded-2xl border border-primary/40 p-6">
+          <h2 className="stadium-heading text-xl text-primary">No buy-in during preseason</h2>
+          <p className="text-sm text-muted-foreground">
+            Preseason picks are free so everyone can get their reps in. The $5 weekly entry and the
+            weekly pot start in Week 1 of the 2026 regular season.
+          </p>
+          <Link
+            to="/picks"
+            className="mt-2 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+          >
+            Make your free picks
+          </Link>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PaymentTestModeBanner />
@@ -111,6 +148,7 @@ function PotPage() {
         <h1 className="stadium-heading text-3xl">Week {WEEK} Pot</h1>
         <p className="text-sm text-muted-foreground">$5 buy-in · winner takes the weekly pot</p>
       </header>
+
 
       <section className="field-panel flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>

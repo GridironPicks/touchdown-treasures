@@ -24,11 +24,13 @@ export const Route = createFileRoute("/_authenticated/leaderboard")({
 });
 
 function LeaderboardPage() {
+  const [board, setBoard] = useState<"reg" | "pre">("reg");
+
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["leaderboard"],
+    queryKey: ["leaderboard", board],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("leaderboard")
+        .from(board === "pre" ? "preseason_leaderboard" : "leaderboard")
         .select("*")
         .order("season_points", { ascending: false });
       if (error) throw error;
@@ -40,8 +42,29 @@ function LeaderboardPage() {
     <div className="space-y-6">
       <header>
         <h1 className="stadium-heading text-3xl">Season Standings</h1>
-        <p className="text-sm text-muted-foreground">2026 season · cumulative confidence points</p>
+        <p className="text-sm text-muted-foreground">
+          {board === "pre"
+            ? "2026 preseason · free-play practice points"
+            : "2026 season · cumulative confidence points"}
+        </p>
       </header>
+
+      <div className="field-panel inline-flex rounded-xl p-1">
+        {(["reg", "pre"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setBoard(key)}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+              board === key
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {key === "reg" ? "Regular season" : "Preseason"}
+          </button>
+        ))}
+      </div>
 
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
@@ -49,6 +72,7 @@ function LeaderboardPage() {
         ) : rows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">No managers yet.</p>
         ) : (
+
           <ul className="divide-y divide-border">
             {rows.map((row, i) => (
               <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">

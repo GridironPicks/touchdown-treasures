@@ -1,9 +1,12 @@
 export const SEASON = 2026;
 export const ENTRY_FEE_CENTS = 500;
 
+export type SeasonType = "pre" | "reg";
+
 export type Game = {
   id: string;
   season: number;
+  season_type: SeasonType;
   week: number;
   kickoff: string;
   away_team: string;
@@ -13,6 +16,11 @@ export type Game = {
   status: string;
   is_tiebreaker_game: boolean;
 };
+
+export function seasonTypeLabel(type: SeasonType): string {
+  return type === "pre" ? "Preseason" : "Week";
+}
+
 
 export const MASCOTS = [
   { id: "eagle", label: "Eagle" },

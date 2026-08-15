@@ -22,6 +22,7 @@ export type Database = {
           paid: boolean
           paid_at: string | null
           season: number
+          season_type: Database["public"]["Enums"]["season_type"]
           stripe_session_id: string | null
           user_id: string
           week: number
@@ -33,6 +34,7 @@ export type Database = {
           paid?: boolean
           paid_at?: string | null
           season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           stripe_session_id?: string | null
           user_id: string
           week: number
@@ -44,6 +46,7 @@ export type Database = {
           paid?: boolean
           paid_at?: string | null
           season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           stripe_session_id?: string | null
           user_id?: string
           week?: number
@@ -62,6 +65,7 @@ export type Database = {
           is_tiebreaker_game: boolean
           kickoff: string
           season: number
+          season_type: Database["public"]["Enums"]["season_type"]
           status: string
           week: number
         }
@@ -76,6 +80,7 @@ export type Database = {
           is_tiebreaker_game?: boolean
           kickoff: string
           season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           status?: string
           week: number
         }
@@ -90,6 +95,7 @@ export type Database = {
           is_tiebreaker_game?: boolean
           kickoff?: string
           season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           status?: string
           week?: number
         }
@@ -103,6 +109,7 @@ export type Database = {
           id: string
           picked_team: string
           season: number
+          season_type: Database["public"]["Enums"]["season_type"]
           user_id: string
           week: number
         }
@@ -113,6 +120,7 @@ export type Database = {
           id?: string
           picked_team: string
           season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           user_id: string
           week: number
         }
@@ -123,6 +131,7 @@ export type Database = {
           id?: string
           picked_team?: string
           season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           user_id?: string
           week?: number
         }
@@ -169,6 +178,7 @@ export type Database = {
           id: string
           predicted_total: number
           season: number
+          season_type: Database["public"]["Enums"]["season_type"]
           user_id: string
           week: number
         }
@@ -177,6 +187,7 @@ export type Database = {
           id?: string
           predicted_total: number
           season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           user_id: string
           week: number
         }
@@ -185,6 +196,7 @@ export type Database = {
           id?: string
           predicted_total?: number
           season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
           user_id?: string
           week?: number
         }
@@ -204,6 +216,18 @@ export type Database = {
         }
         Relationships: []
       }
+      preseason_leaderboard: {
+        Row: {
+          display_name: string | null
+          mascot: string | null
+          primary_color: string | null
+          season_points: number | null
+          team_name: string | null
+          user_id: string | null
+          weeks_played: number | null
+        }
+        Relationships: []
+      }
       weekly_results: {
         Row: {
           actual_total: number | null
@@ -212,6 +236,7 @@ export type Database = {
           points: number | null
           predicted_total: number | null
           season: number | null
+          season_type: Database["public"]["Enums"]["season_type"] | null
           tiebreak_diff: number | null
           user_id: string | null
           week: number | null
@@ -222,6 +247,7 @@ export type Database = {
         Row: {
           points: number | null
           season: number | null
+          season_type: Database["public"]["Enums"]["season_type"] | null
           user_id: string | null
           week: number | null
         }
@@ -229,14 +255,31 @@ export type Database = {
       }
     }
     Functions: {
-      current_week: { Args: { _season: number }; Returns: number }
+      current_slate: {
+        Args: { _season: number }
+        Returns: {
+          season_type: Database["public"]["Enums"]["season_type"]
+          week: number
+        }[]
+      }
+      current_week: {
+        Args: {
+          _season: number
+          _season_type?: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: number
+      }
       picks_deadline: {
-        Args: { _season: number; _week: number }
+        Args: {
+          _season: number
+          _season_type?: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
         Returns: string
       }
     }
     Enums: {
-      [_ in never]: never
+      season_type: "pre" | "reg"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -363,6 +406,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      season_type: ["pre", "reg"],
+    },
   },
 } as const
