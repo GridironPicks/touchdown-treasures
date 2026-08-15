@@ -50,9 +50,17 @@ function timeLabel(iso: string) {
 
 function ChatPage() {
   const queryClient = useQueryClient();
-  const { activeLeague } = useLeague();
+  const { activeLeague, isLoading: leaguesLoading } = useLeague();
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  if (leaguesLoading || !activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const { data: me } = useQuery({
     queryKey: ["me-id"],
