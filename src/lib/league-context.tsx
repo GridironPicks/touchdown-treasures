@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
+import { supabase } from "@/integrations/supabase/client";
 import { listMyLeagues, type League } from "@/lib/leagues.functions";
+
 
 type LeagueContextValue = {
   leagues: League[];
