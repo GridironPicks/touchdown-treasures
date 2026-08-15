@@ -53,7 +53,10 @@ async function handle(request: Request) {
 
   } catch (error) {
     console.error("[nfl-sync]", error);
-    return Response.json({ error: "Sync failed" }, { status: 502 });
+    return Response.json(
+      { error: "Sync failed", detail: error instanceof Error ? error.message : String(error) },
+      { status: 502 },
+    );
   }
 }
 
