@@ -223,6 +223,14 @@ export type Database = {
         }
         Returns: string
       }
+      picks_open_at: {
+        Args: {
+          _season: number
+          _season_type?: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       season_type: "pre" | "reg"
