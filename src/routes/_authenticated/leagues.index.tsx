@@ -313,6 +313,10 @@ function LeaguesPage() {
                       {isActive ? "Active" : "Switch"}
                     </Button>
                   </div>
+                  </div>
+                  {!league.is_global_pool && league.role === "owner" && (
+                    <CommissionerPanel league={league} />
+                  )}
                 </li>
               );
             })}
