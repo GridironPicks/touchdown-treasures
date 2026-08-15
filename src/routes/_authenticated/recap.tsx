@@ -8,9 +8,12 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
+import { BadgeRow } from "@/components/BadgeRow";
 import { SlatePicker } from "@/components/SlatePicker";
+import { getManagerBadges } from "@/lib/awards.functions";
 import { useLeague } from "@/lib/league-context";
 import { getWeekRecap, type WeekRecap } from "@/lib/recap.functions";
+
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
 
 const searchSchema = z.object({
