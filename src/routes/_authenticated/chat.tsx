@@ -101,19 +101,24 @@ function ChatPage() {
 
   // Live chat: push new/removed messages straight into the cache.
   useEffect(() => {
+    if (!activeLeague) return;
     const channel = supabase
-      .channel("league-chat")
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["messages"] });
-      })
+      .channel(`league-chat-${activeLeague.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `league_id=eq.${activeLeague.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["messages", activeLeague.id] });
+        },
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["message-reactions"] });
+        queryClient.invalidateQueries({ queryKey: ["message-reactions", activeLeague.id] });
       })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, activeLeague?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -123,12 +128,15 @@ function ChatPage() {
     mutationFn: async (body: string) => {
       const uid = (await supabase.auth.getUser()).data.user?.id;
       if (!uid) throw new Error("You must be signed in");
-      const { error } = await supabase.from("messages").insert({ user_id: uid, body });
+      if (!activeLeague) throw new Error("No league selected");
+      const { error } = await supabase
+        .from("messages")
+        .insert({ user_id: uid, league_id: activeLeague.id, body });
       if (error) throw error;
     },
     onSuccess: () => {
       setDraft("");
-      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      queryClient.invalidateQueries({ queryKey: ["messages", activeLeague?.id] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not send"),
   });
