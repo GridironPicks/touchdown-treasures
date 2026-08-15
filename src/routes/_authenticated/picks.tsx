@@ -167,7 +167,8 @@ function PicksPage() {
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
   const hasPicks = (existing?.picks.length ?? 0) > 0;
-  const submitted = !!isRegular && hasPicks;
+  // Picks are final once submitted — preseason included.
+  const submitted = hasPicks;
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
@@ -224,9 +225,8 @@ function PicksPage() {
   async function submit() {
     if (!existing || locked) return;
     if (
-      isRegular &&
       !window.confirm(
-        "Submit your picks? Regular season picks are final — you won't be able to change them.",
+        "Submit your picks? Picks are final — you won't be able to change them.",
       )
     ) {
       return;
@@ -234,7 +234,6 @@ function PicksPage() {
     setBusy(true);
     try {
       const uid = existing.uid;
-      const openIds = openGames.map((g) => g.id);
       const rows = openGames
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
@@ -247,17 +246,6 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-      if (!isRegular && openIds.length > 0) {
-        const del = await supabase
-          .from("picks")
-          .delete()
-          .eq("user_id", uid)
-          .eq("season", SEASON)
-          .eq("season_type", seasonType)
-          .eq("week", week)
-          .in("game_id", openIds);
-        if (del.error) throw del.error;
-      }
 
       const ins = await supabase.from("picks").insert(rows);
       if (ins.error) throw ins.error;
@@ -266,7 +254,7 @@ function PicksPage() {
       if (!tiebreakerLocked && !Number.isNaN(total)) {
         const tb = await supabase.from("tiebreakers").upsert(
           { user_id: uid, season: SEASON, season_type: seasonType, week, predicted_total: total },
-          { onConflict: "user_id,season,season_type,week" },
+          { onConflict: "user_id,season,season_type,week", ignoreDuplicates: true },
         );
         if (tb.error) throw tb.error;
       }
