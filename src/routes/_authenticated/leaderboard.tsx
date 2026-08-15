@@ -154,12 +154,32 @@ function LeaderboardPage() {
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {rows.map((row, i) => (
+            {rows.map((row, i) => {
+              const streak = streaks[row.user_id as string] ?? 0;
+              const onFire = streak >= 2;
+              return (
               <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">
                 <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
-                <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
+                <span className="relative">
+                  <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
+                  {onFire && (
+                    <span
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.8)]"
+                      title={`${streak}-week win streak`}
+                    >
+                      <Flame size={12} />
+                    </span>
+                  )}
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{row.team_name}</p>
+                  <p className="flex items-center gap-1.5 truncate font-semibold">
+                    {row.team_name}
+                    {onFire && (
+                      <span className="flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary">
+                        <Flame size={10} /> {streak}W
+                      </span>
+                    )}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
                 {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
@@ -167,6 +187,7 @@ function LeaderboardPage() {
                     <Trophy size={13} /> 2026
                   </span>
                 )}
+
                 <div className="text-right">
                   <p className="stadium-heading text-xl text-primary">{row.season_points ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">
