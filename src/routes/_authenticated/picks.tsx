@@ -303,7 +303,16 @@ function PicksPage() {
       ? "in-progress"
       : "open";
 
+  if (leaguesLoading || !activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-5">
       <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
 
