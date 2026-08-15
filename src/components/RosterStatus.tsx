@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +74,7 @@ export function RosterStatus({
                 <Circle className="h-3.5 w-3.5" /> Not submitted
               </span>
             )}
+            </Link>
           </li>
         ))}
         {rows.length === 0 && (
