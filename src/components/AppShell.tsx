@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users } from "lucide-react";
+import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users, Bell } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LeagueSwitcher } from "@/components/LeagueSwitcher";
+import { InstallAppCard } from "@/components/InstallAppCard";
 
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
@@ -13,6 +14,7 @@ const NAV = [
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
   { to: "/team", label: "Team", icon: Shirt },
   { to: "/leagues", label: "Leagues", icon: Users },
+  { to: "/notifications", label: "Alerts", icon: Bell },
 ] as const;
 
 
@@ -60,15 +62,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-5 sm:pb-10">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-5 sm:pb-10">
+        <InstallAppCard />
+        {children}
+      </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur sm:hidden">
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-7">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-muted-foreground"
+              className="flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
               activeProps={{ className: "text-primary" }}
             >
               <item.icon size={20} />
