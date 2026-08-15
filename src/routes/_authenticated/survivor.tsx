@@ -162,10 +162,10 @@ function SurvivorPage() {
       if (!uid) throw new Error("You must be signed in");
       const { error } = await supabase
         .from("survivor_picks")
-        .insert({ user_id: uid, season: SEASON, week, team });
+        .insert({ user_id: uid, league_id: activeLeague!.id, season: SEASON, week, team });
       if (error) throw error;
       toast.success(`${teamShort(team)} locked in for week ${week}`);
-      await queryClient.invalidateQueries({ queryKey: ["survivor-board", SEASON] });
+      await queryClient.invalidateQueries({ queryKey: ["survivor-board", activeLeague!.id, SEASON] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save your pick");
     } finally {
