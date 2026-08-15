@@ -34,7 +34,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { redirect } = useSearch({ from: "/auth" });
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,6 +51,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("If that email is registered, a reset link is on the way.");
+        return;
+      }
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -74,6 +82,7 @@ function AuthPage() {
     }
   }
 
+
   async function google() {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/auth?redirect=${encodeURIComponent(afterAuth)}`,
@@ -94,7 +103,11 @@ function AuthPage() {
           <span className="text-primary">CONFIDENCE</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {mode === "signin" ? "Welcome back, coach." : "Claim your locker in the league."}
+          {mode === "signin"
+            ? "Welcome back, coach."
+            : mode === "signup"
+              ? "Claim your locker in the league."
+              : "Enter your email and we'll send you a secure reset link."}
         </p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
@@ -109,37 +122,65 @@ function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          {mode !== "reset" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("reset")}
+                    className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <Input
+                id="password"
+                type="password"
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={busy}>
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin"
+              ? "Sign in"
+              : mode === "signup"
+                ? "Create account"
+                : "Send reset link"}
           </Button>
         </form>
 
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-        </div>
+        {mode !== "reset" && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> or{" "}
+              <span className="h-px flex-1 bg-border" />
+            </div>
 
-        <Button variant="secondary" className="w-full" onClick={google}>
-          Continue with Google
-        </Button>
+            <Button variant="secondary" className="w-full" onClick={google}>
+              Continue with Google
+            </Button>
+          </>
+        )}
 
         <button
+          type="button"
           className="mt-6 w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
-          {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          {mode === "signin"
+            ? "Need an account? Sign up"
+            : mode === "signup"
+              ? "Already have an account? Sign in"
+              : "Back to sign in"}
         </button>
+
       </div>
     </div>
   );
