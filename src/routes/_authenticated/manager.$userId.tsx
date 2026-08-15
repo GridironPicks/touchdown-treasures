@@ -104,6 +104,32 @@ function ManagerPage() {
     .map((p) => ({ pick: p, game: data?.games.find((g) => g.id === p.game_id) }))
     .sort((a, b) => (b.pick.confidence ?? 0) - (a.pick.confidence ?? 0));
 
+  const fetchBadges = useServerFn(getManagerBadges);
+  const { data: badgeRows = [] } = useQuery({
+    queryKey: ["badges", activeLeague?.id, seasonType],
+    enabled: !!activeLeague,
+    queryFn: () => fetchBadges({ data: { leagueId: activeLeague!.id, seasonType } }),
+  });
+  const myBadges = badgeRows
+    .filter((b) => b.user_id === userId)
+    .map((b) => ({ badge: b.badge, week: b.week }));
+
+  const fetchH2H = useServerFn(getHeadToHead);
+  const { data: h2hRows = [] } = useQuery({
+    queryKey: ["head-to-head", activeLeague?.id, seasonType],
+    enabled: !!activeLeague,
+    queryFn: () => fetchH2H({ data: { leagueId: activeLeague!.id, seasonType } }),
+  });
+  const { data: meId = null } = useQuery({
+    queryKey: ["me-id"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+  const h2hRecord =
+    meId && meId !== userId
+      ? h2hRows.find((r) => r.user_id === meId && r.opponent_id === userId) ?? null
+      : null;
+
+
   return (
     <div className="space-y-5">
       <Link
