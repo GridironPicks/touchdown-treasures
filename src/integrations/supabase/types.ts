@@ -525,6 +525,14 @@ export type Database = {
         Returns: number
       }
       generate_join_code: { Args: never; Returns: string }
+      is_league_member: {
+        Args: { _league_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_league_owner: {
+        Args: { _league_id: string; _user_id: string }
+        Returns: boolean
+      }
       join_league_by_code: {
         Args: { _code: string; _user_id: string }
         Returns: string
