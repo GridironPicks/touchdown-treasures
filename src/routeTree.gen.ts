@@ -21,6 +21,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedLeaguesIndexRouteImport } from './routes/_authenticated/leagues.index'
 import { Route as AuthenticatedManagerUserIdRouteImport } from './routes/_authenticated/manager.$userId'
 import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
+import { Route as ApiPublicNotifyRouteImport } from './routes/api/public/notify'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -85,6 +86,11 @@ const ApiPublicNflSyncRoute = ApiPublicNflSyncRouteImport.update({
   path: '/api/public/nfl-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNotifyRoute = ApiPublicNotifyRouteImport.update({
+  id: '/api/public/notify',
+  path: '/api/public/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/api/public/notify': typeof ApiPublicNotifyRoute
   '/leagues/': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/api/public/notify': typeof ApiPublicNotifyRoute
   '/leagues': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/api/public/notify': typeof ApiPublicNotifyRoute
   '/_authenticated/leagues/': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/api/public/notify'
     | '/leagues/'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/api/public/notify'
     | '/leagues'
     | '/lovable/email/transactional/preview'
   id:
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/api/public/notify'
     | '/_authenticated/leagues/'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   JoinRoute: typeof JoinRoute
   ApiPublicNflSyncRoute: typeof ApiPublicNflSyncRoute
+  ApiPublicNotifyRoute: typeof ApiPublicNotifyRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNflSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/notify': {
+      id: '/api/public/notify'
+      path: '/api/public/notify'
+      fullPath: '/api/public/notify'
+      preLoaderRoute: typeof ApiPublicNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -316,6 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   JoinRoute: JoinRoute,
   ApiPublicNflSyncRoute: ApiPublicNflSyncRoute,
+  ApiPublicNotifyRoute: ApiPublicNotifyRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
