@@ -395,7 +395,7 @@ function PicksPage() {
         </section>
       )}
 
-      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} />
+      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} leagueId={activeLeague!.id} />
 
       <HowToPlay
         seasonType={isRegular ? "reg" : "pre"}
