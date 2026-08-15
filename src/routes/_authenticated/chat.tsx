@@ -127,6 +127,8 @@ function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  const notifyChat = useServerFn(notifyChatMessage);
+
   const send = useMutation({
     mutationFn: async (body: string) => {
       const uid = (await supabase.auth.getUser()).data.user?.id;
