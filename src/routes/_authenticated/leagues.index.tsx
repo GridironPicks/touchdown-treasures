@@ -226,7 +226,9 @@ function LeaguesPage() {
                         </span>
                       )}
                       {league.role === "owner" && (
-                        <Crown size={14} className="text-primary" title="Owner" />
+                        <span title="Owner">
+                          <Crown size={14} className="text-primary" />
+                        </span>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">Code: {league.join_code}</p>
