@@ -382,14 +382,25 @@ function PicksPage() {
       </ul>
 
       <section className="field-panel space-y-3 rounded-2xl p-5">
-        <h2 className="stadium-heading text-lg">Monday Night Tiebreaker</h2>
-        <p className="text-sm text-muted-foreground">
-          Total combined score in{" "}
-          {tiebreakerGame
-            ? `${teamShort(tiebreakerGame.away_team)} @ ${teamShort(tiebreakerGame.home_team)}`
-            : "the final game"}
-          .
+        <h2 className="stadium-heading text-lg">
+          {tiebreakerGame && isMondayNight(tiebreakerGame.kickoff)
+            ? "Monday Night Tiebreaker"
+            : "Final Game Tiebreaker"}
+        </h2>
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          Total combined score in
+          {tiebreakerGame ? (
+            <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+              <TeamLogo team={tiebreakerGame.away_team} size={20} />
+              {teamShort(tiebreakerGame.away_team)} @
+              <TeamLogo team={tiebreakerGame.home_team} size={20} />
+              {teamShort(tiebreakerGame.home_team)}
+            </span>
+          ) : (
+            "the final game"
+          )}
         </p>
+
         <Input
           inputMode="numeric"
           disabled={tiebreakerLocked}
