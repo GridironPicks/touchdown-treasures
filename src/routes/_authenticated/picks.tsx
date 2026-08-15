@@ -135,8 +135,8 @@ function PicksPage() {
     winProbs.find((w) => w.external_id === game.external_id) ?? null;
 
   const { data: existing } = useQuery({
-    queryKey: ["my-picks", seasonType, week],
-    enabled: !!slate,
+    queryKey: ["my-picks", activeLeague?.id, seasonType, week],
+    enabled: !!slate && !!activeLeague,
     queryFn: async () => {
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user!.id;
@@ -145,6 +145,7 @@ function PicksPage() {
           .from("picks")
           .select("*")
           .eq("user_id", uid)
+          .eq("league_id", activeLeague!.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week),
@@ -152,6 +153,7 @@ function PicksPage() {
           .from("tiebreakers")
           .select("*")
           .eq("user_id", uid)
+          .eq("league_id", activeLeague!.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week)
