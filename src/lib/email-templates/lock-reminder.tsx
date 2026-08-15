@@ -35,9 +35,10 @@ function LockReminder({
             Week {week} locks Wednesday 6:00 PM
           </Heading>
           <Text style={{ color: '#C7D0DB', fontSize: '15px', lineHeight: '22px' }}>
-            {teamName}, your $5 entry for Week {week} hasn't been paid yet. Pay the buy-in to unlock
-            your confidence picks before the deadline — no late entries.
+            {teamName}, your Week {week} confidence picks aren't in yet. It's free to play — get
+            them submitted before the deadline. No late entries.
           </Text>
+
           <Button
             href={picksUrl}
             style={{
@@ -51,7 +52,7 @@ function LockReminder({
               marginTop: '16px',
             }}
           >
-            Pay $5 entry
+            Make my picks
           </Button>
         </Container>
       </Body>
@@ -63,6 +64,7 @@ export const template = {
   component: LockReminder,
   displayName: 'Wednesday Lock Reminder',
   subject: (data: Record<string, any>) =>
-    `Week ${data['week'] ?? 1} picks lock Wednesday 6PM — entry unpaid`,
+    `Week ${data['week'] ?? 1} picks lock Wednesday 6PM`,
+
   previewData: { teamName: 'Steel Curtain', week: 1, picksUrl: 'https://gridironconfidence.com/picks' },
 } satisfies TemplateEntry
