@@ -262,25 +262,21 @@ export type Database = {
           week: number
         }[]
       }
-      current_week:
-        | { Args: { _season: number }; Returns: number }
-        | {
-            Args: {
-              _season: number
-              _season_type?: Database["public"]["Enums"]["season_type"]
-            }
-            Returns: number
-          }
-      picks_deadline:
-        | { Args: { _season: number; _week: number }; Returns: string }
-        | {
-            Args: {
-              _season: number
-              _season_type?: Database["public"]["Enums"]["season_type"]
-              _week: number
-            }
-            Returns: string
-          }
+      current_week: {
+        Args: {
+          _season: number
+          _season_type?: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: number
+      }
+      picks_deadline: {
+        Args: {
+          _season: number
+          _season_type?: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       season_type: "pre" | "reg"
