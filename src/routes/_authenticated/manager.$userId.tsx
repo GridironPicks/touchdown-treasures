@@ -124,6 +124,25 @@ function ManagerPage() {
         </div>
       </header>
 
+      <section className="field-panel rounded-2xl p-5">
+        <h2 className="stadium-heading mb-3 text-lg">Trophy case</h2>
+        {myBadges.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No awards earned yet this season.</p>
+        ) : (
+          <BadgeRow rows={myBadges} size="md" />
+        )}
+        {h2hRecord && (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Your head-to-head record vs {profile?.team_name ?? "this manager"}:{" "}
+            <span className="font-semibold text-foreground">
+              {h2hRecord.wins}-{h2hRecord.losses}
+              {h2hRecord.ties ? `-${h2hRecord.ties}` : ""}
+            </span>
+          </p>
+        )}
+      </section>
+
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading picks…</p>
       ) : !revealed ? (
