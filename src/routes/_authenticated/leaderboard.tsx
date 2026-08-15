@@ -178,6 +178,16 @@ function LeaderboardPage() {
         <SlatePicker slates={slates} value={slate} onChange={setPicked} />
       )}
 
+      {board === "week" && activeLeague && slate && (
+        <LivePoints
+          leagueId={activeLeague.id}
+          seasonType={slate.seasonType}
+          week={slate.week}
+          meId={meId}
+        />
+      )}
+
+
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
