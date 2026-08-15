@@ -270,51 +270,72 @@ function PicksPage() {
           </div>
           <div className="text-right">
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
-              {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
-              {status === "open"
-                ? isRegular
-                  ? "Locks Wed 6:00 PM ET"
-                  : "Next kickoff"
-                : status === "in-progress"
-                  ? isRegular && deadlinePassed
-                    ? "Deadline passed"
-                    : "All games started"
-                  : "Final"}
+              {status === "open" || notOpenYet ? <Timer size={13} /> : <Lock size={13} />}
+              {notOpenYet
+                ? "Opens Tue 12:00 AM ET"
+                : status === "open"
+                  ? isRegular
+                    ? "Locks Wed 6:00 PM ET"
+                    : "Next kickoff"
+                  : submitted
+                    ? "Picks submitted"
+                    : status === "in-progress"
+                      ? isRegular && deadlinePassed
+                        ? "Deadline passed"
+                        : "All games started"
+                      : "Final"}
             </p>
-            {status === "open" ? (
+            {notOpenYet ? (
+              <p className="stadium-heading text-2xl tabular-nums text-muted-foreground">
+                {formatCountdown(untilOpen)}
+              </p>
+            ) : status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
                 {formatCountdown(isRegular ? untilDeadline : nextKickoff)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
-                {status === "final" ? "Week complete" : "LOCKED"}
+                {status === "final" ? "Week complete" : submitted ? "FINAL" : "LOCKED"}
               </p>
             )}
           </div>
         </div>
       </header>
 
-      {status === "open" ? (
+      {notOpenYet ? (
+        <section className="field-panel rounded-2xl border border-border p-5">
+          <h2 className="stadium-heading text-lg">Week not open yet</h2>
+          <p className="text-sm text-muted-foreground">
+            Regular season picks open Tuesday at 12:00 AM ET of game week and lock Wednesday at
+            6:00 PM ET. Check back Tuesday to make this week's picks.
+          </p>
+        </section>
+      ) : status === "open" ? (
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">
             {isRegular ? "Picks open" : "Free preseason play"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
-              ? "Free all season. Edit your picks until Wednesday 6:00 PM ET — after that the week is locked."
+              ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
               : "No deadline in the preseason. Edit your picks any time — each game locks only when it kicks off."}
           </p>
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
-          <h2 className="stadium-heading text-lg">Read only</h2>
+          <h2 className="stadium-heading text-lg">
+            {submitted ? "Picks are final" : "Read only"}
+          </h2>
           <p className="text-sm text-muted-foreground">
-            {isRegular && deadlinePassed
-              ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
-              : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
+            {submitted
+              ? "You've submitted this week's picks — they're locked in and can't be changed."
+              : isRegular && deadlinePassed
+                ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+                : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
       )}
+
 
 
 
