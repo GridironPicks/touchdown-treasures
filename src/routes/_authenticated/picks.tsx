@@ -63,7 +63,7 @@ type Selection = { team: string; confidence: number | null };
 
 function PicksPage() {
   const queryClient = useQueryClient();
-  const { activeLeague } = useLeague();
+  const { activeLeague, isLoading: leaguesLoading } = useLeague();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [selections, setSelections] = useState<Record<string, Selection>>({});
@@ -85,6 +85,14 @@ function PicksPage() {
 
   const selectSlate = (next: Slate) =>
     navigate({ search: { type: next.seasonType, week: next.week } });
+
+  if (leaguesLoading || !activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   
 
