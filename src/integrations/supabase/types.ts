@@ -62,6 +62,71 @@ export type Database = {
         }
         Relationships: []
       }
+      league_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_memberships_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leagues: {
+        Row: {
+          created_at: string
+          id: string
+          is_global_pool: boolean
+          join_code: string
+          name: string
+          owner_id: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_global_pool?: boolean
+          join_code: string
+          name: string
+          owner_id: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_global_pool?: boolean
+          join_code?: string
+          name?: string
+          owner_id?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -99,21 +164,32 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          league_id: string
           user_id: string
         }
         Insert: {
           body: string
           created_at?: string
           id?: string
+          league_id: string
           user_id: string
         }
         Update: {
           body?: string
           created_at?: string
           id?: string
+          league_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       picks: {
         Row: {
@@ -121,6 +197,7 @@ export type Database = {
           created_at: string
           game_id: string
           id: string
+          league_id: string
           picked_team: string
           season: number
           season_type: Database["public"]["Enums"]["season_type"]
@@ -132,6 +209,7 @@ export type Database = {
           created_at?: string
           game_id: string
           id?: string
+          league_id: string
           picked_team: string
           season: number
           season_type?: Database["public"]["Enums"]["season_type"]
@@ -143,6 +221,7 @@ export type Database = {
           created_at?: string
           game_id?: string
           id?: string
+          league_id?: string
           picked_team?: string
           season?: number
           season_type?: Database["public"]["Enums"]["season_type"]
@@ -155,6 +234,13 @@ export type Database = {
             columns: ["game_id"]
             isOneToOne: false
             referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "picks_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
             referencedColumns: ["id"]
           },
         ]
@@ -190,6 +276,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          league_id: string
           season: number
           team: string
           user_id: string
@@ -198,6 +285,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          league_id: string
           season: number
           team: string
           user_id: string
@@ -206,17 +294,27 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          league_id?: string
           season?: number
           team?: string
           user_id?: string
           week?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "survivor_picks_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tiebreakers: {
         Row: {
           created_at: string
           id: string
+          league_id: string
           predicted_total: number
           season: number
           season_type: Database["public"]["Enums"]["season_type"]
@@ -226,6 +324,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          league_id: string
           predicted_total: number
           season: number
           season_type?: Database["public"]["Enums"]["season_type"]
@@ -235,19 +334,29 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          league_id?: string
           predicted_total?: number
           season?: number
           season_type?: Database["public"]["Enums"]["season_type"]
           user_id?: string
           week?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tiebreakers_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       leaderboard: {
         Row: {
           display_name: string | null
+          league_id: string | null
           mascot: string | null
           primary_color: string | null
           season_points: number | null
@@ -255,11 +364,20 @@ export type Database = {
           user_id: string | null
           weeks_played: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "picks_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       preseason_leaderboard: {
         Row: {
           display_name: string | null
+          league_id: string | null
           mascot: string | null
           primary_color: string | null
           season_points: number | null
@@ -267,20 +385,41 @@ export type Database = {
           user_id: string | null
           weeks_played: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "picks_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weekly_scores: {
         Row: {
+          league_id: string | null
           points: number | null
           season: number | null
           season_type: Database["public"]["Enums"]["season_type"] | null
           user_id: string | null
           week: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "picks_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
+      create_league: {
+        Args: { _name: string; _owner_id: string; _settings?: Json }
+        Returns: string
+      }
       current_slate: {
         Args: { _season: number }
         Returns: {
@@ -294,6 +433,11 @@ export type Database = {
           _season_type?: Database["public"]["Enums"]["season_type"]
         }
         Returns: number
+      }
+      generate_join_code: { Args: never; Returns: string }
+      join_league_by_code: {
+        Args: { _code: string; _user_id: string }
+        Returns: string
       }
       picks_deadline: {
         Args: {
@@ -311,44 +455,87 @@ export type Database = {
         }
         Returns: string
       }
-      picks_revealed: {
-        Args: {
-          _season: number
-          _season_type: Database["public"]["Enums"]["season_type"]
-          _week: number
-        }
-        Returns: boolean
-      }
-      survivor_board: {
-        Args: { _season: number }
-        Returns: {
-          display_name: string
-          mascot: string
-          primary_color: string
-          result: string
-          revealed: boolean
-          team: string
-          team_name: string
-          user_id: string
-          week: number
-        }[]
-      }
-      week_submission_status: {
-        Args: {
-          _season: number
-          _season_type: Database["public"]["Enums"]["season_type"]
-          _week: number
-        }
-        Returns: {
-          display_name: string
-          mascot: string
-          pick_count: number
-          primary_color: string
-          submitted: boolean
-          team_name: string
-          user_id: string
-        }[]
-      }
+      picks_revealed:
+        | {
+            Args: {
+              _season: number
+              _season_type: Database["public"]["Enums"]["season_type"]
+              _week: number
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _league_id?: string
+              _season: number
+              _season_type: Database["public"]["Enums"]["season_type"]
+              _week: number
+            }
+            Returns: boolean
+          }
+      survivor_board:
+        | {
+            Args: { _season: number }
+            Returns: {
+              display_name: string
+              mascot: string
+              primary_color: string
+              result: string
+              revealed: boolean
+              team: string
+              team_name: string
+              user_id: string
+              week: number
+            }[]
+          }
+        | {
+            Args: { _league_id?: string; _season: number }
+            Returns: {
+              display_name: string
+              mascot: string
+              primary_color: string
+              result: string
+              revealed: boolean
+              team: string
+              team_name: string
+              user_id: string
+              week: number
+            }[]
+          }
+      week_submission_status:
+        | {
+            Args: {
+              _season: number
+              _season_type: Database["public"]["Enums"]["season_type"]
+              _week: number
+            }
+            Returns: {
+              display_name: string
+              mascot: string
+              pick_count: number
+              primary_color: string
+              submitted: boolean
+              team_name: string
+              user_id: string
+            }[]
+          }
+        | {
+            Args: {
+              _league_id?: string
+              _season: number
+              _season_type: Database["public"]["Enums"]["season_type"]
+              _week: number
+            }
+            Returns: {
+              display_name: string
+              mascot: string
+              pick_count: number
+              primary_color: string
+              submitted: boolean
+              team_name: string
+              user_id: string
+            }[]
+          }
     }
     Enums: {
       season_type: "pre" | "reg"
