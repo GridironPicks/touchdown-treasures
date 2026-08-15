@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { MessageSquare, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useServerFn } from "@tanstack/react-start";
+import { notifyChatMessage } from "@/lib/notifications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { MessageReactions, type Reaction } from "@/components/MessageReactions";
@@ -134,6 +136,7 @@ function ChatPage() {
         .from("messages")
         .insert({ user_id: uid, league_id: activeLeague.id, body });
       if (error) throw error;
+      void notifyChat({ data: { leagueId: activeLeague.id, body } }).catch(() => {});
     },
     onSuccess: () => {
       setDraft("");
