@@ -19,6 +19,8 @@ import {
 } from "@/lib/league";
 import { TeamLogo } from "@/components/TeamLogo";
 import { HowToPlay } from "@/components/HowToPlay";
+import { RosterStatus } from "@/components/RosterStatus";
+
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
@@ -364,12 +366,15 @@ function PicksPage() {
         </section>
       )}
 
+      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} />
+
       <HowToPlay
         seasonType={isRegular ? "reg" : "pre"}
         maxPoints={maxPoints}
         opensAt={opensAt}
         deadline={deadline}
       />
+
 
       <ul className="space-y-3">
         {games.map((game) => {
