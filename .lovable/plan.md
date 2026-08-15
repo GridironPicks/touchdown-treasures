@@ -1,42 +1,51 @@
-# Standings as a Football Field
+# Awards & Head-to-Head + Live Possible Points
 
-Yes — this can look great, as long as the field is a *view mode* on top of the existing table, not a replacement. A field is fun and instantly readable at a glance; a table is better for exact numbers, weeks played and streaks. So: add a "Field" / "Table" toggle on the Standings page, defaulting to Field.
+Two upgrades that top pick'em sites have and Gridiron Confidence doesn't yet.
 
-## The visual
+## 1. Live possible points + rank projection
 
-```text
-+--------------------------------------------------------------+
-| W |                                                        | L |
-| I |  50   40   30   20   10   20   30   40   50            | O |
-| N |   .    .    .    .    .    .    .    .    .            | S |
-| N |  (1) Bolts 214                                         | E |
-| E |        (2) Hawks 201                                   | R |
-| R |               (3) Wolves 188                           | S |
-|   |                        (4) Ravens 160                  |   |
-+--------------------------------------------------------------+
-```
+While games are being played, every manager sees where they actually stand — not just points banked so far.
 
-- Dark navy field with field-green turf, yard lines every 10 yards, hash marks, subtle stadium-light glow.
-- Left endzone reads WINNER (green, glowing); right endzone reads LOSERS (muted silver/red).
-- Each manager is a chip on the field: their mascot/logo badge, team name, and points.
-- Horizontal position is scaled by points — leader sits on the goal line at the WINNER endzone, last place sits back near the LOSERS endzone, everyone else spaced proportionally between them.
-- Vertical position is by rank so chips never overlap; the field scrolls vertically if there are many players.
-- Leader gets the trophy badge; hot-streak players keep the flame; the signed-in user's chip is outlined so they can find themselves.
-- Chips animate to their new yard line when standings change.
+On the Standings page (and a compact strip on the Picks page) each manager row shows:
+- **Banked** — points from games already final
+- **Live** — banked plus points currently winning in in-progress games
+- **Max possible** — banked plus every point still in play
+- **Projected rank** — sorted by live points, with an arrow showing movement vs. banked rank
+- **Eliminated / clinched** badges: if your max possible can't catch the current leader's banked total, you're mathematically out for the week; if your banked total already beats everyone's max, you've clinched.
 
-## Mobile
+Only visible once the week's picks are revealed (existing reveal rules stay untouched). The panel auto-refreshes on the same live cadence the scoreboard already uses, and shows a "Games in progress" indicator so it's obvious the numbers are moving.
 
-On phones the field rotates to a vertical drive: WINNER endzone at the top, LOSERS at the bottom, chips stacked down the field. Same logic, no horizontal scrolling.
+## 2. Awards, badges & head-to-head
 
-## Behavior
+**Badges** appear next to a manager everywhere they're listed (standings, recap, roster, profile):
+- Perfect Week — every game correct
+- Hot Streak — 2+ weekly wins in a row (extends the existing flame)
+- Bullseye — nailed the tiebreaker within 3 points
+- Gutsy Call — highest confidence points earned on a road underdog
+- Ice Cold — a week finishing last
+- Comeback — moved up 3+ places in season rank in one week
+- Iron Manager — submitted every week so far
 
-- Works for all three boards already on the page (regular season, preseason, single week) and respects the active league.
-- Tapping a chip opens that manager's profile page, same as the table rows do today.
-- If everyone is tied at 0 (before week 1) all chips sit at midfield with a "Kickoff pending" note.
+Badges are computed from existing picks and game results, so they backfill automatically for weeks already played. Each badge has a tooltip explaining how it was earned, and a manager's profile page gets a trophy case of everything they've collected.
+
+**Awards** on the weekly Recap page, expanding today's highlights:
+- Best pick / worst pick of the week
+- Biggest upset called
+- Luckiest win (fewest points needed to hold on)
+- Closest tiebreaker
+
+**Head-to-head** on a new tab of the manager profile page:
+- Your record vs. that manager, week by week (who scored more each week)
+- Season series summary: "You lead 6-3"
+- A compact grid on the Standings page showing everyone's record against everyone else in the league
 
 ## Technical notes
 
-- New component `src/components/StandingsField.tsx`, rendered from `src/routes/_authenticated/leaderboard.tsx` behind a view toggle; existing query, streak and winner logic is reused untouched.
-- Position = normalized points between min and max in the current board; single-player or all-equal cases clamp to the goal line / midfield.
-- Field, endzone, turf and glow colors added as semantic tokens in `src/styles.css` — no hardcoded color utilities.
-- Chips reuse `Mascot` for logos; layout uses percentage offsets so it scales without media-query hacks.
+- New security-definer SQL functions in the database, matching the style of the existing `week_recap` / `week_highlights`:
+  - `week_live_standings(season, season_type, week, league_id)` — per-manager banked, live, max possible, correct counts, remaining games; respects the same reveal gate as `picks_revealed`.
+  - `manager_badges(season, season_type, league_id)` — one row per earned badge per manager per week.
+  - `head_to_head(season, season_type, league_id)` — pairwise weekly win/loss/tie records.
+- New `src/lib/awards.functions.ts` wrapping those calls, and a `src/components/BadgeRow.tsx` plus `src/components/LivePoints.tsx`.
+- Standings (`leaderboard.tsx`), Recap (`recap.tsx`) and the manager profile route (`manager.$userId.tsx`) consume the new data; existing queries, streak logic and reveal rules stay in place.
+- All new colors/glows go in `src/styles.css` as semantic tokens.
+- Also fixing a hydration warning on the sign-in screen while in these files.
