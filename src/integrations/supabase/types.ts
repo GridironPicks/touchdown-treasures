@@ -698,6 +698,21 @@ export type Database = {
           user_id: string
         }[]
       }
+      week_open_picks: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          external_id: string
+          home_team: string
+          picked_team: string
+          points: number
+          user_id: string
+        }[]
+      }
       week_recap: {
         Args: {
           _league_id: string
