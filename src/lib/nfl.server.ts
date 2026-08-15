@@ -16,8 +16,13 @@ export type ProviderGame = {
   status: "scheduled" | "in_progress" | "final";
 };
 
-const ESPN_SCOREBOARD =
-  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+// ESPN serves the same scoreboard payload from several hosts. `site.api`
+// blocks data-center IPs with a 403, so `site.web.api` is tried first and the
+// legacy host is kept as a fallback.
+const ESPN_SCOREBOARD_HOSTS = [
+  "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+];
 
 function mapStatus(state: string, completed: boolean): ProviderGame["status"] {
   if (completed || state === "post") return "final";
@@ -25,27 +30,44 @@ function mapStatus(state: string, completed: boolean): ProviderGame["status"] {
   return "scheduled";
 }
 
+/** Fetches one week of the ESPN scoreboard, trying each host in turn. */
+export async function fetchScoreboard(
+  season: number,
+  week: number,
+  seasonType: SeasonType,
+): Promise<any> {
+  const espnSeasonType = seasonType === "pre" ? 1 : 2;
+  const query = `?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
+  let lastError = "";
+  for (const host of ESPN_SCOREBOARD_HOSTS) {
+    try {
+      const res = await fetch(`${host}${query}`, {
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language": "en-US,en;q=0.9",
+          "user-agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+          referer: "https://www.espn.com/",
+        },
+      });
+      if (res.ok) return await res.json();
+      lastError = `${host} responded ${res.status}`;
+      console.error("[espn]", lastError);
+    } catch (error) {
+      lastError = `${host} threw ${error instanceof Error ? error.message : String(error)}`;
+      console.error("[espn]", lastError);
+    }
+  }
+  throw new Error(`NFL provider unreachable (${lastError})`);
+}
+
 export async function fetchProviderWeek(
   season: number,
   week: number,
   seasonType: SeasonType = "reg",
 ): Promise<ProviderGame[]> {
-  const espnSeasonType = seasonType === "pre" ? 1 : 2;
-  const url = `${ESPN_SCOREBOARD}?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
-  // ESPN blocks default edge-runtime requests (403) unless a browser-like
-  // user agent is supplied.
-  const res = await fetch(url, {
-    headers: {
-      accept: "application/json, text/plain, */*",
-      "accept-language": "en-US,en;q=0.9",
-      "user-agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-      referer: "https://www.espn.com/",
-    },
-  });
-  if (!res.ok) throw new Error(`NFL provider responded ${res.status}`);
+  const json = (await fetchScoreboard(season, week, seasonType)) as {
 
-  const json = (await res.json()) as {
     events?: Array<{
       id: string;
       date: string;
