@@ -129,18 +129,16 @@ function PicksPage() {
     setTiebreaker(existing.tiebreaker ? String(existing.tiebreaker.predicted_total) : "");
   }, [existing]);
 
-  const deadline = useMemo(() => weekDeadline(games), [games]);
-  const msLeft = deadline ? deadline.getTime() - now : 0;
-  const deadlinePassed = deadline !== null && msLeft <= 0;
-  const locked = deadlinePassed;
-
-
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
+  // Picks stay editable all week — only games that already kicked off lock.
+  const locked = games.length > 0 && openGames.length === 0;
 
-  const tiebreakerGame = games.find((g) => g.is_tiebreaker_game) ?? games[games.length - 1];
-  const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
+  const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
+  const tiebreakerLocked = tiebreakerGame ? hasStarted(tiebreakerGame) : true;
+  const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
+
 
   // Points spent on games that already kicked off can't be reused this week.
   const reservedPoints = new Set(
