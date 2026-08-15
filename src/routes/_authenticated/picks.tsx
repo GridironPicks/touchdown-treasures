@@ -18,6 +18,7 @@ import {
   type SeasonType,
 } from "@/lib/league";
 import { TeamLogo } from "@/components/TeamLogo";
+import { HowToPlay } from "@/components/HowToPlay";
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
