@@ -33,8 +33,11 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 
 **App changes**
 - `picks.tsx`: resolve current `season_type`/`week` from the database instead of a fixed week constant. When preseason, hide the entry-fee banner, skip the paid check, and show a "Preseason — free practice week, no entry fee" badge. Submit button reads "Submit preseason picks".
+- `picks.tsx` game list: split games into "open" (kickoff in the future, status scheduled) and "already played" (kicked off, in progress, or final). Open games get the confidence selector; played games render as a locked result card with the score, a winner highlight, and no selector. Confidence values are generated from the open-game count only.
+- Tiebreaker input is hidden when the designated tiebreaker game has already kicked off.
 - `pot.tsx`: during preseason, show a message that the pot opens in regular-season Week 1 rather than a checkout button.
 - `leaderboard.tsx`: default to the regular-season standings, with a preseason tab while preseason is active.
+
 
 **Not changed**
 - Stripe product/price, webhook, receipt email, and the $5 amount all stay as-is; they simply are not invoked during preseason.
