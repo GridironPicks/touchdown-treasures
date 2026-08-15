@@ -525,6 +525,20 @@ export type Database = {
         Returns: number
       }
       generate_join_code: { Args: never; Returns: string }
+      head_to_head: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          losses: number
+          opponent_id: string
+          ties: number
+          user_id: string
+          wins: number
+        }[]
+      }
       is_league_member: {
         Args: { _league_id: string; _user_id: string }
         Returns: boolean
@@ -545,6 +559,35 @@ export type Database = {
         }
         Returns: {
           points: number
+          user_id: string
+          week: number
+        }[]
+      }
+      league_weekly_points: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          correct_count: number
+          field_size: number
+          place: number
+          points: number
+          tiebreak_diff: number
+          user_id: string
+          week: number
+        }[]
+      }
+      manager_badges: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          badge: string
+          detail: string
           user_id: string
           week: number
         }[]
@@ -631,6 +674,26 @@ export type Database = {
           picked_team: string
           points: number
           primary_color: string
+          team_name: string
+          user_id: string
+        }[]
+      }
+      week_live_standings: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          banked: number
+          correct_count: number
+          display_name: string
+          live: number
+          mascot: string
+          max_possible: number
+          primary_color: string
+          remaining: number
           team_name: string
           user_id: string
         }[]
