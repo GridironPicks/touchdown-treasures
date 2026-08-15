@@ -478,7 +478,7 @@ function PicksPage() {
             : "Final Game Tiebreaker"}
         </h2>
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          Total combined score in
+          Total combined score in{" "}
           {tiebreakerGame ? (
             <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
               <TeamLogo team={tiebreakerGame.away_team} size={20} />
