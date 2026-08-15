@@ -174,7 +174,16 @@ function SurvivorPage() {
     }
   }
 
+  if (!activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
