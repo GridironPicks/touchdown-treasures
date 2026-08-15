@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Trophy } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
@@ -76,6 +76,41 @@ function LeaderboardPage() {
     },
   });
 
+  const streakType = board === "pre" ? "pre" : "reg";
+  const { data: streaks = {} } = useQuery({
+    queryKey: ["streaks", streakType],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_scores")
+        .select("user_id, week, points")
+        .eq("season", SEASON)
+        .eq("season_type", streakType);
+      if (error) throw error;
+      const byWeek = new Map<number, { user_id: string; points: number }[]>();
+      for (const r of data ?? []) {
+        if (!byWeek.has(r.week!)) byWeek.set(r.week!, []);
+        byWeek.get(r.week!)!.push({ user_id: r.user_id!, points: r.points ?? 0 });
+      }
+      // Winners per completed week (highest points, ties share the week).
+      const winnersByWeek = new Map<number, Set<string>>();
+      for (const [week, rowsW] of byWeek) {
+        const max = Math.max(...rowsW.map((r) => r.points));
+        if (max <= 0) continue;
+        winnersByWeek.set(week, new Set(rowsW.filter((r) => r.points === max).map((r) => r.user_id)));
+      }
+      const weeks = [...winnersByWeek.keys()].sort((a, b) => b - a);
+      const result: Record<string, number> = {};
+      for (const w of weeks) {
+        for (const uid of winnersByWeek.get(w)!) {
+          // Only extend a streak that is still unbroken from the newest week back.
+          const expected = weeks.indexOf(w);
+          if ((result[uid] ?? 0) === expected) result[uid] = expected + 1;
+        }
+      }
+      return result;
+    },
+  });
+
   return (
     <div className="space-y-6">
       <header>
@@ -119,12 +154,32 @@ function LeaderboardPage() {
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {rows.map((row, i) => (
+            {rows.map((row, i) => {
+              const streak = streaks[row.user_id as string] ?? 0;
+              const onFire = streak >= 2;
+              return (
               <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">
                 <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
-                <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
+                <span className="relative">
+                  <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
+                  {onFire && (
+                    <span
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.8)]"
+                      title={`${streak}-week win streak`}
+                    >
+                      <Flame size={12} />
+                    </span>
+                  )}
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{row.team_name}</p>
+                  <p className="flex items-center gap-1.5 truncate font-semibold">
+                    {row.team_name}
+                    {onFire && (
+                      <span className="flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary">
+                        <Flame size={10} /> {streak}W
+                      </span>
+                    )}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
                 {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
@@ -132,6 +187,7 @@ function LeaderboardPage() {
                     <Trophy size={13} /> 2026
                   </span>
                 )}
+
                 <div className="text-right">
                   <p className="stadium-heading text-xl text-primary">{row.season_points ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">
@@ -139,7 +195,8 @@ function LeaderboardPage() {
                   </p>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </section>
