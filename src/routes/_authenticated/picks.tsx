@@ -197,7 +197,15 @@ function PicksPage() {
   }
 
   async function submit() {
-    if (!existing) return;
+    if (!existing || locked) return;
+    if (
+      isRegular &&
+      !window.confirm(
+        "Submit your picks? Regular season picks are final — you won't be able to change them.",
+      )
+    ) {
+      return;
+    }
     setBusy(true);
     try {
       const uid = existing.uid;
