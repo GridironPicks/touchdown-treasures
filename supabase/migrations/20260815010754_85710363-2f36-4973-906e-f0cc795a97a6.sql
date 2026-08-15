@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enforce_pick_lock() FROM PUBLIC, anon, authenticated;

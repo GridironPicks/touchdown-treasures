@@ -8,12 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   SEASON,
   formatCountdown,
+  isMondayNight,
   kickoffLabel,
   teamShort,
-  weekDeadline,
+  tiebreakerGameOf,
   type Game,
   type SeasonType,
 } from "@/lib/league";
+import { TeamLogo } from "@/components/TeamLogo";
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
@@ -129,18 +131,16 @@ function PicksPage() {
     setTiebreaker(existing.tiebreaker ? String(existing.tiebreaker.predicted_total) : "");
   }, [existing]);
 
-  const deadline = useMemo(() => weekDeadline(games), [games]);
-  const msLeft = deadline ? deadline.getTime() - now : 0;
-  const deadlinePassed = deadline !== null && msLeft <= 0;
-  const locked = deadlinePassed;
-
-
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
+  // Picks stay editable all week — only games that already kicked off lock.
+  const locked = games.length > 0 && openGames.length === 0;
 
-  const tiebreakerGame = games.find((g) => g.is_tiebreaker_game) ?? games[games.length - 1];
-  const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
+  const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
+  const tiebreakerLocked = tiebreakerGame ? hasStarted(tiebreakerGame) : true;
+  const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
+
 
   // Points spent on games that already kicked off can't be reused this week.
   const reservedPoints = new Set(
@@ -237,7 +237,7 @@ function PicksPage() {
   const allFinal = games.length > 0 && games.every((g) => g.status === "final");
   const status: "open" | "in-progress" | "final" = allFinal
     ? "final"
-    : deadlinePassed
+    : locked
       ? "in-progress"
       : "open";
 
@@ -258,14 +258,14 @@ function PicksPage() {
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
               {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
               {status === "open"
-                ? "Locks Wed 6:00 PM ET"
+                ? "Next kickoff"
                 : status === "in-progress"
-                  ? "Locked — games in progress"
+                  ? "All games started"
                   : "Final"}
             </p>
             {status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
-                {formatCountdown(msLeft)}
+                {formatCountdown(nextKickoff)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
@@ -280,17 +280,18 @@ function PicksPage() {
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
           <p className="text-sm text-muted-foreground">
-            Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
+            Free all season. Edit your picks any time — each game locks only when it kicks off.
           </p>
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
           <h2 className="stadium-heading text-lg">Read only</h2>
           <p className="text-sm text-muted-foreground">
-            This week is locked. Your submitted picks are shown below with live scores.
+            Every game this week has kicked off. Your submitted picks are shown below with scores.
           </p>
         </section>
       )}
+
 
 
 
@@ -311,9 +312,10 @@ function PicksPage() {
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
                 <span>{kickoffLabel(game.kickoff)}</span>
                 <span className="flex items-center gap-2">
-                  {game.is_tiebreaker_game && (
+                  {tiebreakerGame?.id === game.id && (
                     <span className="flex items-center gap-1 text-primary">
-                      <Flame size={12} /> Monday Night
+                      <Flame size={12} />
+                      {isMondayNight(game.kickoff) ? "Monday Night" : "Final game"}
                     </span>
                   )}
                   {started && (
@@ -332,19 +334,25 @@ function PicksPage() {
                       type="button"
                       disabled={gameLocked}
                       onClick={() => pickTeam(game.id, team)}
-                      className={`rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-60 ${
+                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-60 ${
                         sel?.team === team
                           ? "glow-ring border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {team === game.home_team ? "Home" : "Away"}
+                      <TeamLogo team={team} size={32} />
+                      <span className="min-w-0">
+                        <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                          {team === game.home_team ? "Home" : "Away"}
+                        </span>
+                        <span className="stadium-heading block truncate text-lg">
+                          {teamShort(team)}
+                        </span>
                       </span>
-                      <span className="stadium-heading text-lg">{teamShort(team)}</span>
                     </button>
                   ))}
                 </div>
+
                 <select
                   aria-label="Confidence points"
                   disabled={gameLocked}
@@ -374,14 +382,25 @@ function PicksPage() {
       </ul>
 
       <section className="field-panel space-y-3 rounded-2xl p-5">
-        <h2 className="stadium-heading text-lg">Monday Night Tiebreaker</h2>
-        <p className="text-sm text-muted-foreground">
-          Total combined score in{" "}
-          {tiebreakerGame
-            ? `${teamShort(tiebreakerGame.away_team)} @ ${teamShort(tiebreakerGame.home_team)}`
-            : "the final game"}
-          .
+        <h2 className="stadium-heading text-lg">
+          {tiebreakerGame && isMondayNight(tiebreakerGame.kickoff)
+            ? "Monday Night Tiebreaker"
+            : "Final Game Tiebreaker"}
+        </h2>
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          Total combined score in
+          {tiebreakerGame ? (
+            <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+              <TeamLogo team={tiebreakerGame.away_team} size={20} />
+              {teamShort(tiebreakerGame.away_team)} @
+              <TeamLogo team={tiebreakerGame.home_team} size={20} />
+              {teamShort(tiebreakerGame.home_team)}
+            </span>
+          ) : (
+            "the final game"
+          )}
         </p>
+
         <Input
           inputMode="numeric"
           disabled={tiebreakerLocked}

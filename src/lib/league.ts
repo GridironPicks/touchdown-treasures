@@ -110,13 +110,30 @@ export function formatCountdown(ms: number): string {
   return `${d}d ${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+/** Kickoff in the viewer's own timezone, e.g. "Sat, Aug 15 · 5:00 PM PDT". */
 export function kickoffLabel(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
     weekday: "short",
+    month: "short",
+    day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(iso));
+    timeZoneName: "short",
+  })
+    .format(new Date(iso))
+    .replace(/,\s(?=\d)/, " · ");
+}
+
+/** The game whose combined score settles ties: the last kickoff of the week. */
+export function tiebreakerGameOf(games: Game[]): Game | undefined {
+  if (games.length === 0) return undefined;
+  return [...games].sort(
+    (a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime(),
+  )[games.length - 1];
+}
+
+export function isMondayNight(iso: string): boolean {
+  return etCalendar(new Date(iso)).weekdayIndex === 1;
 }
 
 export function teamShort(name: string): string {
