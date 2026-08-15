@@ -191,6 +191,63 @@ export type Database = {
           },
         ]
       }
+      notification_log: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          chat: boolean
+          consent_version: string | null
+          consented_at: string | null
+          deadlines: boolean
+          results: boolean
+          survivor: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat?: boolean
+          consent_version?: string | null
+          consented_at?: string | null
+          deadlines?: boolean
+          results?: boolean
+          survivor?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat?: boolean
+          consent_version?: string | null
+          consented_at?: string | null
+          deadlines?: boolean
+          results?: boolean
+          survivor?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       picks: {
         Row: {
           confidence: number
@@ -269,6 +326,39 @@ export type Database = {
           mascot?: string
           primary_color?: string
           team_name?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          device_label: string | null
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          device_label?: string | null
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          device_label?: string | null
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
