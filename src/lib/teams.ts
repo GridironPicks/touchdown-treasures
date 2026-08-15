@@ -42,3 +42,9 @@ export function teamLogo(name: string): string | null {
   const abbr = teamAbbr(name);
   return abbr ? `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png` : null;
 }
+
+export const NFL_BADGES = Object.entries(ABBR).map(([name, abbr]) => ({
+  name,
+  abbr,
+  short: name.split(" ").slice(-1)[0]!,
+}));
