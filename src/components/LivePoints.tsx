@@ -131,10 +131,23 @@ export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
                 <p className="stadium-heading text-xl text-primary">{r.live}</p>
                 <p className="text-[10px] text-muted-foreground">live</p>
               </div>
+              <div className="w-12 text-right">
+                <p
+                  className="stadium-heading text-xl tabular-nums"
+                  title="Chance to win the week"
+                >
+                  {fmtOdds(clinched ? 100 : eliminated ? 0 : (odds[r.user_id] ?? 0))}
+                </p>
+                <p className="text-[10px] text-muted-foreground">win</p>
+              </div>
             </li>
           );
         })}
       </ul>
+      <p className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
+        Odds simulate the remaining games using live win probability.
+      </p>
+
     </section>
   );
 }
