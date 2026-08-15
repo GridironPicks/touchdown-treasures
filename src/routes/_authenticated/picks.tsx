@@ -246,17 +246,6 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-      if (!isRegular && openIds.length > 0) {
-        const del = await supabase
-          .from("picks")
-          .delete()
-          .eq("user_id", uid)
-          .eq("season", SEASON)
-          .eq("season_type", seasonType)
-          .eq("week", week)
-          .in("game_id", openIds);
-        if (del.error) throw del.error;
-      }
 
       const ins = await supabase.from("picks").insert(rows);
       if (ins.error) throw ins.error;
