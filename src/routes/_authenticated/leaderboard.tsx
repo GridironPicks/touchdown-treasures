@@ -134,6 +134,28 @@ function LeaderboardPage() {
     },
   });
 
+  const fetchBadges = useServerFn(getManagerBadges);
+  const { data: badgeRows = [] } = useQuery({
+    queryKey: ["badges", activeLeague?.id, streakType],
+    enabled: !!activeLeague,
+    queryFn: () =>
+      fetchBadges({ data: { leagueId: activeLeague!.id, seasonType: streakType } }),
+  });
+
+  const badgesByUser = useMemo(() => {
+    const map: Record<string, { badge: string; week: number | null }[]> = {};
+    for (const r of badgeRows) {
+      (map[r.user_id] ??= []).push({ badge: r.badge, week: r.week });
+    }
+    return map;
+  }, [badgeRows]);
+
+  const { data: meId = null } = useQuery({
+    queryKey: ["me-id"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
