@@ -12,6 +12,7 @@ const NAV = [
   { to: "/survivor", label: "Survivor", icon: ShieldCheck },
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
   { to: "/team", label: "Team", icon: Shirt },
+  { to: "/leagues", label: "Leagues", icon: Users },
 ] as const;
 
 
