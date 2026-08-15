@@ -354,14 +354,17 @@ function PicksPage() {
           const sel = selections[game.id];
           const started = hasStarted(game);
           const gameLocked = locked || started;
-          const finalScore =
-            game.away_score !== null && game.home_score !== null
-              ? `${game.away_score}–${game.home_score}`
+          const isFinal = game.status === "final";
+          const hasScore = game.away_score !== null && game.home_score !== null;
+          const finalScore = hasScore ? `${game.away_score}–${game.home_score}` : null;
+          const winner =
+            isFinal && hasScore && game.away_score !== game.home_score
+              ? (game.home_score! > game.away_score! ? game.home_team : game.away_team)
               : null;
           return (
             <li
               key={game.id}
-              className={`field-panel rounded-2xl p-4 ${started ? "opacity-70" : ""}`}
+              className={`field-panel rounded-2xl p-4 ${started && !isFinal ? "opacity-70" : ""}`}
             >
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
                 <span>{kickoffLabel(game.kickoff)}</span>
@@ -375,37 +378,62 @@ function PicksPage() {
                   {started && (
                     <span className="flex items-center gap-1">
                       <Lock size={11} />
-                      {game.status === "final" ? `Final ${finalScore ?? ""}` : "Kicked off"}
+                      {isFinal ? `Final ${finalScore ?? ""}` : "Kicked off"}
                     </span>
                   )}
                 </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="grid flex-1 grid-cols-2 gap-2">
-                  {[game.away_team, game.home_team].map((team) => (
-                    <button
-                      key={team}
-                      type="button"
-                      disabled={gameLocked}
-                      onClick={() => pickTeam(game.id, team)}
-                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-60 ${
-                        sel?.team === team
-                          ? "glow-ring border-primary bg-primary/10 text-primary"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <TeamLogo team={team} size={32} />
-                      <span className="min-w-0">
-                        <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                          {team === game.home_team ? "Home" : "Away"}
+                  {[game.away_team, game.home_team].map((team) => {
+                    const score = team === game.home_team ? game.home_score : game.away_score;
+                    const won = winner === team;
+                    const lost = winner !== null && !won;
+                    return (
+                      <button
+                        key={team}
+                        type="button"
+                        disabled={gameLocked}
+                        onClick={() => pickTeam(game.id, team)}
+                        className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-100 ${
+                          won
+                            ? "glow-ring border-primary bg-primary/15"
+                            : lost
+                              ? "border-border/60 opacity-55"
+                              : sel?.team === team
+                                ? "glow-ring border-primary bg-primary/10 text-primary"
+                                : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <TeamLogo team={team} size={32} />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                            {team === game.home_team ? "Home" : "Away"}
+                            {sel?.team === team && <span className="text-primary">· your pick</span>}
+                          </span>
+                          <span className="flex items-center justify-between gap-2">
+                            <span
+                              className={`stadium-heading block truncate text-lg ${won ? "text-primary" : ""}`}
+                            >
+                              {teamShort(team)}
+                            </span>
+                            {hasScore && (
+                              <span
+                                className={`stadium-heading text-xl tabular-nums ${
+                                  won ? "text-primary" : "text-muted-foreground"
+                                }`}
+                              >
+                                {score}
+                              </span>
+                            )}
+                          </span>
                         </span>
-                        <span className="stadium-heading block truncate text-lg">
-                          {teamShort(team)}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
+                        {won && <Trophy size={16} className="shrink-0 text-primary" />}
+                      </button>
+                    );
+                  })}
                 </div>
+
 
                 <select
                   aria-label="Confidence points"
