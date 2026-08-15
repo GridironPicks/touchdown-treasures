@@ -52,10 +52,13 @@ export function RosterStatus({
 
       <ul className="grid gap-2 sm:grid-cols-2">
         {rows.map((r) => (
-          <li
-            key={r.user_id}
-            className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2"
-          >
+          <li key={r.user_id}>
+            <Link
+              to="/manager/$userId"
+              params={{ userId: r.user_id }}
+              search={{ type: seasonType, week }}
+              className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2 transition-colors hover:border-primary/60"
+            >
             <Mascot mascot={r.mascot} color={r.primary_color} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{r.team_name}</p>
