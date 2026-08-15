@@ -17,6 +17,7 @@ import {
   weekOpensAt,
   type Game,
 } from "@/lib/league";
+import { useLeague } from "@/lib/league-context";
 import { useSlates } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/survivor")({
