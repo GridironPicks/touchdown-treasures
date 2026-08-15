@@ -52,7 +52,7 @@ function JoinPage() {
     onSuccess: (leagueId) => {
       queryClient.invalidateQueries({ queryKey: ["my-leagues"] });
       toast.success("Welcome to the league");
-      navigate({ to: "/picks", search: { league: leagueId } });
+      navigate({ to: "/picks" });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not join league"),
   });
