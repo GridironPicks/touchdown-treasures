@@ -15,6 +15,7 @@ export type Game = {
   home_score: number | null;
   status: string;
   is_tiebreaker_game: boolean;
+  external_id?: string | null;
 };
 
 export function seasonTypeLabel(type: SeasonType): string {

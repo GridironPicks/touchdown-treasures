@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
+import { MessageReactions, type Reaction } from "@/components/MessageReactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -78,12 +79,24 @@ function ChatPage() {
     },
   });
 
+  const { data: reactions = [] } = useQuery({
+    queryKey: ["message-reactions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("message_reactions").select("*");
+      if (error) throw error;
+      return (data ?? []) as Reaction[];
+    },
+  });
+
   // Live chat: push new/removed messages straight into the cache.
   useEffect(() => {
     const channel = supabase
       .channel("league-chat")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
         queryClient.invalidateQueries({ queryKey: ["messages"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["message-reactions"] });
       })
       .subscribe();
     return () => {
@@ -149,6 +162,11 @@ function ChatPage() {
                     </span>
                   </p>
                   <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>
+                  <MessageReactions
+                    messageId={m.id}
+                    reactions={reactions.filter((r) => r.message_id === m.id)}
+                    me={me ?? null}
+                  />
                 </div>
                 {mine && (
                   <button

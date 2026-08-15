@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { refreshSlateScores } from "@/lib/scores.functions";
+import { getWinProbabilities } from "@/lib/winprob.functions";
+import { WinProbability } from "@/components/WinProbability";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame, Trophy, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
@@ -116,6 +118,19 @@ function PicksPage() {
       return live ? 60_000 : false;
     },
   });
+
+  // Live win probability straight from the provider, polled while games run.
+  const fetchWinProb = useServerFn(getWinProbabilities);
+  const anyLive = games.some((g) => g.status === "in_progress");
+  const { data: winProbs = [] } = useQuery({
+    queryKey: ["winprob", seasonType, week],
+    enabled: !!slate && anyLive,
+    queryFn: async () => await fetchWinProb({ data: { seasonType, week } }),
+    refetchInterval: anyLive ? 30_000 : false,
+    refetchOnWindowFocus: true,
+  });
+  const winProbFor = (game: Game) =>
+    winProbs.find((w) => w.external_id === game.external_id) ?? null;
 
   const { data: existing } = useQuery({
     queryKey: ["my-picks", seasonType, week],
@@ -488,6 +503,19 @@ function PicksPage() {
                   ))}
                 </select>
               </div>
+              {(() => {
+                const wp = winProbFor(game);
+                if (!wp || isFinal) return null;
+                return (
+                  <WinProbability
+                    awayTeam={game.away_team}
+                    homeTeam={game.home_team}
+                    awayPct={wp.awayPct}
+                    homePct={wp.homePct}
+                    live={wp.live}
+                  />
+                );
+              })()}
             </li>
           );
         })}

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Shirt, MessageSquare, LogOut } from "lucide-react";
+import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
   { to: "/leaderboard", label: "Standings", icon: Trophy },
+  { to: "/survivor", label: "Survivor", icon: ShieldCheck },
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
   { to: "/team", label: "Team", icon: Shirt },
 ] as const;
@@ -57,7 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-5 sm:pb-10">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur sm:hidden">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {NAV.map((item) => (
             <Link
               key={item.to}

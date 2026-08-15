@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
+import { Route as AuthenticatedSurvivorRouteImport } from './routes/_authenticated/survivor'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedManagerUserIdRouteImport } from './routes/_authenticated/manager.$userId'
 import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
@@ -50,6 +51,11 @@ const AuthenticatedPicksRoute = AuthenticatedPicksRouteImport.update({
   path: '/picks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSurvivorRoute = AuthenticatedSurvivorRouteImport.update({
+  id: '/survivor',
+  path: '/survivor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
+  '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AuthenticatedChatRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
+  '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
+  '/_authenticated/survivor': typeof AuthenticatedSurvivorRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/leaderboard'
     | '/picks'
+    | '/survivor'
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/leaderboard'
     | '/picks'
+    | '/survivor'
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/leaderboard'
     | '/_authenticated/picks'
+    | '/_authenticated/survivor'
     | '/_authenticated/team'
     | '/_authenticated/manager/$userId'
     | '/api/public/nfl-sync'
@@ -197,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPicksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/survivor': {
+      id: '/_authenticated/survivor'
+      path: '/survivor'
+      fullPath: '/survivor'
+      preLoaderRoute: typeof AuthenticatedSurvivorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/team': {
       id: '/_authenticated/team'
       path: '/team'
@@ -232,6 +251,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedPicksRoute: typeof AuthenticatedPicksRoute
+  AuthenticatedSurvivorRoute: typeof AuthenticatedSurvivorRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedManagerUserIdRoute: typeof AuthenticatedManagerUserIdRoute
 }
@@ -240,6 +260,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedPicksRoute: AuthenticatedPicksRoute,
+  AuthenticatedSurvivorRoute: AuthenticatedSurvivorRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedManagerUserIdRoute: AuthenticatedManagerUserIdRoute,
 }
