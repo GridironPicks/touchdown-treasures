@@ -312,9 +312,10 @@ function PicksPage() {
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
                 <span>{kickoffLabel(game.kickoff)}</span>
                 <span className="flex items-center gap-2">
-                  {game.is_tiebreaker_game && (
+                  {tiebreakerGame?.id === game.id && (
                     <span className="flex items-center gap-1 text-primary">
-                      <Flame size={12} /> Monday Night
+                      <Flame size={12} />
+                      {isMondayNight(game.kickoff) ? "Monday Night" : "Final game"}
                     </span>
                   )}
                   {started && (
@@ -333,19 +334,25 @@ function PicksPage() {
                       type="button"
                       disabled={gameLocked}
                       onClick={() => pickTeam(game.id, team)}
-                      className={`rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-60 ${
+                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-60 ${
                         sel?.team === team
                           ? "glow-ring border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {team === game.home_team ? "Home" : "Away"}
+                      <TeamLogo team={team} size={32} />
+                      <span className="min-w-0">
+                        <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                          {team === game.home_team ? "Home" : "Away"}
+                        </span>
+                        <span className="stadium-heading block truncate text-lg">
+                          {teamShort(team)}
+                        </span>
                       </span>
-                      <span className="stadium-heading text-lg">{teamShort(team)}</span>
                     </button>
                   ))}
                 </div>
+
                 <select
                   aria-label="Confidence points"
                   disabled={gameLocked}
