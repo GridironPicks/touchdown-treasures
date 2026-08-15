@@ -257,6 +257,7 @@ function PicksPage() {
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
           user_id: uid,
+          league_id: activeLeague!.id,
           game_id: g.id,
           season: SEASON,
           season_type: seasonType,
@@ -265,15 +266,21 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-
       const ins = await supabase.from("picks").insert(rows);
       if (ins.error) throw ins.error;
 
       const total = Number.parseInt(tiebreaker, 10);
       if (!tiebreakerLocked && !Number.isNaN(total)) {
         const tb = await supabase.from("tiebreakers").upsert(
-          { user_id: uid, season: SEASON, season_type: seasonType, week, predicted_total: total },
-          { onConflict: "user_id,season,season_type,week", ignoreDuplicates: true },
+          {
+            user_id: uid,
+            league_id: activeLeague!.id,
+            season: SEASON,
+            season_type: seasonType,
+            week,
+            predicted_total: total,
+          },
+          { onConflict: "user_id,league_id,season,season_type,week", ignoreDuplicates: true },
         );
         if (tb.error) throw tb.error;
       }
