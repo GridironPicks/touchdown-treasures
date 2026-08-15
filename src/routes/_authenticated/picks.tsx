@@ -13,6 +13,7 @@ import {
   teamShort,
   tiebreakerGameOf,
   weekDeadline,
+  weekOpensAt,
   type Game,
   type SeasonType,
 } from "@/lib/league";
@@ -213,7 +214,7 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-      if (openIds.length > 0) {
+      if (!isRegular && openIds.length > 0) {
         const del = await supabase
           .from("picks")
           .delete()
