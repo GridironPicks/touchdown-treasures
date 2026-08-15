@@ -21,9 +21,10 @@ export const refreshSlateScores = createServerFn({ method: "POST" })
     if (!shouldSync(`${data.seasonType}-${data.week}`)) return { skipped: true as const };
     try {
       await syncWeek(SEASON, data.week, data.seasonType);
-      return { skipped: false as const };
+      return { skipped: false as const, error: false as const };
     } catch (error) {
       console.error("[refreshSlateScores]", error);
       return { skipped: false as const, error: true as const };
     }
+
   });

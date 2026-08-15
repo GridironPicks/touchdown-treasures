@@ -1,4 +1,4 @@
-const MIN_INTERVAL_MS = 20_000;
+const MIN_INTERVAL_MS = 15_000;
 const lastSync = new Map<string, number>();
 
 /** Simple per-isolate throttle so many visitors don't spam the provider. */
