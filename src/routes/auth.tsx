@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search["redirect"] === "string" ? search["redirect"] : "",
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const redirect = typeof search["redirect"] === "string" ? search["redirect"] : undefined;
+    return redirect ? { redirect } : {};
+  },
   head: () => ({
     meta: [
       { title: "Sign In — Gridiron Confidence" },
