@@ -9,9 +9,14 @@ import { Flame, ScrollText, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { SlatePicker } from "@/components/SlatePicker";
+import { BadgeRow } from "@/components/BadgeRow";
+import { HeadToHead } from "@/components/HeadToHead";
+import { LivePoints } from "@/components/LivePoints";
+import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
+
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
