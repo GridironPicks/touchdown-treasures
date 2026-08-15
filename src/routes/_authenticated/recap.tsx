@@ -8,9 +8,12 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
+import { BadgeRow } from "@/components/BadgeRow";
 import { SlatePicker } from "@/components/SlatePicker";
+import { getManagerBadges } from "@/lib/awards.functions";
 import { useLeague } from "@/lib/league-context";
 import { getWeekRecap, type WeekRecap } from "@/lib/recap.functions";
+
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
 
 const searchSchema = z.object({
@@ -72,6 +75,26 @@ function RecapPage() {
   const winner = data?.rows.find((r) => r.place === 1) ?? null;
   const runnerUp = data?.rows.find((r) => r.place === 2) ?? null;
   const highlight = (kind: string) => data?.highlights.find((h) => h.kind === kind) ?? null;
+
+  const fetchBadges = useServerFn(getManagerBadges);
+  const { data: badgeRows = [] } = useQuery({
+    queryKey: ["badges", activeLeague?.id, slate?.seasonType],
+    enabled: !!activeLeague && !!slate,
+    queryFn: () =>
+      fetchBadges({ data: { leagueId: activeLeague!.id, seasonType: slate!.seasonType } }),
+  });
+
+  const weekBadges = useMemo(() => {
+    const map = new Map<string, { badge: string; week: number | null }[]>();
+    for (const b of badgeRows) {
+      if (b.week !== null && b.week !== slate?.week) continue;
+      const list = map.get(b.user_id) ?? [];
+      list.push({ badge: b.badge, week: b.week });
+      map.set(b.user_id, list);
+    }
+    return [...map.entries()].map(([userId, rows]) => ({ userId, rows }));
+  }, [badgeRows, slate?.week]);
+
 
   function share() {
     if (!data || !winner || !slate) return;
@@ -209,6 +232,23 @@ function RecapPage() {
               ))}
             </ul>
           </section>
+
+          {weekBadges.length > 0 && (
+            <section className="field-panel rounded-2xl p-5">
+              <h2 className="stadium-heading mb-3 text-lg">Awards this week</h2>
+              <ul className="space-y-2 text-sm">
+                {weekBadges.map((entry) => (
+                  <li key={entry.userId} className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">
+                      {data.rows.find((r) => r.user_id === entry.userId)?.team_name ?? "Manager"}
+                    </span>
+                    <BadgeRow rows={entry.rows} size="md" />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
 
           {data.casualties.length > 0 && (
             <section className="field-panel rounded-2xl p-5">

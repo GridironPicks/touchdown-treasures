@@ -9,9 +9,14 @@ import { Flame, ScrollText, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { SlatePicker } from "@/components/SlatePicker";
+import { BadgeRow } from "@/components/BadgeRow";
+import { HeadToHead } from "@/components/HeadToHead";
+import { LivePoints } from "@/components/LivePoints";
+import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
+
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
@@ -134,6 +139,28 @@ function LeaderboardPage() {
     },
   });
 
+  const fetchBadges = useServerFn(getManagerBadges);
+  const { data: badgeRows = [] } = useQuery({
+    queryKey: ["badges", activeLeague?.id, streakType],
+    enabled: !!activeLeague,
+    queryFn: () =>
+      fetchBadges({ data: { leagueId: activeLeague!.id, seasonType: streakType } }),
+  });
+
+  const badgesByUser = useMemo(() => {
+    const map: Record<string, { badge: string; week: number | null }[]> = {};
+    for (const r of badgeRows) {
+      (map[r.user_id] ??= []).push({ badge: r.badge, week: r.week });
+    }
+    return map;
+  }, [badgeRows]);
+
+  const { data: meId = null } = useQuery({
+    queryKey: ["me-id"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -178,6 +205,16 @@ function LeaderboardPage() {
         <SlatePicker slates={slates} value={slate} onChange={setPicked} />
       )}
 
+      {board === "week" && activeLeague && slate && (
+        <LivePoints
+          leagueId={activeLeague.id}
+          seasonType={slate.seasonType}
+          week={slate.week}
+          meId={meId}
+        />
+      )}
+
+
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
@@ -205,16 +242,18 @@ function LeaderboardPage() {
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1.5 truncate font-semibold">
+                  <p className="flex flex-wrap items-center gap-1.5 truncate font-semibold">
                     {row.team_name}
                     {onFire && (
                       <span className="flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary">
                         <Flame size={10} /> {streak}W
                       </span>
                     )}
+                    <BadgeRow rows={badgesByUser[row.user_id as string] ?? []} limit={4} />
                   </p>
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
+
                 {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
                   <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
                     <Trophy size={13} /> 2026
@@ -233,6 +272,9 @@ function LeaderboardPage() {
           </ul>
         )}
       </section>
+
+      {activeLeague && <HeadToHead leagueId={activeLeague.id} seasonType={streakType} />}
+
     </div>
   );
 }
