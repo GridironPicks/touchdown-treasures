@@ -32,7 +32,17 @@ export async function fetchProviderWeek(
 ): Promise<ProviderGame[]> {
   const espnSeasonType = seasonType === "pre" ? 1 : 2;
   const url = `${ESPN_SCOREBOARD}?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
-  const res = await fetch(url, { headers: { accept: "application/json" } });
+  // ESPN blocks default edge-runtime requests (403) unless a browser-like
+  // user agent is supplied.
+  const res = await fetch(url, {
+    headers: {
+      accept: "application/json, text/plain, */*",
+      "accept-language": "en-US,en;q=0.9",
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+      referer: "https://www.espn.com/",
+    },
+  });
   if (!res.ok) throw new Error(`NFL provider responded ${res.status}`);
 
   const json = (await res.json()) as {
