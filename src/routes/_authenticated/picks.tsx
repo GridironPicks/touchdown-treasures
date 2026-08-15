@@ -92,6 +92,11 @@ function PicksPage() {
       if (error) throw error;
       return (data ?? []) as Game[];
     },
+    refetchInterval: (query) => {
+      const data = query.state.data as Game[] | undefined;
+      const live = data?.some((g) => g.status === "in_progress");
+      return live ? 60_000 : false;
+    },
   });
 
   const { data: existing } = useQuery({
