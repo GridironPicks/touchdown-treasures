@@ -1,40 +1,119 @@
-# Guaranteed Single Weekly Winner (No Ties)
+# Private Leagues Plan
 
-Today a week's winner is simply "whoever has the most confidence points" — computed in the leaderboard UI from `weekly_scores`. With 20+ players that will produce tied weeks regularly, and there is no rule that resolves them. This adds a full tiebreaker cascade that always ends with exactly one winner.
+Add a multi-tenant "Private Leagues" feature while keeping the default "Global Pool" as a permanent, opt-out league.
 
-## The tiebreaker ladder
+## Decisions
 
-Applied in order; the first step that separates players decides the week:
+- Picks are **separate per league**. A user can belong to multiple leagues and submit a different pick set for each.
+- Survivor pool is also **separate per league**.
+- The default "Global Pool" is created automatically. New users are enrolled by default, but they can leave it.
+- League URL structure: `/leagues/:leagueId/picks`, `/leagues/:leagueId/leaderboard`, `/leagues/:leagueId/survivor`, `/leagues/:leagueId/chat`, `/leagues/:leagueId/team`. Existing top-level routes (`/picks`, `/leaderboard`, etc.) redirect to the user's active/default league.
+- Lock rules for private leagues initially mirror the global rules (preseason per-kickoff, regular season Tuesday open / Wednesday lock). A `deadline_type` setting is stored in `settings` JSONB and surfaced in the UI; enforcement will follow the chosen setting in a later phase if needed. For this phase we store the setting and apply the existing global logic to all leagues.
 
-1. **Most confidence points** — the normal weekly score.
-2. **Closest to the final game's combined total, without going over** — the existing tiebreaker guess. Over-guesses fall behind all valid under-or-exact guesses.
-3. **Closest total by absolute distance** — catches the case where everyone went over.
-4. **Most correct winners picked** — raw number of games called right.
-5. **Highest points earned on the top-confidence pick** — did they nail their most confident game, then next-most, and so on down the ranking.
-6. **Earliest submission timestamp** — the final guarantee. First sheet in wins.
+## Database Changes
 
-Anyone who did not submit any picks for the week is excluded. Steps 2–5 resolve virtually every realistic tie; step 6 makes a tie mathematically impossible.
+1. **Create `public.leagues` table**
+   - `id` uuid PK
+   - `name` text not null
+   - `owner_id` uuid references auth.users(id)
+   - `join_code` text unique, 6-character random string
+   - `settings` jsonb default `{}`
+   - `is_global_pool` boolean default false
+   - `created_at`, `updated_at`
 
-## What players see
+2. **Create `public.league_memberships` table**
+   - `id` uuid PK
+   - `league_id` uuid references public.leagues(id) on delete cascade
+   - `user_id` uuid references auth.users(id) on delete cascade
+   - `role` text check ('owner' | 'member')
+   - unique (`league_id`, `user_id`)
+   - `created_at`
 
-- **Leaderboard, weekly view**: the winner row gets a trophy/crown and a short line explaining how it was decided — e.g. "Won on tiebreaker: closest to 44 (guessed 45)" or "Won on tiebreaker: earliest submission".
-- **Weekly winner panel** on the leaderboard showing the winner's team, mascot, points, their total guess vs the actual total, and — once you turn on dues — the amount owed to them.
-- **How to Play** section on the Picks tab gains a "How ties are broken" list with the ladder above, so it's clear before anyone pays.
-- Because submission time can decide a week, the Picks tab will note that the submission timestamp is recorded and used as the last resort — this rewards submitting early.
+3. **Add `league_id` to existing tables**
+   - `picks.league_id` uuid references public.leagues(id)
+   - `tiebreakers.league_id` uuid references public.leagues(id)
+   - `survivor_picks.league_id` uuid references public.leagues(id)
+   - `messages.league_id` uuid references public.leagues(id)
+   - Update unique constraints to include `league_id` where appropriate.
 
-## Going live with weekly dues
+4. **Backfill data**
+   - Insert one `leagues` row for the Global Pool (`is_global_pool = true`).
+   - Backfill `league_id` on all existing picks, tiebreakers, survivor_picks, and messages with the Global Pool id.
+   - Enroll every existing profile into the Global Pool membership with role 'member'.
 
-You chose manual payouts, so nothing changes in how money moves — you collect and pay out. What the app should add when you're ready (not built in this pass unless you say so):
+5. **RLS / policies**
+   - `leagues`: readable by members; updatable by owner; insertable by authenticated users.
+   - `league_memberships`: readable by members of the same league; insertable on join; deletable by owner or self.
+   - Update picks/tiebreakers/survivor_picks/messages policies to scope by `league_id` and respect membership.
 
-- A per-week paid/unpaid marker per manager, shown on the League Status roster.
-- A pot total for the week (players paid x entry amount) and "owed to winner" on the weekly winner panel.
+6. **Helper functions**
+   - `public.generate_join_code()` returns a random 6-character alphanumeric string.
+   - `public.create_league(name, owner_id, settings)` creates the league, membership as owner, and join code.
+   - `public.join_league_by_code(code, user_id)` adds membership if not already a member.
 
-Say the word and I'll layer that on top; the tiebreaker work below is independent of it and should land first.
+## Backend Server Functions
 
-## Technical notes
+1. **`src/lib/leagues.functions.ts`**
+   - `createLeague({ name, settings })` — authenticated, returns the new league id and join code.
+   - `joinLeagueByCode({ code })` — authenticated, adds membership.
+   - `getMyLeagues()` — authenticated, returns all leagues the user belongs to with role.
+   - `getLeagueById({ leagueId })` — authenticated, returns league + membership info.
+   - `leaveLeague({ leagueId })` — authenticated, self-removal; blocked if it is the only league the user belongs to.
 
-- New database function `public.week_winner(_season, _season_type, _week)` returning the ranked field with a `tiebreak_reason` column, implemented as `SECURITY DEFINER` so it can read all picks after the reveal point without loosening RLS. It joins `picks`, `tiebreakers`, and `games` and orders by the six criteria above, using `min(picks.created_at)` per user for step 6.
-- A companion `public.week_standings(...)` returning every submitter in tiebreak order, so the weekly leaderboard view can be sorted correctly rather than by points alone.
-- Grants: `EXECUTE` to `authenticated` only.
-- Results are only exposed for weeks where `picks_revealed` is true or all games are final, keeping hidden-picks privacy intact.
-- `leaderboard.tsx` switches its weekly view from client-side max-points logic to these functions; the streak engine reuses `week_winner` so multi-week streaks also respect tiebreakers instead of counting co-winners.
+2. **Update existing server functions**
+   - `refreshSlateScores`, `getWinProbabilities`: no league changes needed (games are global).
+   - `week_submission_status`, `survivor_board`, leaderboard views: accept `league_id` and filter members.
+
+## Frontend Changes
+
+1. **League context / switcher**
+   - Add `src/lib/league-context.tsx` to hold the active league id.
+   - Update `AppShell.tsx` header to include a League Selector dropdown (Global Pool + user's leagues). Selecting a league navigates to `/leagues/:leagueId/picks`.
+
+2. **Route restructuring**
+   - Create `src/routes/_authenticated/leagues.$leagueId.tsx` as a layout that validates membership and provides league context.
+   - Move existing pages to:
+     - `src/routes/_authenticated/leagues.$leagueId.picks.tsx`
+     - `src/routes/_authenticated/leagues.$leagueId.leaderboard.tsx`
+     - `src/routes/_authenticated/leagues.$leagueId.survivor.tsx`
+     - `src/routes/_authenticated/leagues.$leagueId.chat.tsx`
+     - `src/routes/_authenticated/leagues.$leagueId.team.tsx`
+     - `src/routes/_authenticated/leagues.$leagueId.manager.$userId.tsx`
+   - Keep old top-level routes (`/picks`, `/leaderboard`, etc.) as redirects to the active league.
+
+3. **Picks page updates**
+   - Read `league_id` from route params/context.
+   - Fetch and submit picks scoped to the active league.
+   - Roster status scoped to league members.
+   - How-to-play text mentions the league name.
+
+4. **Leaderboard / manager / survivor / chat updates**
+   - Pass `league_id` to standings, streaks, survivor board, and chat queries.
+   - Manager page only shows picks for that league.
+
+5. **Create League wizard**
+   - Add `src/routes/_authenticated/leagues.create.tsx` (or modal on `/picks`).
+   - Step 1: league name + optional icon/color.
+   - Step 2: deadline type (first kickoff / individual kickoff), drop-lowest-week toggle, custom rules textarea.
+   - Step 3: generated join code and copyable link `/join?code=XYZ`.
+
+6. **Join flow**
+   - Create `src/routes/join.tsx` public route.
+   - If logged in, call `joinLeagueByCode` and redirect to `/leagues/:leagueId/picks`.
+   - If logged out, redirect to `/auth?redirect=/join?code=XYZ` first, then complete join after login.
+
+7. **Team page**
+   - Add a "My Leagues" section showing enrolled leagues and a "Leave league" button (disabled for last league).
+
+## Migration & Backfill
+
+- Single Supabase migration creates tables, adds columns, backfills Global Pool data, updates policies, and creates helper functions.
+- After migration, run a type regeneration so `src/integrations/supabase/types.ts` reflects the new schema.
+
+## Verification
+
+- Type-check the app.
+- Confirm a new user is auto-enrolled in Global Pool.
+- Confirm a user can create a private league, copy the join link, and join from an incognito session.
+- Confirm picks submitted in one league do not appear in another.
+- Confirm leaving Global Pool is allowed only when another league membership exists.
