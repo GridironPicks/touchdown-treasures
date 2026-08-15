@@ -51,6 +51,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("If that email is registered, a reset link is on the way.");
+        return;
+      }
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -73,6 +81,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   async function google() {
     const result = await lovable.auth.signInWithOAuth("google", {
