@@ -288,6 +288,19 @@ function LeaguesPage() {
                         <LogOut size={14} /> Leave
                       </Button>
                     )}
+                    {!league.is_global_pool && league.role === "owner" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPendingDelete(league);
+                          setConfirmName("");
+                        }}
+                        className="gap-1 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant={isActive ? "secondary" : "default"}
