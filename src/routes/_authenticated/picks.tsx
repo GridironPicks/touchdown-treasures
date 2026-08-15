@@ -351,7 +351,7 @@ function PicksPage() {
       )}
 
       <HowToPlay
-        seasonType={seasonType}
+        seasonType={isRegular ? "reg" : "pre"}
         maxPoints={maxPoints}
         opensAt={opensAt}
         deadline={deadline}
