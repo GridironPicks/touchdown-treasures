@@ -75,7 +75,7 @@ export const createLeague = createServerFn({ method: "POST" })
     const { data: leagueId, error } = await context.supabase.rpc("create_league", {
       _name: data.name,
       _owner_id: context.userId,
-      _settings: data.settings,
+      _settings: data.settings as Record<string, string | number | boolean | null>,
     });
     if (error) throw error;
     return { leagueId: leagueId as string };
