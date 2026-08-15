@@ -364,12 +364,15 @@ function PicksPage() {
         </section>
       )}
 
+      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} />
+
       <HowToPlay
         seasonType={isRegular ? "reg" : "pre"}
         maxPoints={maxPoints}
         opensAt={opensAt}
         deadline={deadline}
       />
+
 
       <ul className="space-y-3">
         {games.map((game) => {
