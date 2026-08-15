@@ -81,10 +81,22 @@ function PicksPage() {
 
   
 
+  const refreshScores = useServerFn(refreshSlateScores);
+
   const { data: games = [] } = useQuery({
     queryKey: ["games", seasonType, week],
     enabled: !!slate,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     queryFn: async () => {
+      // Pull the newest NFL scores before reading, so a refresh or tab switch
+      // always shows live data.
+      try {
+        await refreshScores({ data: { seasonType, week } });
+      } catch {
+        /* fall back to whatever is already stored */
+      }
       const { data, error } = await supabase
         .from("games")
         .select("*")
