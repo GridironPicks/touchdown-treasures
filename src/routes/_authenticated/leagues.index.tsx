@@ -56,6 +56,8 @@ function LeaguesPage() {
   const [dropLowest, setDropLowest] = useState(false);
   const [deadlineFirstGame, setDeadlineFirstGame] = useState(false);
   const [customRules, setCustomRules] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<League | null>(null);
+  const [confirmName, setConfirmName] = useState("");
 
   const { data: leagues = [] } = useQuery<League[]>({
     queryKey: ["my-leagues"],
