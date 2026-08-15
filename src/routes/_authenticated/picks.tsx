@@ -13,6 +13,7 @@ import {
   teamShort,
   tiebreakerGameOf,
   weekDeadline,
+  weekOpensAt,
   type Game,
   type SeasonType,
 } from "@/lib/league";
@@ -135,19 +136,23 @@ function PicksPage() {
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
-  // Regular season locks at Wednesday 6:00 PM ET; preseason stays open per game.
+  // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
+  // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const deadline = useMemo(
-    () => (isRegular ? weekDeadline(games) : null),
-    [isRegular, games],
-  );
+  const deadline = useMemo(() => (isRegular ? weekDeadline(games) : null), [isRegular, games]);
+  const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
-  const locked = (games.length > 0 && openGames.length === 0) || deadlinePassed;
+  const notOpenYet = opensAt ? now < opensAt.getTime() : false;
+  const submitted = !!isRegular && (existing?.picks.length ?? 0) > 0;
+  const locked =
+    (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
   const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
   const untilDeadline = deadline ? deadline.getTime() - now : 0;
+  const untilOpen = opensAt ? opensAt.getTime() - now : 0;
+
 
 
 
@@ -192,7 +197,15 @@ function PicksPage() {
   }
 
   async function submit() {
-    if (!existing) return;
+    if (!existing || locked) return;
+    if (
+      isRegular &&
+      !window.confirm(
+        "Submit your picks? Regular season picks are final — you won't be able to change them.",
+      )
+    ) {
+      return;
+    }
     setBusy(true);
     try {
       const uid = existing.uid;
@@ -209,7 +222,7 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-      if (openIds.length > 0) {
+      if (!isRegular && openIds.length > 0) {
         const del = await supabase
           .from("picks")
           .delete()
@@ -265,51 +278,72 @@ function PicksPage() {
           </div>
           <div className="text-right">
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
-              {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
-              {status === "open"
-                ? isRegular
-                  ? "Locks Wed 6:00 PM ET"
-                  : "Next kickoff"
-                : status === "in-progress"
-                  ? isRegular && deadlinePassed
-                    ? "Deadline passed"
-                    : "All games started"
-                  : "Final"}
+              {status === "open" || notOpenYet ? <Timer size={13} /> : <Lock size={13} />}
+              {notOpenYet
+                ? "Opens Tue 12:00 AM ET"
+                : status === "open"
+                  ? isRegular
+                    ? "Locks Wed 6:00 PM ET"
+                    : "Next kickoff"
+                  : submitted
+                    ? "Picks submitted"
+                    : status === "in-progress"
+                      ? isRegular && deadlinePassed
+                        ? "Deadline passed"
+                        : "All games started"
+                      : "Final"}
             </p>
-            {status === "open" ? (
+            {notOpenYet ? (
+              <p className="stadium-heading text-2xl tabular-nums text-muted-foreground">
+                {formatCountdown(untilOpen)}
+              </p>
+            ) : status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
                 {formatCountdown(isRegular ? untilDeadline : nextKickoff)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
-                {status === "final" ? "Week complete" : "LOCKED"}
+                {status === "final" ? "Week complete" : submitted ? "FINAL" : "LOCKED"}
               </p>
             )}
           </div>
         </div>
       </header>
 
-      {status === "open" ? (
+      {notOpenYet ? (
+        <section className="field-panel rounded-2xl border border-border p-5">
+          <h2 className="stadium-heading text-lg">Week not open yet</h2>
+          <p className="text-sm text-muted-foreground">
+            Regular season picks open Tuesday at 12:00 AM ET of game week and lock Wednesday at
+            6:00 PM ET. Check back Tuesday to make this week's picks.
+          </p>
+        </section>
+      ) : status === "open" ? (
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">
             {isRegular ? "Picks open" : "Free preseason play"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
-              ? "Free all season. Edit your picks until Wednesday 6:00 PM ET — after that the week is locked."
+              ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
               : "No deadline in the preseason. Edit your picks any time — each game locks only when it kicks off."}
           </p>
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
-          <h2 className="stadium-heading text-lg">Read only</h2>
+          <h2 className="stadium-heading text-lg">
+            {submitted ? "Picks are final" : "Read only"}
+          </h2>
           <p className="text-sm text-muted-foreground">
-            {isRegular && deadlinePassed
-              ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
-              : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
+            {submitted
+              ? "You've submitted this week's picks — they're locked in and can't be changed."
+              : isRegular && deadlinePassed
+                ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+                : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
       )}
+
 
 
 

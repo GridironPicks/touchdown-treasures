@@ -99,6 +99,16 @@ export function weekDeadline(games: Game[]): Date | null {
   return new Date(Date.UTC(mCal.year, mCal.month - 1, mCal.day + 2, 18) - offset * 60000);
 }
 
+/**
+ * Regular season picks open Tuesday 12:00 AM ET of the week — 42 hours
+ * before the Wednesday 6:00 PM ET deadline. Mirrors the database rule.
+ */
+export function weekOpensAt(games: Game[]): Date | null {
+  const deadline = weekDeadline(games);
+  return deadline ? new Date(deadline.getTime() - 42 * 3600000) : null;
+}
+
+
 export function formatCountdown(ms: number): string {
   if (ms <= 0) return "LOCKED";
   const total = Math.floor(ms / 1000);
