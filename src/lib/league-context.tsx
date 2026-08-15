@@ -22,8 +22,21 @@ export function LeagueProvider({ children }: { children: ReactNode }) {
 
   const { data: leagues = [], isLoading } = useQuery<League[]>({
     queryKey: ["my-leagues"],
-    queryFn: () => fetchLeagues(),
+    retry: false,
+    queryFn: async () => {
+      // No (or expired) session: the protected server fn would 401 and blank
+      // the app, so bail out quietly and let the auth gate handle redirects.
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return [];
+      try {
+        return await fetchLeagues();
+      } catch (error) {
+        console.error("[leagues]", error);
+        return [];
+      }
+    },
   });
+
 
   const [activeLeagueId, setActiveLeagueIdState] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
