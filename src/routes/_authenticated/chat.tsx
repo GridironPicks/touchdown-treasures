@@ -54,6 +54,11 @@ function ChatPage() {
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const { data: me } = useQuery({
+    queryKey: ["me-id"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+
   if (leaguesLoading || !activeLeague) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -61,11 +66,6 @@ function ChatPage() {
       </div>
     );
   }
-
-  const { data: me } = useQuery({
-    queryKey: ["me-id"],
-    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
-  });
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles"],
