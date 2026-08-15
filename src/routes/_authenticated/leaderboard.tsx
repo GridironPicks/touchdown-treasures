@@ -76,6 +76,41 @@ function LeaderboardPage() {
     },
   });
 
+  const streakType = board === "pre" ? "pre" : "reg";
+  const { data: streaks = {} } = useQuery({
+    queryKey: ["streaks", streakType],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_scores")
+        .select("user_id, week, points")
+        .eq("season", SEASON)
+        .eq("season_type", streakType);
+      if (error) throw error;
+      const byWeek = new Map<number, { user_id: string; points: number }[]>();
+      for (const r of data ?? []) {
+        if (!byWeek.has(r.week!)) byWeek.set(r.week!, []);
+        byWeek.get(r.week!)!.push({ user_id: r.user_id!, points: r.points ?? 0 });
+      }
+      // Winners per completed week (highest points, ties share the week).
+      const winnersByWeek = new Map<number, Set<string>>();
+      for (const [week, rowsW] of byWeek) {
+        const max = Math.max(...rowsW.map((r) => r.points));
+        if (max <= 0) continue;
+        winnersByWeek.set(week, new Set(rowsW.filter((r) => r.points === max).map((r) => r.user_id)));
+      }
+      const weeks = [...winnersByWeek.keys()].sort((a, b) => b - a);
+      const result: Record<string, number> = {};
+      for (const w of weeks) {
+        for (const uid of winnersByWeek.get(w)!) {
+          // Only extend a streak that is still unbroken from the newest week back.
+          const expected = weeks.indexOf(w);
+          if ((result[uid] ?? 0) === expected) result[uid] = expected + 1;
+        }
+      }
+      return result;
+    },
+  });
+
   return (
     <div className="space-y-6">
       <header>
