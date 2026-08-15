@@ -267,6 +267,9 @@ function LeaguesPage() {
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">Code: {league.join_code}</p>
+                    {!league.is_global_pool && league.role === "owner" && (
+                      <p className="text-xs text-primary">You own this league — you can delete it</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -290,15 +293,15 @@ function LeaguesPage() {
                     )}
                     {!league.is_global_pool && league.role === "owner" && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           setPendingDelete(league);
                           setConfirmName("");
                         }}
-                        className="gap-1 text-destructive hover:text-destructive"
+                        className="gap-1 border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
-                        <Trash2 size={14} /> Delete
+                        <Trash2 size={14} /> Delete league
                       </Button>
                     )}
                     <Button
