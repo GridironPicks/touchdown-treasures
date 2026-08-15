@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
 import { SEASON, teamShort, type Game, type SeasonType } from "@/lib/league";
+import { useLeague } from "@/lib/league-context";
 import { slateLabel } from "@/lib/slate";
 
 type ManagerSearch = { type?: SeasonType; week?: number };
