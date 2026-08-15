@@ -121,9 +121,13 @@ function SurvivorPage() {
   const games = activeSlate?.games ?? [];
 
   const { data: board = [] } = useQuery({
-    queryKey: ["survivor-board", SEASON],
+    queryKey: ["survivor-board", activeLeague?.id, SEASON],
+    enabled: !!activeLeague,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("survivor_board", { _season: SEASON });
+      const { data, error } = await supabase.rpc("survivor_board", {
+        _season: SEASON,
+        _league_id: activeLeague!.id,
+      });
       if (error) throw error;
       return (data ?? []) as BoardRow[];
     },
