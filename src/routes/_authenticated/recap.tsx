@@ -73,6 +73,26 @@ function RecapPage() {
   const runnerUp = data?.rows.find((r) => r.place === 2) ?? null;
   const highlight = (kind: string) => data?.highlights.find((h) => h.kind === kind) ?? null;
 
+  const fetchBadges = useServerFn(getManagerBadges);
+  const { data: badgeRows = [] } = useQuery({
+    queryKey: ["badges", activeLeague?.id, slate?.seasonType],
+    enabled: !!activeLeague && !!slate,
+    queryFn: () =>
+      fetchBadges({ data: { leagueId: activeLeague!.id, seasonType: slate!.seasonType } }),
+  });
+
+  const weekBadges = useMemo(() => {
+    const map = new Map<string, { badge: string; week: number | null }[]>();
+    for (const b of badgeRows) {
+      if (b.week !== null && b.week !== slate?.week) continue;
+      const list = map.get(b.user_id) ?? [];
+      list.push({ badge: b.badge, week: b.week });
+      map.set(b.user_id, list);
+    }
+    return [...map.entries()].map(([userId, rows]) => ({ userId, rows }));
+  }, [badgeRows, slate?.week]);
+
+
   function share() {
     if (!data || !winner || !slate) return;
     const lines = [
