@@ -8,6 +8,9 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 - **Preseason weeks** — labelled "Preseason Week 1-4" in the app. Picks, confidence ranking, Monday-night style tiebreaker, and the Wednesday 6:00 PM lock all work exactly as they do now. No payment gate, no pot, no payout. Results still score and show on a separate "Preseason" standings view so people can practice.
 - **Regular season Week 1 onward** — the current behavior returns: $5 entry required before picks can be submitted, pot total, weekly winner, payout, and the season leaderboard that drives the 2026 championship trophy.
 - **Season leaderboard** only counts regular-season weeks. Preseason results are practice-only and marked as such.
+- **Games already played before the league existed** — any game whose kickoff has passed (or that is in progress/final) is never pickable. It renders as a read-only result row showing the final score with the winner highlighted and the loser dimmed, marked "Result — no picks". If an entire week is already in the past, that week shows as a results-only recap with no submit button and no tiebreaker input.
+- **Partially started weeks** — if some games in the current week have kicked off but others have not, only the remaining games are pickable. Confidence numbers are sized to the count of still-open games, so the ranking stays valid.
+
 
 ## Current state confirmed
 
