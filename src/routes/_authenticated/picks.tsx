@@ -149,9 +149,11 @@ function PicksPage() {
   const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
-  const submitted = !!isRegular && (existing?.picks.length ?? 0) > 0;
+  const hasPicks = (existing?.picks.length ?? 0) > 0;
+  const submitted = !!isRegular && hasPicks;
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
+
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
