@@ -53,7 +53,7 @@ function PicksPage() {
   const { data: slate } = useCurrentSlate();
   const seasonType = slate?.seasonType ?? "reg";
   const week = slate?.week ?? 1;
-  const isPreseason = seasonType === "pre";
+  
 
   const { data: games = [] } = useQuery({
     queryKey: ["games", seasonType, week],

@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react'
-import { template as entryReceiptTemplate } from './entry-receipt'
 import { template as lockReminderTemplate } from './lock-reminder'
 
 export interface TemplateEntry {
@@ -20,6 +19,5 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  'entry-receipt': entryReceiptTemplate,
   'lock-reminder': lockReminderTemplate,
 }
