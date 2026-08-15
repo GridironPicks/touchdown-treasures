@@ -254,7 +254,7 @@ function PicksPage() {
       if (!tiebreakerLocked && !Number.isNaN(total)) {
         const tb = await supabase.from("tiebreakers").upsert(
           { user_id: uid, season: SEASON, season_type: seasonType, week, predicted_total: total },
-          { onConflict: "user_id,season,season_type,week" },
+          { onConflict: "user_id,season,season_type,week", ignoreDuplicates: true },
         );
         if (tb.error) throw tb.error;
       }
