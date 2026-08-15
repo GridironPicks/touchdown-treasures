@@ -234,9 +234,17 @@ function PicksPage() {
   }
 
   const heading = slate ? `${slateLabel(slate)} Picks` : "Picks";
+  const allFinal = games.length > 0 && games.every((g) => g.status === "final");
+  const status: "open" | "in-progress" | "final" = allFinal
+    ? "final"
+    : deadlinePassed
+      ? "in-progress"
+      : "open";
 
   return (
     <div className="space-y-5">
+      <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
+
       <header className="field-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -248,26 +256,42 @@ function PicksPage() {
           </div>
           <div className="text-right">
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
-              {deadlinePassed ? <Lock size={13} /> : <Timer size={13} />}
-              {deadlinePassed ? "Picks locked" : "Locks Wed 6:00 PM ET"}
+              {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
+              {status === "open"
+                ? "Locks Wed 6:00 PM ET"
+                : status === "in-progress"
+                  ? "Locked — games in progress"
+                  : "Final"}
             </p>
-            <p
-              className={`stadium-heading text-2xl tabular-nums ${
-                deadlinePassed ? "text-destructive" : "text-primary"
-              }`}
-            >
-              {formatCountdown(msLeft)}
-            </p>
+            {status === "open" ? (
+              <p className="stadium-heading text-2xl tabular-nums text-primary">
+                {formatCountdown(msLeft)}
+              </p>
+            ) : (
+              <p className="stadium-heading text-2xl text-muted-foreground">
+                {status === "final" ? "Week complete" : "LOCKED"}
+              </p>
+            )}
           </div>
         </div>
       </header>
 
-      <section className="field-panel rounded-2xl border border-primary/40 p-5">
-        <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
-        <p className="text-sm text-muted-foreground">
-          Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
-        </p>
-      </section>
+      {status === "open" ? (
+        <section className="field-panel rounded-2xl border border-primary/40 p-5">
+          <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
+          <p className="text-sm text-muted-foreground">
+            Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
+          </p>
+        </section>
+      ) : (
+        <section className="field-panel rounded-2xl border border-border p-5">
+          <h2 className="stadium-heading text-lg">Read only</h2>
+          <p className="text-sm text-muted-foreground">
+            This week is locked. Your submitted picks are shown below with live scores.
+          </p>
+        </section>
+      )}
+
 
 
       <ul className="space-y-3">
