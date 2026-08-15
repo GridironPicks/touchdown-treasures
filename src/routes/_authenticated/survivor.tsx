@@ -116,21 +116,7 @@ function SurvivorPage() {
     queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
   });
 
-  const { data: games = [] } = useQuery({
-    queryKey: ["survivor-games", week],
-    enabled: !!activeSlate,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("games")
-        .select("*")
-        .eq("season", SEASON)
-        .eq("season_type", "reg")
-        .eq("week", week)
-        .order("kickoff");
-      if (error) throw error;
-      return (data ?? []) as Game[];
-    },
-  });
+  const games = activeSlate?.games ?? [];
 
   const { data: board = [] } = useQuery({
     queryKey: ["survivor-board", SEASON],
