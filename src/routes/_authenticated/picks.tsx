@@ -278,7 +278,19 @@ function PicksPage() {
       <header className="field-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="stadium-heading text-3xl">{heading}</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="stadium-heading text-3xl">{heading}</h1>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${
+                  hasPicks
+                    ? "bg-primary/15 text-primary"
+                    : "bg-amber-500/10 text-amber-400"
+                }`}
+              >
+                {hasPicks ? <CheckCircle2 size={13} /> : <Circle size={13} />}
+                {hasPicks ? "Picks in" : "Not submitted"}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground">
               {maxPoints} games · assign {maxPoints} down to 1
               {openGames.length < maxPoints ? ` · ${openGames.length} still open` : ""}
