@@ -24,7 +24,34 @@ async function markEntryPaid(session: any) {
     },
     { onConflict: "user_id,season,week" },
   );
-  if (error) console.error("Failed to record entry:", error.message);
+  if (error) {
+    console.error("Failed to record entry:", error.message);
+    return;
+  }
+
+  const email = session?.customer_details?.email ?? session?.customer_email;
+  if (!email) return;
+
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("team_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+    await sendTemplateEmail("entry-receipt", email, {
+      templateData: {
+        teamName: profile?.team_name ?? "Manager",
+        week,
+        season,
+        amount: `$${((session.amount_total ?? 500) / 100).toFixed(2)}`,
+      },
+      idempotencyKey: `entry-receipt-${session.id}`,
+    });
+  } catch (e) {
+    console.error("Failed to send entry receipt:", e);
+  }
 }
 
 async function handleWebhook(req: Request, env: StripeEnv) {
