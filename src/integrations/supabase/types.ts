@@ -14,45 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      entries: {
-        Row: {
-          amount_cents: number
-          id: string
-          method: string
-          paid: boolean
-          paid_at: string | null
-          season: number
-          season_type: Database["public"]["Enums"]["season_type"]
-          stripe_session_id: string | null
-          user_id: string
-          week: number
-        }
-        Insert: {
-          amount_cents?: number
-          id?: string
-          method?: string
-          paid?: boolean
-          paid_at?: string | null
-          season: number
-          season_type?: Database["public"]["Enums"]["season_type"]
-          stripe_session_id?: string | null
-          user_id: string
-          week: number
-        }
-        Update: {
-          amount_cents?: number
-          id?: string
-          method?: string
-          paid?: boolean
-          paid_at?: string | null
-          season?: number
-          season_type?: Database["public"]["Enums"]["season_type"]
-          stripe_session_id?: string | null
-          user_id?: string
-          week?: number
-        }
-        Relationships: []
-      }
       games: {
         Row: {
           away_score: number | null
@@ -225,21 +186,6 @@ export type Database = {
           team_name: string | null
           user_id: string | null
           weeks_played: number | null
-        }
-        Relationships: []
-      }
-      weekly_results: {
-        Row: {
-          actual_total: number | null
-          complete: boolean | null
-          is_winner: boolean | null
-          points: number | null
-          predicted_total: number | null
-          season: number | null
-          season_type: Database["public"]["Enums"]["season_type"] | null
-          tiebreak_diff: number | null
-          user_id: string | null
-          week: number | null
         }
         Relationships: []
       }

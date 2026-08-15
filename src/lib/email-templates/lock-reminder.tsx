@@ -14,13 +14,13 @@ import type { TemplateEntry } from './registry'
 interface LockReminderProps {
   teamName?: string
   week?: number
-  potUrl?: string
+  picksUrl?: string
 }
 
 function LockReminder({
   teamName = 'Manager',
   week = 1,
-  potUrl = 'https://gridironconfidence.com/pot',
+  picksUrl = 'https://gridironconfidence.com/picks',
 }: LockReminderProps) {
   return (
     <Html>
@@ -35,11 +35,12 @@ function LockReminder({
             Week {week} locks Wednesday 6:00 PM
           </Heading>
           <Text style={{ color: '#C7D0DB', fontSize: '15px', lineHeight: '22px' }}>
-            {teamName}, your $5 entry for Week {week} hasn't been paid yet. Pay the buy-in to unlock
-            your confidence picks before the deadline — no late entries.
+            {teamName}, your Week {week} confidence picks aren't in yet. It's free to play — get
+            them submitted before the deadline. No late entries.
           </Text>
+
           <Button
-            href={potUrl}
+            href={picksUrl}
             style={{
               backgroundColor: '#00E676',
               color: '#0B162A',
@@ -51,7 +52,7 @@ function LockReminder({
               marginTop: '16px',
             }}
           >
-            Pay $5 entry
+            Make my picks
           </Button>
         </Container>
       </Body>
@@ -63,6 +64,7 @@ export const template = {
   component: LockReminder,
   displayName: 'Wednesday Lock Reminder',
   subject: (data: Record<string, any>) =>
-    `Week ${data['week'] ?? 1} picks lock Wednesday 6PM — entry unpaid`,
-  previewData: { teamName: 'Steel Curtain', week: 1, potUrl: 'https://gridironconfidence.com/pot' },
+    `Week ${data['week'] ?? 1} picks lock Wednesday 6PM`,
+
+  previewData: { teamName: 'Steel Curtain', week: 1, picksUrl: 'https://gridironconfidence.com/picks' },
 } satisfies TemplateEntry

@@ -14,10 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
-import { Route as AuthenticatedPotRouteImport } from './routes/_authenticated/pot'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -45,11 +43,6 @@ const AuthenticatedPicksRoute = AuthenticatedPicksRouteImport.update({
   path: '/picks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPotRoute = AuthenticatedPotRouteImport.update({
-  id: '/pot',
-  path: '/pot',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -60,12 +53,6 @@ const ApiPublicNflSyncRoute = ApiPublicNflSyncRouteImport.update({
   path: '/api/public/nfl-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicPaymentsWebhookRoute =
-  ApiPublicPaymentsWebhookRouteImport.update({
-    id: '/api/public/payments/webhook',
-    path: '/api/public/payments/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -78,10 +65,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
-  '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
@@ -89,10 +74,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
-  '/pot': typeof AuthenticatedPotRoute
   '/team': typeof AuthenticatedTeamRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
@@ -102,10 +85,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
-  '/_authenticated/pot': typeof AuthenticatedPotRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
@@ -115,10 +96,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/leaderboard'
     | '/picks'
-    | '/pot'
     | '/team'
     | '/api/public/nfl-sync'
-    | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -126,10 +105,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/leaderboard'
     | '/picks'
-    | '/pot'
     | '/team'
     | '/api/public/nfl-sync'
-    | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
@@ -138,10 +115,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/leaderboard'
     | '/_authenticated/picks'
-    | '/_authenticated/pot'
     | '/_authenticated/team'
     | '/api/public/nfl-sync'
-    | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
@@ -150,7 +125,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicNflSyncRoute: typeof ApiPublicNflSyncRoute
-  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -191,13 +165,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPicksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/pot': {
-      id: '/_authenticated/pot'
-      path: '/pot'
-      fullPath: '/pot'
-      preLoaderRoute: typeof AuthenticatedPotRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/team': {
       id: '/_authenticated/team'
       path: '/team'
@@ -210,13 +177,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/nfl-sync'
       fullPath: '/api/public/nfl-sync'
       preLoaderRoute: typeof ApiPublicNflSyncRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/payments/webhook': {
-      id: '/api/public/payments/webhook'
-      path: '/api/public/payments/webhook'
-      fullPath: '/api/public/payments/webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/transactional/preview': {
@@ -232,14 +192,12 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedPicksRoute: typeof AuthenticatedPicksRoute
-  AuthenticatedPotRoute: typeof AuthenticatedPotRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedPicksRoute: AuthenticatedPicksRoute,
-  AuthenticatedPotRoute: AuthenticatedPotRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
 }
 
@@ -251,7 +209,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicNflSyncRoute: ApiPublicNflSyncRoute,
-  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport

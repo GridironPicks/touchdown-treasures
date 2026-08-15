@@ -53,7 +53,7 @@ function PicksPage() {
   const { data: slate } = useCurrentSlate();
   const seasonType = slate?.seasonType ?? "reg";
   const week = slate?.week ?? 1;
-  const isPreseason = seasonType === "pre";
+  
 
   const { data: games = [] } = useQuery({
     queryKey: ["games", seasonType, week],
@@ -99,23 +99,6 @@ function PicksPage() {
     },
   });
 
-  const { data: myEntry } = useQuery({
-    queryKey: ["my-entry", seasonType, week],
-    enabled: !!slate && !isPreseason,
-    queryFn: async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from("entries")
-        .select("paid")
-        .eq("user_id", auth.user!.id)
-        .eq("season", SEASON)
-        .eq("season_type", "reg")
-        .eq("week", week)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
 
   useEffect(() => {
     if (!existing) return;
@@ -130,8 +113,8 @@ function PicksPage() {
   const deadline = useMemo(() => weekDeadline(games), [games]);
   const msLeft = deadline ? deadline.getTime() - now : 0;
   const deadlinePassed = deadline !== null && msLeft <= 0;
-  const paid = isPreseason || myEntry?.paid === true;
-  const locked = deadlinePassed || !paid;
+  const locked = deadlinePassed;
+
 
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
@@ -260,33 +243,13 @@ function PicksPage() {
         </div>
       </header>
 
-      {isPreseason ? (
-        <section className="field-panel rounded-2xl border border-primary/40 p-5">
-          <h2 className="stadium-heading text-lg text-primary">Free preseason play</h2>
-          <p className="text-sm text-muted-foreground">
-            Preseason weeks are free — no buy-in required. The $5 weekly entry starts in Week 1 of
-            the 2026 regular season.
-          </p>
-        </section>
-      ) : (
-        !paid &&
-        !deadlinePassed && (
-          <section className="field-panel flex flex-col gap-3 rounded-2xl border border-primary/40 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="stadium-heading text-lg text-primary">Entry fee required</h2>
-              <p className="text-sm text-muted-foreground">
-                Pay the $5 Week {week} buy-in to unlock your picks.
-              </p>
-            </div>
-            <Link
-              to="/pot"
-              className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
-            >
-              Pay $5 entry
-            </Link>
-          </section>
-        )
-      )}
+      <section className="field-panel rounded-2xl border border-primary/40 p-5">
+        <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
+        <p className="text-sm text-muted-foreground">
+          Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
+        </p>
+      </section>
+
 
       <ul className="space-y-3">
         {games.map((game) => {
@@ -392,15 +355,14 @@ function PicksPage() {
           disabled={locked || busy || !complete}
           onClick={submit}
         >
-          {!paid
-            ? "Pay your $5 entry to submit"
-            : deadlinePassed
-              ? "Picks locked"
-              : openGames.length === 0
-                ? "Every game has kicked off"
-                : complete
-                  ? "Submit picks"
-                  : "Complete every open game to submit"}
+          {deadlinePassed
+            ? "Picks locked"
+            : openGames.length === 0
+              ? "Every game has kicked off"
+              : complete
+                ? "Submit picks"
+                : "Complete every open game to submit"}
+
         </Button>
       </div>
     </div>

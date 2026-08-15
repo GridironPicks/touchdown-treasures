@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Wallet, Shirt, LogOut } from "lucide-react";
+import { ClipboardList, Trophy, Shirt, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
   { to: "/leaderboard", label: "Standings", icon: Trophy },
-  { to: "/pot", label: "Pot", icon: Wallet },
   { to: "/team", label: "Team", icon: Shirt },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
