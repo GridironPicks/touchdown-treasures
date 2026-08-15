@@ -210,6 +210,23 @@ function RecapPage() {
             </ul>
           </section>
 
+          {weekBadges.length > 0 && (
+            <section className="field-panel rounded-2xl p-5">
+              <h2 className="stadium-heading mb-3 text-lg">Awards this week</h2>
+              <ul className="space-y-2 text-sm">
+                {weekBadges.map((entry) => (
+                  <li key={entry.userId} className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">
+                      {data.rows.find((r) => r.user_id === entry.userId)?.team_name ?? "Manager"}
+                    </span>
+                    <BadgeRow rows={entry.rows} size="md" />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+
           {data.casualties.length > 0 && (
             <section className="field-panel rounded-2xl p-5">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-destructive">
