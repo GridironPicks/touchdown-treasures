@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
+import { supabase } from "@/integrations/supabase/client";
 import { listMyLeagues, type League } from "@/lib/leagues.functions";
+
 
 type LeagueContextValue = {
   leagues: League[];
@@ -22,8 +24,21 @@ export function LeagueProvider({ children }: { children: ReactNode }) {
 
   const { data: leagues = [], isLoading } = useQuery<League[]>({
     queryKey: ["my-leagues"],
-    queryFn: () => fetchLeagues(),
+    retry: false,
+    queryFn: async () => {
+      // No (or expired) session: the protected server fn would 401 and blank
+      // the app, so bail out quietly and let the auth gate handle redirects.
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return [];
+      try {
+        return await fetchLeagues();
+      } catch (error) {
+        console.error("[leagues]", error);
+        return [];
+      }
+    },
   });
+
 
   const [activeLeagueId, setActiveLeagueIdState] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
