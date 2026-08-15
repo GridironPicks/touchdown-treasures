@@ -20,6 +20,7 @@ import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
 import { Route as AuthenticatedRecapRouteImport } from './routes/_authenticated/recap'
+import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
 import { Route as AuthenticatedSurvivorRouteImport } from './routes/_authenticated/survivor'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedLeaguesIndexRouteImport } from './routes/_authenticated/leagues.index'
@@ -84,6 +85,11 @@ const AuthenticatedRecapRoute = AuthenticatedRecapRouteImport.update({
   path: '/recap',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedScoreboardRoute = AuthenticatedScoreboardRouteImport.update({
+  id: '/scoreboard',
+  path: '/scoreboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSurvivorRoute = AuthenticatedSurvivorRouteImport.update({
   id: '/survivor',
   path: '/survivor',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/picks': typeof AuthenticatedPicksRoute
   '/recap': typeof AuthenticatedRecapRoute
+  '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/picks': typeof AuthenticatedPicksRoute
   '/recap': typeof AuthenticatedRecapRoute
+  '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
   '/_authenticated/recap': typeof AuthenticatedRecapRoute
+  '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRoute
   '/_authenticated/survivor': typeof AuthenticatedSurvivorRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/manager/$userId': typeof AuthenticatedManagerUserIdRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/picks'
     | '/recap'
+    | '/scoreboard'
     | '/survivor'
     | '/team'
     | '/manager/$userId'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/picks'
     | '/recap'
+    | '/scoreboard'
     | '/survivor'
     | '/team'
     | '/manager/$userId'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/picks'
     | '/_authenticated/recap'
+    | '/_authenticated/scoreboard'
     | '/_authenticated/survivor'
     | '/_authenticated/team'
     | '/_authenticated/manager/$userId'
@@ -333,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scoreboard': {
+      id: '/_authenticated/scoreboard'
+      path: '/scoreboard'
+      fullPath: '/scoreboard'
+      preLoaderRoute: typeof AuthenticatedScoreboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/survivor': {
       id: '/_authenticated/survivor'
       path: '/survivor'
@@ -392,6 +411,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPicksRoute: typeof AuthenticatedPicksRoute
   AuthenticatedRecapRoute: typeof AuthenticatedRecapRoute
+  AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRoute
   AuthenticatedSurvivorRoute: typeof AuthenticatedSurvivorRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedManagerUserIdRoute: typeof AuthenticatedManagerUserIdRoute
@@ -405,6 +425,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPicksRoute: AuthenticatedPicksRoute,
   AuthenticatedRecapRoute: AuthenticatedRecapRoute,
+  AuthenticatedScoreboardRoute: AuthenticatedScoreboardRoute,
   AuthenticatedSurvivorRoute: AuthenticatedSurvivorRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedManagerUserIdRoute: AuthenticatedManagerUserIdRoute,

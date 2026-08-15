@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle } from "lucide-react";
+import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { InstallAppCard } from "@/components/InstallAppCard";
 
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
+  { to: "/scoreboard", label: "Scores", icon: Radio },
   { to: "/leaderboard", label: "Standings", icon: Trophy },
   { to: "/survivor", label: "Survivor", icon: ShieldCheck },
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
@@ -17,6 +18,7 @@ const NAV = [
   { to: "/notifications", label: "Alerts", icon: Bell },
   { to: "/account", label: "Account", icon: UserCircle },
 ] as const;
+
 
 
 
@@ -70,12 +72,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur sm:hidden">
-        <div className="grid grid-cols-4">
+        <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
+              className="flex w-[4.5rem] shrink-0 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
               activeProps={{ className: "text-primary" }}
             >
               <item.icon size={20} />
@@ -83,6 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </div>
+
       </nav>
     </div>
   );
