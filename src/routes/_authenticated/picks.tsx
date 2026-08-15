@@ -12,6 +12,7 @@ import {
   kickoffLabel,
   teamShort,
   tiebreakerGameOf,
+  weekDeadline,
   type Game,
   type SeasonType,
 } from "@/lib/league";
@@ -135,7 +136,7 @@ function PicksPage() {
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
   // Regular season locks at Wednesday 6:00 PM ET; preseason stays open per game.
-  const isRegular = slate?.season_type === "reg";
+  const isRegular = slate?.seasonType === "reg";
   const deadline = useMemo(
     () => (isRegular ? weekDeadline(games) : null),
     [isRegular, games],
