@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Trophy } from "lucide-react";
-
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
+import { SlatePicker } from "@/components/SlatePicker";
+import { SEASON } from "@/lib/league";
+import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
@@ -25,12 +27,46 @@ export const Route = createFileRoute("/_authenticated/leaderboard")({
   component: LeaderboardPage,
 });
 
+type Board = "reg" | "pre" | "week";
+
 function LeaderboardPage() {
-  const [board, setBoard] = useState<"reg" | "pre">("reg");
+  const [board, setBoard] = useState<Board>("reg");
+  const { data: slates = [] } = useSlates();
+  const fallback = useMemo(() => defaultSlate(slates), [slates]);
+  const [picked, setPicked] = useState<Slate | null>(null);
+  const slate = picked ?? fallback;
 
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["leaderboard", board],
+    queryKey: ["leaderboard", board, slate?.seasonType, slate?.week],
+    enabled: board !== "week" || !!slate,
     queryFn: async () => {
+      if (board === "week") {
+        const [scores, profiles] = await Promise.all([
+          supabase
+            .from("weekly_scores")
+            .select("*")
+            .eq("season", SEASON)
+            .eq("season_type", slate!.seasonType)
+            .eq("week", slate!.week),
+          supabase.from("profiles").select("*"),
+        ]);
+        if (scores.error) throw scores.error;
+        if (profiles.error) throw profiles.error;
+        return (scores.data ?? [])
+          .map((s) => {
+            const p = (profiles.data ?? []).find((x) => x.id === s.user_id);
+            return {
+              user_id: s.user_id,
+              display_name: p?.display_name ?? "Manager",
+              team_name: p?.team_name ?? "Unnamed Squad",
+              mascot: p?.mascot ?? "eagle",
+              primary_color: p?.primary_color ?? "#00E676",
+              season_points: s.points ?? 0,
+              weeks_played: null as number | null,
+            };
+          })
+          .sort((a, b) => (b.season_points ?? 0) - (a.season_points ?? 0));
+      }
       const { data, error } = await supabase
         .from(board === "pre" ? "preseason_leaderboard" : "leaderboard")
         .select("*")
@@ -47,12 +83,14 @@ function LeaderboardPage() {
         <p className="text-sm text-muted-foreground">
           {board === "pre"
             ? "2026 preseason · free-play practice points"
-            : "2026 season · cumulative confidence points"}
+            : board === "week"
+              ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+              : "2026 season · cumulative confidence points"}
         </p>
       </header>
 
       <div className="field-panel inline-flex rounded-xl p-1">
-        {(["reg", "pre"] as const).map((key) => (
+        {(["reg", "pre", "week"] as const).map((key) => (
           <button
             key={key}
             type="button"
@@ -63,18 +101,23 @@ function LeaderboardPage() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {key === "reg" ? "Regular season" : "Preseason"}
+            {key === "reg" ? "Regular season" : key === "pre" ? "Preseason" : "By week"}
           </button>
         ))}
       </div>
+
+      {board === "week" && (
+        <SlatePicker slates={slates} value={slate} onChange={setPicked} />
+      )}
 
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
         ) : rows.length === 0 ? (
-          <p className="p-6 text-sm text-muted-foreground">No managers yet.</p>
+          <p className="p-6 text-sm text-muted-foreground">
+            {board === "week" ? "No scored picks for this week yet." : "No managers yet."}
+          </p>
         ) : (
-
           <ul className="divide-y divide-border">
             {rows.map((row, i) => (
               <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">
@@ -84,7 +127,7 @@ function LeaderboardPage() {
                   <p className="truncate font-semibold">{row.team_name}</p>
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
-                {i === 0 && (row.season_points ?? 0) > 0 && (
+                {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
                   <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
                     <Trophy size={13} /> 2026
                   </span>
@@ -92,7 +135,7 @@ function LeaderboardPage() {
                 <div className="text-right">
                   <p className="stadium-heading text-xl text-primary">{row.season_points ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {row.weeks_played ?? 0} wks scored
+                    {board === "week" ? "pts" : `${row.weeks_played ?? 0} wks scored`}
                   </p>
                 </div>
               </li>
@@ -103,3 +146,4 @@ function LeaderboardPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame } from "lucide-react";
@@ -12,12 +12,22 @@ import {
   teamShort,
   weekDeadline,
   type Game,
+  type SeasonType,
 } from "@/lib/league";
-import { useCurrentSlate, slateLabel } from "@/lib/slate";
+import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
+import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+type PicksSearch = { type?: SeasonType; week?: number };
+
 export const Route = createFileRoute("/_authenticated/picks")({
+  validateSearch: (search: Record<string, unknown>): PicksSearch => {
+    const type = search["type"] === "pre" || search["type"] === "reg" ? search["type"] : undefined;
+    const weekRaw = Number(search["week"]);
+    const week = Number.isFinite(weekRaw) && weekRaw > 0 ? weekRaw : undefined;
+    return type && week ? { type, week } : {};
+  },
   head: () => ({
     meta: [
       { title: "Weekly Picks — Gridiron Confidence" },
@@ -40,6 +50,8 @@ type Selection = { team: string; confidence: number | null };
 
 function PicksPage() {
   const queryClient = useQueryClient();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [tiebreaker, setTiebreaker] = useState("");
   const [now, setNow] = useState(() => Date.now());
@@ -50,9 +62,16 @@ function PicksPage() {
     return () => clearInterval(t);
   }, []);
 
-  const { data: slate } = useCurrentSlate();
+  const { data: slates = [] } = useSlates();
+  const fallback = useMemo(() => defaultSlate(slates), [slates]);
+  const slate: Slate | null =
+    search.type && search.week ? { seasonType: search.type, week: search.week } : fallback;
   const seasonType = slate?.seasonType ?? "reg";
   const week = slate?.week ?? 1;
+
+  const selectSlate = (next: Slate) =>
+    navigate({ search: { type: next.seasonType, week: next.week } });
+
   
 
   const { data: games = [] } = useQuery({
@@ -215,9 +234,17 @@ function PicksPage() {
   }
 
   const heading = slate ? `${slateLabel(slate)} Picks` : "Picks";
+  const allFinal = games.length > 0 && games.every((g) => g.status === "final");
+  const status: "open" | "in-progress" | "final" = allFinal
+    ? "final"
+    : deadlinePassed
+      ? "in-progress"
+      : "open";
 
   return (
     <div className="space-y-5">
+      <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
+
       <header className="field-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -229,26 +256,42 @@ function PicksPage() {
           </div>
           <div className="text-right">
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
-              {deadlinePassed ? <Lock size={13} /> : <Timer size={13} />}
-              {deadlinePassed ? "Picks locked" : "Locks Wed 6:00 PM ET"}
+              {status === "open" ? <Timer size={13} /> : <Lock size={13} />}
+              {status === "open"
+                ? "Locks Wed 6:00 PM ET"
+                : status === "in-progress"
+                  ? "Locked — games in progress"
+                  : "Final"}
             </p>
-            <p
-              className={`stadium-heading text-2xl tabular-nums ${
-                deadlinePassed ? "text-destructive" : "text-primary"
-              }`}
-            >
-              {formatCountdown(msLeft)}
-            </p>
+            {status === "open" ? (
+              <p className="stadium-heading text-2xl tabular-nums text-primary">
+                {formatCountdown(msLeft)}
+              </p>
+            ) : (
+              <p className="stadium-heading text-2xl text-muted-foreground">
+                {status === "final" ? "Week complete" : "LOCKED"}
+              </p>
+            )}
           </div>
         </div>
       </header>
 
-      <section className="field-panel rounded-2xl border border-primary/40 p-5">
-        <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
-        <p className="text-sm text-muted-foreground">
-          Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
-        </p>
-      </section>
+      {status === "open" ? (
+        <section className="field-panel rounded-2xl border border-primary/40 p-5">
+          <h2 className="stadium-heading text-lg text-primary">Free to play</h2>
+          <p className="text-sm text-muted-foreground">
+            Every week is free — no buy-in, no entry fee. Just beat the Wednesday 6PM lock.
+          </p>
+        </section>
+      ) : (
+        <section className="field-panel rounded-2xl border border-border p-5">
+          <h2 className="stadium-heading text-lg">Read only</h2>
+          <p className="text-sm text-muted-foreground">
+            This week is locked. Your submitted picks are shown below with live scores.
+          </p>
+        </section>
+      )}
+
 
 
       <ul className="space-y-3">
@@ -348,23 +391,23 @@ function PicksPage() {
         />
       </section>
 
-      <div className="sticky bottom-20 sm:bottom-4">
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={locked || busy || !complete}
-          onClick={submit}
-        >
-          {deadlinePassed
-            ? "Picks locked"
-            : openGames.length === 0
+      {!locked && (
+        <div className="sticky bottom-20 sm:bottom-4">
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={busy || !complete}
+            onClick={submit}
+          >
+            {openGames.length === 0
               ? "Every game has kicked off"
               : complete
                 ? "Submit picks"
                 : "Complete every open game to submit"}
+          </Button>
+        </div>
+      )}
 
-        </Button>
-      </div>
     </div>
   );
 }
