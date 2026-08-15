@@ -117,6 +117,19 @@ function PicksPage() {
     },
   });
 
+  // Live win probability straight from the provider, polled while games run.
+  const fetchWinProb = useServerFn(getWinProbabilities);
+  const anyLive = games.some((g) => g.status === "in_progress");
+  const { data: winProbs = [] } = useQuery({
+    queryKey: ["winprob", seasonType, week],
+    enabled: !!slate && anyLive,
+    queryFn: async () => await fetchWinProb({ data: { seasonType, week } }),
+    refetchInterval: anyLive ? 30_000 : false,
+    refetchOnWindowFocus: true,
+  });
+  const winProbFor = (game: Game) =>
+    winProbs.find((w) => w.external_id === game.external_id) ?? null;
+
   const { data: existing } = useQuery({
     queryKey: ["my-picks", seasonType, week],
     enabled: !!slate,
