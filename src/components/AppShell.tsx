@@ -4,6 +4,7 @@ import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut } from
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { LeagueSwitcher } from "@/components/LeagueSwitcher";
 
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
