@@ -16,16 +16,44 @@ const leagueIdSchema = z.object({
   leagueId: z.string().uuid(),
 });
 
+export type LeagueSettings = Record<string, string | number | boolean | null>;
+
 export type League = {
   id: string;
   name: string;
   owner_id: string;
   join_code: string;
-  settings: Record<string, unknown>;
+  settings: LeagueSettings;
   is_global_pool: boolean;
   role: "owner" | "member";
   created_at: string;
 };
+
+function toSettings(value: unknown): LeagueSettings {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  const out: LeagueSettings = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean" || v === null) {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
+function toLeague(row: any): League | null {
+  const l = row?.leagues ?? row;
+  if (!l) return null;
+  return {
+    id: l.id,
+    name: l.name,
+    owner_id: l.owner_id,
+    join_code: l.join_code,
+    settings: toSettings(l.settings),
+    is_global_pool: l.is_global_pool,
+    role: row.role as "owner" | "member",
+    created_at: l.created_at,
+  };
+}
 
 export const listMyLeagues = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -37,24 +65,7 @@ export const listMyLeagues = createServerFn({ method: "GET" })
       .order("created_at", { referencedTable: "leagues", ascending: true });
     if (error) throw error;
 
-    const leagues: League[] = (data ?? [])
-      .map((m: any) => {
-        const l = m.leagues;
-        if (!l) return null;
-        return {
-          id: l.id,
-          name: l.name,
-          owner_id: l.owner_id,
-          join_code: l.join_code,
-          settings: (l.settings as Record<string, unknown>) ?? {},
-          is_global_pool: l.is_global_pool,
-          role: m.role as "owner" | "member",
-          created_at: l.created_at,
-        };
-      })
-      .filter(Boolean) as League[];
-
-    return leagues;
+    return ((data ?? []).map(toLeague).filter(Boolean) as League[]);
   });
 
 export const createLeague = createServerFn({ method: "POST" })
@@ -117,16 +128,7 @@ export const getLeague = createServerFn({ method: "GET" })
     if (membershipError) throw membershipError;
     if (!membership) throw new Error("League not found or you're not a member");
 
-    const l = (membership as any).leagues;
-    const league: League = {
-      id: l.id,
-      name: l.name,
-      owner_id: l.owner_id,
-      join_code: l.join_code,
-      settings: (l.settings as Record<string, unknown>) ?? {},
-      is_global_pool: l.is_global_pool,
-      role: membership.role as "owner" | "member",
-      created_at: l.created_at,
-    };
+    const league = toLeague(membership);
+    if (!league) throw new Error("League not found");
     return league;
   });

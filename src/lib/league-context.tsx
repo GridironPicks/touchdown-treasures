@@ -20,7 +20,7 @@ export function LeagueProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const fetchLeagues = useServerFn(listMyLeagues);
 
-  const { data: leagues = [], isLoading } = useQuery({
+  const { data: leagues = [], isLoading } = useQuery<League[]>({
     queryKey: ["my-leagues"],
     queryFn: () => fetchLeagues(),
   });
