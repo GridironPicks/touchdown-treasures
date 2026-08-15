@@ -233,6 +233,9 @@ function LeaderboardPage() {
           </ul>
         )}
       </section>
+
+      {activeLeague && <HeadToHead leagueId={activeLeague.id} seasonType={streakType} />}
+
     </div>
   );
 }
