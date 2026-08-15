@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame } from "lucide-react";
@@ -12,12 +12,22 @@ import {
   teamShort,
   weekDeadline,
   type Game,
+  type SeasonType,
 } from "@/lib/league";
-import { useCurrentSlate, slateLabel } from "@/lib/slate";
+import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
+import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+type PicksSearch = { type?: SeasonType; week?: number };
+
 export const Route = createFileRoute("/_authenticated/picks")({
+  validateSearch: (search: Record<string, unknown>): PicksSearch => {
+    const type = search["type"] === "pre" || search["type"] === "reg" ? search["type"] : undefined;
+    const weekRaw = Number(search["week"]);
+    const week = Number.isFinite(weekRaw) && weekRaw > 0 ? weekRaw : undefined;
+    return type && week ? { type, week } : {};
+  },
   head: () => ({
     meta: [
       { title: "Weekly Picks — Gridiron Confidence" },
@@ -40,6 +50,8 @@ type Selection = { team: string; confidence: number | null };
 
 function PicksPage() {
   const queryClient = useQueryClient();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [tiebreaker, setTiebreaker] = useState("");
   const [now, setNow] = useState(() => Date.now());
@@ -50,9 +62,16 @@ function PicksPage() {
     return () => clearInterval(t);
   }, []);
 
-  const { data: slate } = useCurrentSlate();
+  const { data: slates = [] } = useSlates();
+  const fallback = useMemo(() => defaultSlate(slates), [slates]);
+  const slate: Slate | null =
+    search.type && search.week ? { seasonType: search.type, week: search.week } : fallback;
   const seasonType = slate?.seasonType ?? "reg";
   const week = slate?.week ?? 1;
+
+  const selectSlate = (next: Slate) =>
+    navigate({ search: { type: next.seasonType, week: next.week } });
+
   
 
   const { data: games = [] } = useQuery({
