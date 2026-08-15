@@ -37,7 +37,7 @@ async function deliver(sub: SubscriptionRow, payload: PushMessagePayload): Promi
     vapid(),
   );
 
-  const res = await fetch(sub.endpoint, request);
+  const res = await fetch(sub.endpoint, request as unknown as RequestInit);
 
   if (res.status === 404 || res.status === 410) {
     // Subscription is dead — drop it so we stop trying.
