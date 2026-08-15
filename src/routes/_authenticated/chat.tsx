@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { MessageReactions, type Reaction } from "@/components/MessageReactions";
+import { useLeague } from "@/lib/league-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
