@@ -8,6 +8,9 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 - **Preseason weeks** — labelled "Preseason Week 1-4" in the app. Picks, confidence ranking, Monday-night style tiebreaker, and the Wednesday 6:00 PM lock all work exactly as they do now. No payment gate, no pot, no payout. Results still score and show on a separate "Preseason" standings view so people can practice.
 - **Regular season Week 1 onward** — the current behavior returns: $5 entry required before picks can be submitted, pot total, weekly winner, payout, and the season leaderboard that drives the 2026 championship trophy.
 - **Season leaderboard** only counts regular-season weeks. Preseason results are practice-only and marked as such.
+- **Games already played before the league existed** — any game whose kickoff has passed (or that is in progress/final) is never pickable. It renders as a read-only result row showing the final score with the winner highlighted and the loser dimmed, marked "Result — no picks". If an entire week is already in the past, that week shows as a results-only recap with no submit button and no tiebreaker input.
+- **Partially started weeks** — if some games in the current week have kicked off but others have not, only the remaining games are pickable. Confidence numbers are sized to the count of still-open games, so the ranking stays valid.
+
 
 ## Current state confirmed
 
@@ -22,7 +25,7 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 - Update the unique constraints and keys that currently use `(user_id, season, week)` to include `season_type` — picks, tiebreakers, and entries — so preseason Week 1 and regular Week 1 are distinct.
 - Update the paid-entry enforcement so it only applies when `season_type = 'reg'`; preseason picks insert freely.
 - Update `leaderboard`, `weekly_scores`, and `weekly_results` views to filter to `season_type = 'reg'`, and add a preseason-only standings view.
-- Keep the Wednesday 6:00 PM ET lock trigger applying to both.
+- Keep the Wednesday 6:00 PM ET lock trigger applying to both, and extend the pick-lock trigger so any individual pick is rejected once that game's kickoff has passed — this makes "no picks on already-played games" enforced server-side, not just hidden in the UI.
 
 **NFL data sync**
 - Extend the sync to fetch preseason weeks using the provider's preseason season type, tagging those rows `season_type = 'pre'`.
@@ -30,8 +33,11 @@ Let managers play the full confidence pick 'em game during NFL preseason for fre
 
 **App changes**
 - `picks.tsx`: resolve current `season_type`/`week` from the database instead of a fixed week constant. When preseason, hide the entry-fee banner, skip the paid check, and show a "Preseason — free practice week, no entry fee" badge. Submit button reads "Submit preseason picks".
+- `picks.tsx` game list: split games into "open" (kickoff in the future, status scheduled) and "already played" (kicked off, in progress, or final). Open games get the confidence selector; played games render as a locked result card with the score, a winner highlight, and no selector. Confidence values are generated from the open-game count only.
+- Tiebreaker input is hidden when the designated tiebreaker game has already kicked off.
 - `pot.tsx`: during preseason, show a message that the pot opens in regular-season Week 1 rather than a checkout button.
 - `leaderboard.tsx`: default to the regular-season standings, with a preseason tab while preseason is active.
+
 
 **Not changed**
 - Stripe product/price, webhook, receipt email, and the $5 amount all stay as-is; they simply are not invoked during preseason.
