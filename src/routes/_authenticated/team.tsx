@@ -9,6 +9,8 @@ import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NFL_BADGES } from "@/lib/teams";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({
@@ -123,24 +125,61 @@ function TeamPage() {
         </div>
 
         <div className="space-y-3">
-          <Label>Mascot badge</Label>
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
-            {MASCOTS.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setMascot(m.id)}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[11px] transition-colors ${
-                  mascot === m.id
-                    ? "glow-ring border-primary text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/50"
-                }`}
-              >
-                <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <Label>Team badge</Label>
+          <Tabs defaultValue={mascot.startsWith("nfl:") ? "nfl" : "mascots"}>
+            <TabsList className="w-full">
+              <TabsTrigger className="flex-1" value="mascots">
+                Mascots
+              </TabsTrigger>
+              <TabsTrigger className="flex-1" value="nfl">
+                NFL Teams
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="mascots" className="mt-3">
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
+                {MASCOTS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMascot(m.id)}
+                    className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[11px] transition-colors ${
+                      mascot === m.id
+                        ? "glow-ring border-primary text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="nfl" className="mt-3">
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
+                {NFL_BADGES.map((t) => {
+                  const id = `nfl:${t.abbr}`;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setMascot(id)}
+                      title={t.name}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[10px] transition-colors ${
+                        mascot === id
+                          ? "glow-ring border-primary text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      <Mascot mascot={id} color={mascot === id ? color : null} size="sm" />
+                      <span className="w-full truncate text-center">{t.short}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div className="space-y-3">
