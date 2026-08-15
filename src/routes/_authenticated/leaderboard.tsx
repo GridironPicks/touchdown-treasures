@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { SlatePicker } from "@/components/SlatePicker";
 import { SEASON } from "@/lib/league";
+import { useLeague } from "@/lib/league-context";
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
