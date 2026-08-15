@@ -350,10 +350,12 @@ function PicksPage() {
         </section>
       )}
 
-
-
-
-
+      <HowToPlay
+        seasonType={seasonType}
+        maxPoints={maxPoints}
+        opensAt={opensAt}
+        deadline={deadline}
+      />
 
       <ul className="space-y-3">
         {games.map((game) => {
