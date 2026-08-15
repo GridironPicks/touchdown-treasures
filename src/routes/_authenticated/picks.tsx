@@ -25,6 +25,7 @@ import {
 import { TeamLogo } from "@/components/TeamLogo";
 import { HowToPlay } from "@/components/HowToPlay";
 import { RosterStatus } from "@/components/RosterStatus";
+import { useLeague } from "@/lib/league-context";
 
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
