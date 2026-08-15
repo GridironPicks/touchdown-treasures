@@ -133,7 +133,7 @@ export function tiebreakerGameOf(games: Game[]): Game | undefined {
 }
 
 export function isMondayNight(iso: string): boolean {
-  return new Date(iso).getDay() === 1;
+  return etCalendar(new Date(iso)).weekdayIndex === 1;
 }
 
 export function teamShort(name: string): string {
