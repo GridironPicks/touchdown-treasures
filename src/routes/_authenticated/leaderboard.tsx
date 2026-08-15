@@ -103,11 +103,14 @@ function LeaderboardPage() {
 
   const streakType = board === "pre" ? "pre" : "reg";
   const { data: streaks = {} } = useQuery({
-    queryKey: ["streaks", streakType],
+    queryKey: ["streaks", activeLeague?.id, streakType],
+    enabled: !!activeLeague,
     queryFn: async () => {
+      if (!activeLeague) return {};
       const { data, error } = await supabase
         .from("weekly_scores")
         .select("user_id, week, points")
+        .eq("league_id", activeLeague.id)
         .eq("season", SEASON)
         .eq("season_type", streakType);
       if (error) throw error;
