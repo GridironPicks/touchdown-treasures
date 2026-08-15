@@ -88,37 +88,37 @@ async function resultAlerts(slates: Slate[]) {
     const last = Math.max(...slate.games.map((g) => new Date(g.kickoff).getTime()));
     if (Date.now() - last > 5 * 86400000) continue;
 
-    const { data: scores } = await supabaseAdmin
-      .from("weekly_scores")
-      .select("user_id, league_id, points")
-      .eq("season", SEASON)
-      .eq("season_type", slate.seasonType)
-      .eq("week", slate.week);
-    if (!scores || scores.length === 0) continue;
-
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, team_name");
-    const teamName = new Map((profiles ?? []).map((p) => [p.id, p.team_name]));
     const weekLabel =
       slate.seasonType === "pre" ? `Preseason Week ${slate.week}` : `Week ${slate.week}`;
 
     for (const [leagueId, league] of leagues) {
-      const rows = scores
-        .filter((s) => s.league_id === leagueId && s.user_id && s.points !== null)
-        .sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
-      if (rows.length === 0) continue;
+      // Same tiebroken order the recap and standings use.
+      const { data: rows } = await supabaseAdmin.rpc("week_recap", {
+        _season: SEASON,
+        _season_type: slate.seasonType,
+        _week: slate.week,
+        _league_id: leagueId,
+      });
+      if (!rows || rows.length === 0) continue;
 
       const winner = rows[0]!;
-      const winnerName = teamName.get(winner.user_id as string) ?? "A rival";
+      const winnerName = winner.team_name ?? "A rival";
+      const tiebroken = winner.decided_by && winner.decided_by !== "points";
 
-      for (const [index, row] of rows.entries()) {
-        const isWinner = index === 0;
+      for (const row of rows) {
+        const isWinner = row.place === 1;
         const body = isWinner
-          ? `You won ${weekLabel} in ${league.name} with ${winner.points} points.`
-          : `${winnerName} won ${weekLabel} in ${league.name}. You finished #${index + 1} with ${row.points} points.`;
+          ? `You won ${weekLabel} in ${league.name} with ${winner.points} points${tiebroken ? " on the tiebreaker" : ""}.`
+          : `${winnerName} won ${weekLabel} in ${league.name}. You finished #${row.place} with ${row.points} points.`;
         sent += await sendToUsers(
           [row.user_id as string],
           "results",
-          { title: `${weekLabel} results`, body, url: "/leaderboard", tag: `results-${slate.week}` },
+          {
+            title: `${weekLabel} results`,
+            body,
+            url: `/recap?st=${slate.seasonType}&wk=${slate.week}`,
+            tag: `results-${slate.week}`,
+          },
           `results-${leagueId}-${slate.seasonType}-${slate.week}`,
         );
       }
