@@ -74,6 +74,11 @@ function LeaderboardPage() {
       if (error) throw error;
       return data ?? [];
     },
+    refetchInterval: () => {
+      const info = slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week);
+      const live = info ? info.anyStarted && !info.allFinal : false;
+      return live ? 60_000 : false;
+    },
   });
 
   const streakType = board === "pre" ? "pre" : "reg";
@@ -108,6 +113,11 @@ function LeaderboardPage() {
         }
       }
       return result;
+    },
+    refetchInterval: () => {
+      const info = slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week);
+      const live = info ? info.anyStarted && !info.allFinal : false;
+      return live ? 60_000 : false;
     },
   });
 
