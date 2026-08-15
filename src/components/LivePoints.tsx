@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useMemo } from "react";
 import { ArrowDown, ArrowUp, Minus, Radio } from "lucide-react";
 
 import { Mascot } from "@/components/Mascot";
-import { getLiveStandings, type LiveRow } from "@/lib/awards.functions";
+import { getLiveStandings, getOpenPicks, type LiveRow } from "@/lib/awards.functions";
+import { getWinProbabilities } from "@/lib/winprob.functions";
+import { winOdds } from "@/lib/win-odds";
 import type { SeasonType } from "@/lib/league";
 
 type Props = {
@@ -16,6 +19,8 @@ type Props = {
 /** Banked vs live vs best-case points for the selected week, refreshed while games run. */
 export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
   const fetchLive = useServerFn(getLiveStandings);
+  const fetchOpen = useServerFn(getOpenPicks);
+  const fetchProbs = useServerFn(getWinProbabilities);
 
   const { data: rows = [] } = useQuery<LiveRow[]>({
     queryKey: ["live-standings", leagueId, seasonType, week],
@@ -26,6 +31,29 @@ export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
     queryFn: () => fetchLive({ data: { leagueId, seasonType, week } }),
   });
 
+  const { data: openPicks = [] } = useQuery({
+    queryKey: ["open-picks", leagueId, seasonType, week],
+    enabled: !!leagueId,
+    staleTime: 0,
+    refetchInterval: 60_000,
+    queryFn: () => fetchOpen({ data: { leagueId, seasonType, week } }),
+  });
+
+  const { data: probs = [] } = useQuery({
+    queryKey: ["win-probs", seasonType, week],
+    staleTime: 0,
+    refetchInterval: 60_000,
+    queryFn: () => fetchProbs({ data: { seasonType, week } }),
+  });
+
+  const odds = useMemo(() => {
+    const banked: Record<string, number> = {};
+    for (const r of rows) banked[r.user_id] = r.banked;
+    const homePct: Record<string, number> = {};
+    for (const p of probs) homePct[p.external_id] = p.homePct;
+    return winOdds(banked, openPicks, homePct);
+  }, [rows, openPicks, probs]);
+
   if (rows.length === 0) return null;
 
   const inProgress = rows.some((r) => r.remaining > 0);
@@ -35,6 +63,9 @@ export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
   const leaderBanked = bankedOrder[0]?.banked ?? 0;
   const bestMaxOfOthers = (uid: string) =>
     Math.max(0, ...rows.filter((r) => r.user_id !== uid).map((r) => r.max_possible));
+  const fmtOdds = (v: number) =>
+    v >= 99.5 ? "99+%" : v > 0 && v < 1 ? "<1%" : `${Math.round(v)}%`;
+
 
   return (
     <section className="field-panel overflow-hidden rounded-2xl">
