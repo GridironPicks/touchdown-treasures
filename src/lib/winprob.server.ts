@@ -38,7 +38,7 @@ export async function fetchWinProbabilities(
           lastPlay?: {
             probability?: { homeWinPercentage?: number; awayWinPercentage?: number };
           };
-ȧ        };
+};
       }>;
     }>;
   };
