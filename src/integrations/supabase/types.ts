@@ -62,6 +62,27 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       picks: {
         Row: {
           confidence: number
@@ -230,6 +251,14 @@ export type Database = {
           _week: number
         }
         Returns: string
+      }
+      picks_revealed: {
+        Args: {
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: boolean
       }
       week_submission_status: {
         Args: {
