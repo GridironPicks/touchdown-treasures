@@ -391,23 +391,23 @@ function PicksPage() {
         />
       </section>
 
-      <div className="sticky bottom-20 sm:bottom-4">
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={locked || busy || !complete}
-          onClick={submit}
-        >
-          {deadlinePassed
-            ? "Picks locked"
-            : openGames.length === 0
+      {!locked && (
+        <div className="sticky bottom-20 sm:bottom-4">
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={busy || !complete}
+            onClick={submit}
+          >
+            {openGames.length === 0
               ? "Every game has kicked off"
               : complete
                 ? "Submit picks"
                 : "Complete every open game to submit"}
+          </Button>
+        </div>
+      )}
 
-        </Button>
-      </div>
     </div>
   );
 }
