@@ -102,6 +102,7 @@ function groupBoard(rows: BoardRow[]): Manager[] {
 
 function SurvivorPage() {
   const queryClient = useQueryClient();
+  const { activeLeague } = useLeague();
   const [busy, setBusy] = useState(false);
   const now = Date.now();
 
