@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { refreshSlateScores } from "@/lib/scores.functions";
 import { useMemo, useState } from "react";
-import { Flame, Trophy } from "lucide-react";
+import { Flame, ScrollText, Trophy } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
