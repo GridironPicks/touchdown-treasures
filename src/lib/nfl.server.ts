@@ -1,10 +1,12 @@
 // Server-only NFL data sync. Provider: ESPN public NFL scoreboard feed.
 // Swapping providers only requires changing `fetchProviderWeek`.
 import type { Database } from "@/integrations/supabase/types";
+import type { SeasonType } from "@/lib/league";
 
 export type ProviderGame = {
   external_id: string;
   season: number;
+  season_type: SeasonType;
   week: number;
   kickoff: string;
   away_team: string;
@@ -23,8 +25,13 @@ function mapStatus(state: string, completed: boolean): ProviderGame["status"] {
   return "scheduled";
 }
 
-export async function fetchProviderWeek(season: number, week: number): Promise<ProviderGame[]> {
-  const url = `${ESPN_SCOREBOARD}?dates=${season}&seasontype=2&week=${week}`;
+export async function fetchProviderWeek(
+  season: number,
+  week: number,
+  seasonType: SeasonType = "reg",
+): Promise<ProviderGame[]> {
+  const espnSeasonType = seasonType === "pre" ? 1 : 2;
+  const url = `${ESPN_SCOREBOARD}?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
   const res = await fetch(url, { headers: { accept: "application/json" } });
   if (!res.ok) throw new Error(`NFL provider responded ${res.status}`);
 
@@ -58,6 +65,7 @@ export async function fetchProviderWeek(season: number, week: number): Promise<P
     games.push({
       external_id: `espn:${event.id}`,
       season,
+      season_type: seasonType,
       week,
       kickoff: new Date(event.date).toISOString(),
       away_team: away.team.displayName,
@@ -79,10 +87,11 @@ type GameInsert = Database["public"]["Tables"]["games"]["Insert"];
  * kickoff of the week as the Monday-night tiebreaker game, and removes stale
  * rows (seeded placeholders or games the provider rescheduled away).
  */
-export async function syncWeek(season: number, week: number) {
+export async function syncWeek(season: number, week: number, seasonType: SeasonType = "reg") {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const games = await fetchProviderWeek(season, week);
-  if (games.length === 0) return { season, week, synced: 0, removed: 0 };
+  const games = await fetchProviderWeek(season, week, seasonType);
+  if (games.length === 0)
+    return { season, season_type: seasonType, week, synced: 0, removed: 0 };
 
   const rows: GameInsert[] = games.map((g, i) => ({
     ...g,
@@ -99,6 +108,7 @@ export async function syncWeek(season: number, week: number) {
     .from("games")
     .select("id, external_id")
     .eq("season", season)
+    .eq("season_type", seasonType)
     .eq("week", week);
   if (staleError) throw new Error(staleError.message);
 
@@ -111,12 +121,25 @@ export async function syncWeek(season: number, week: number) {
     if (delError) throw new Error(delError.message);
   }
 
-  return { season, week, synced: rows.length, removed: staleIds.length };
+  return { season, season_type: seasonType, week, synced: rows.length, removed: staleIds.length };
 }
 
-/** Current week per the database helper, falling back to week 1. */
-export async function resolveCurrentWeek(season: number): Promise<number> {
+export type Slate = { seasonType: SeasonType; week: number };
+
+/** Active slate per the database helper, falling back to preseason week 1. */
+export async function resolveCurrentSlate(season: number): Promise<Slate> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.rpc("current_week", { _season: season });
-  return typeof data === "number" && data > 0 ? data : 1;
+  const { data } = await supabaseAdmin.rpc("current_slate", { _season: season });
+  const row = Array.isArray(data) ? data[0] : null;
+  if (row) return { seasonType: row.season_type, week: row.week };
+  return { seasonType: "pre", week: 1 };
 }
+
+/** Preseason runs Hall of Fame week + weeks 1-3; regular season runs 1-18. */
+export function nextSlate(slate: Slate): Slate {
+  const maxWeek = slate.seasonType === "pre" ? 4 : 18;
+  if (slate.week < maxWeek) return { seasonType: slate.seasonType, week: slate.week + 1 };
+  if (slate.seasonType === "pre") return { seasonType: "reg", week: 1 };
+  return slate;
+}
+
