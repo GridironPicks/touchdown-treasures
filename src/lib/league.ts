@@ -128,9 +128,10 @@ export function formatCountdown(ms: number): string {
   return `${d}d ${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-/** Kickoff in the viewer's own timezone, e.g. "Sat, Aug 15 · 5:00 PM PDT". */
+/** Kickoff in Central Time, e.g. "Sat, Aug 15 · 7:00 PM CDT". */
 export function kickoffLabel(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
     weekday: "short",
     month: "short",
     day: "numeric",
