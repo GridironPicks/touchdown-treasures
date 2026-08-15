@@ -503,6 +503,19 @@ function PicksPage() {
                   ))}
                 </select>
               </div>
+              {(() => {
+                const wp = winProbFor(game);
+                if (!wp || isFinal) return null;
+                return (
+                  <WinProbability
+                    awayTeam={game.away_team}
+                    homeTeam={game.home_team}
+                    awayPct={wp.awayPct}
+                    homePct={wp.homePct}
+                    live={wp.live}
+                  />
+                );
+              })()}
             </li>
           );
         })}
