@@ -136,16 +136,26 @@ function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="stadium-heading text-3xl">Season Standings</h1>
-        <p className="text-sm text-muted-foreground">
-          {board === "pre"
-            ? "2026 preseason · free-play practice points"
-            : board === "week"
-              ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
-              : "2026 season · cumulative confidence points"}
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="stadium-heading text-3xl">Season Standings</h1>
+          <p className="text-sm text-muted-foreground">
+            {board === "pre"
+              ? "2026 preseason · free-play practice points"
+              : board === "week"
+                ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+                : "2026 season · cumulative confidence points"}
+          </p>
+        </div>
+        <Link
+          to="/recap"
+          search={slate ? { st: slate.seasonType, wk: slate.week } : {}}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ScrollText size={15} className="text-primary" /> Weekly recap
+        </Link>
       </header>
+
 
       <div className="field-panel inline-flex rounded-xl p-1">
         {(["reg", "pre", "week"] as const).map((key) => (
