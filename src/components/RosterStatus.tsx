@@ -56,7 +56,7 @@ export function RosterStatus({
             key={r.user_id}
             className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2"
           >
-            <Mascot name={r.mascot} color={r.primary_color} className="h-8 w-8 shrink-0" />
+            <Mascot mascot={r.mascot} color={r.primary_color} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{r.team_name}</p>
               <p className="truncate text-xs text-muted-foreground">{r.display_name}</p>
