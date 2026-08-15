@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
 import { SEASON, teamShort, type Game, type SeasonType } from "@/lib/league";
+import { useLeague } from "@/lib/league-context";
 import { slateLabel } from "@/lib/slate";
 
 type ManagerSearch = { type?: SeasonType; week?: number };
@@ -39,6 +40,7 @@ function ManagerPage() {
   const search = Route.useSearch();
   const seasonType: SeasonType = search.type ?? "reg";
   const week = search.week ?? 1;
+  const { activeLeague } = useLeague();
 
   const { data: profile } = useQuery({
     queryKey: ["profile", userId],
@@ -50,13 +52,16 @@ function ManagerPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["manager-picks", userId, seasonType, week],
+    queryKey: ["manager-picks", activeLeague?.id, userId, seasonType, week],
+    enabled: !!activeLeague,
     queryFn: async () => {
+      if (!activeLeague) return { picks: [], games: [], tiebreaker: null, revealed: false };
       const [picks, games, tb, revealed] = await Promise.all([
         supabase
           .from("picks")
           .select("*")
           .eq("user_id", userId)
+          .eq("league_id", activeLeague.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week),
@@ -71,6 +76,7 @@ function ManagerPage() {
           .from("tiebreakers")
           .select("*")
           .eq("user_id", userId)
+          .eq("league_id", activeLeague.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week)
@@ -79,6 +85,7 @@ function ManagerPage() {
           _season: SEASON,
           _season_type: seasonType,
           _week: week,
+          _league_id: activeLeague.id,
         }),
       ]);
       if (games.error) throw games.error;

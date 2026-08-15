@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { MessageReactions, type Reaction } from "@/components/MessageReactions";
+import { useLeague } from "@/lib/league-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -49,6 +50,7 @@ function timeLabel(iso: string) {
 
 function ChatPage() {
   const queryClient = useQueryClient();
+  const { activeLeague, isLoading: leaguesLoading } = useLeague();
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +58,7 @@ function ChatPage() {
     queryKey: ["me-id"],
     queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
   });
+
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles"],
@@ -67,11 +70,13 @@ function ChatPage() {
   });
 
   const { data: messages = [] } = useQuery({
-    queryKey: ["messages"],
+    queryKey: ["messages", activeLeague?.id],
+    enabled: !!activeLeague,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("messages")
         .select("*")
+        .eq("league_id", activeLeague!.id)
         .order("created_at", { ascending: true })
         .limit(300);
       if (error) throw error;
@@ -80,9 +85,16 @@ function ChatPage() {
   });
 
   const { data: reactions = [] } = useQuery({
-    queryKey: ["message-reactions"],
+    queryKey: ["message-reactions", activeLeague?.id],
+    enabled: !!activeLeague,
     queryFn: async () => {
-      const { data, error } = await supabase.from("message_reactions").select("*");
+      const { data, error } = await supabase
+        .from("message_reactions")
+        .select("*")
+        .in(
+          "message_id",
+          messages.map((m) => m.id),
+        );
       if (error) throw error;
       return (data ?? []) as Reaction[];
     },
@@ -90,19 +102,24 @@ function ChatPage() {
 
   // Live chat: push new/removed messages straight into the cache.
   useEffect(() => {
+    if (!activeLeague) return;
     const channel = supabase
-      .channel("league-chat")
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["messages"] });
-      })
+      .channel(`league-chat-${activeLeague.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `league_id=eq.${activeLeague.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["messages", activeLeague.id] });
+        },
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["message-reactions"] });
+        queryClient.invalidateQueries({ queryKey: ["message-reactions", activeLeague.id] });
       })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, activeLeague?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,12 +129,15 @@ function ChatPage() {
     mutationFn: async (body: string) => {
       const uid = (await supabase.auth.getUser()).data.user?.id;
       if (!uid) throw new Error("You must be signed in");
-      const { error } = await supabase.from("messages").insert({ user_id: uid, body });
+      if (!activeLeague) throw new Error("No league selected");
+      const { error } = await supabase
+        .from("messages")
+        .insert({ user_id: uid, league_id: activeLeague.id, body });
       if (error) throw error;
     },
     onSuccess: () => {
       setDraft("");
-      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      queryClient.invalidateQueries({ queryKey: ["messages", activeLeague?.id] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Could not send"),
   });
@@ -130,7 +150,16 @@ function ChatPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages"] }),
   });
 
+  if (leaguesLoading || !activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-4">
       <header>
         <h1 className="stadium-heading flex items-center gap-2 text-3xl">

@@ -17,6 +17,7 @@ import {
   weekOpensAt,
   type Game,
 } from "@/lib/league";
+import { useLeague } from "@/lib/league-context";
 import { useSlates } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/survivor")({
@@ -101,6 +102,7 @@ function groupBoard(rows: BoardRow[]): Manager[] {
 
 function SurvivorPage() {
   const queryClient = useQueryClient();
+  const { activeLeague } = useLeague();
   const [busy, setBusy] = useState(false);
   const now = Date.now();
 
@@ -116,12 +118,17 @@ function SurvivorPage() {
     queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
   });
 
+
   const games = activeSlate?.games ?? [];
 
   const { data: board = [] } = useQuery({
-    queryKey: ["survivor-board", SEASON],
+    queryKey: ["survivor-board", activeLeague?.id, SEASON],
+    enabled: !!activeLeague,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("survivor_board", { _season: SEASON });
+      const { data, error } = await supabase.rpc("survivor_board", {
+        _season: SEASON,
+        _league_id: activeLeague!.id,
+      });
       if (error) throw error;
       return (data ?? []) as BoardRow[];
     },
@@ -156,10 +163,10 @@ function SurvivorPage() {
       if (!uid) throw new Error("You must be signed in");
       const { error } = await supabase
         .from("survivor_picks")
-        .insert({ user_id: uid, season: SEASON, week, team });
+        .insert({ user_id: uid, league_id: activeLeague!.id, season: SEASON, week, team });
       if (error) throw error;
       toast.success(`${teamShort(team)} locked in for week ${week}`);
-      await queryClient.invalidateQueries({ queryKey: ["survivor-board", SEASON] });
+      await queryClient.invalidateQueries({ queryKey: ["survivor-board", activeLeague!.id, SEASON] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save your pick");
     } finally {
@@ -167,7 +174,16 @@ function SurvivorPage() {
     }
   }
 
+  if (!activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>

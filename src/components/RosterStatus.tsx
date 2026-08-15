@@ -19,17 +19,20 @@ type Row = {
 export function RosterStatus({
   seasonType,
   week,
+  leagueId,
 }: {
   seasonType: SeasonType;
   week: number;
+  leagueId: string;
 }) {
   const { data: rows = [] } = useQuery({
-    queryKey: ["week-submissions", seasonType, week],
+    queryKey: ["week-submissions", leagueId, seasonType, week],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("week_submission_status", {
         _season: SEASON,
         _season_type: seasonType,
         _week: week,
+        _league_id: leagueId,
       });
       if (error) throw error;
       return (data ?? []) as Row[];

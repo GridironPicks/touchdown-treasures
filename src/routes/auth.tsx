@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +10,10 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => {
+    const redirect = typeof search["redirect"] === "string" ? search["redirect"] : undefined;
+    return redirect ? { redirect } : {};
+  },
   head: () => ({
     meta: [
       { title: "Sign In — Gridiron Confidence" },
@@ -29,16 +33,19 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = useSearch({ from: "/auth" });
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const afterAuth = redirect && redirect.startsWith("/") ? redirect : "/picks";
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/picks", replace: true });
+      if (data.session) navigate({ to: afterAuth as "/picks", replace: true });
     });
-  }, [navigate]);
+  }, [navigate, afterAuth]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +66,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/team", replace: true });
+      navigate({ to: afterAuth, replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -69,14 +76,14 @@ function AuthPage() {
 
   async function google() {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth?redirect=${encodeURIComponent(afterAuth)}`,
     });
     if (result.error) {
       toast.error("Google sign-in failed");
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/picks", replace: true });
+    navigate({ to: afterAuth, replace: true });
   }
 
   return (

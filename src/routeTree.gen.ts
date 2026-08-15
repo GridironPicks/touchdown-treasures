@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
 import { Route as AuthenticatedSurvivorRouteImport } from './routes/_authenticated/survivor'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedLeaguesIndexRouteImport } from './routes/_authenticated/leagues.index'
 import { Route as AuthenticatedManagerUserIdRouteImport } from './routes/_authenticated/manager.$userId'
 import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -33,6 +35,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
@@ -61,6 +68,12 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLeaguesIndexRoute =
+  AuthenticatedLeaguesIndexRouteImport.update({
+    id: '/leagues/',
+    path: '/leagues/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedManagerUserIdRoute =
   AuthenticatedManagerUserIdRouteImport.update({
     id: '/manager/$userId',
@@ -82,6 +95,7 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/join': typeof JoinRoute
   '/chat': typeof AuthenticatedChatRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
@@ -89,11 +103,13 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/leagues/': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/join': typeof JoinRoute
   '/chat': typeof AuthenticatedChatRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/picks': typeof AuthenticatedPicksRoute
@@ -101,6 +117,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/leagues': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
@@ -108,6 +125,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/join': typeof JoinRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
@@ -115,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
+  '/_authenticated/leagues/': typeof AuthenticatedLeaguesIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
@@ -122,6 +141,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/join'
     | '/chat'
     | '/leaderboard'
     | '/picks'
@@ -129,11 +149,13 @@ export interface FileRouteTypes {
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/leagues/'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/join'
     | '/chat'
     | '/leaderboard'
     | '/picks'
@@ -141,12 +163,14 @@ export interface FileRouteTypes {
     | '/team'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/leagues'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/join'
     | '/_authenticated/chat'
     | '/_authenticated/leaderboard'
     | '/_authenticated/picks'
@@ -154,6 +178,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/manager/$userId'
     | '/api/public/nfl-sync'
+    | '/_authenticated/leagues/'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
@@ -161,6 +186,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  JoinRoute: typeof JoinRoute
   ApiPublicNflSyncRoute: typeof ApiPublicNflSyncRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
@@ -186,6 +212,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/chat': {
@@ -223,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leagues/': {
+      id: '/_authenticated/leagues/'
+      path: '/leagues'
+      fullPath: '/leagues/'
+      preLoaderRoute: typeof AuthenticatedLeaguesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/manager/$userId': {
       id: '/_authenticated/manager/$userId'
       path: '/manager/$userId'
@@ -254,6 +294,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSurvivorRoute: typeof AuthenticatedSurvivorRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedManagerUserIdRoute: typeof AuthenticatedManagerUserIdRoute
+  AuthenticatedLeaguesIndexRoute: typeof AuthenticatedLeaguesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -263,6 +304,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSurvivorRoute: AuthenticatedSurvivorRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedManagerUserIdRoute: AuthenticatedManagerUserIdRoute,
+  AuthenticatedLeaguesIndexRoute: AuthenticatedLeaguesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -272,6 +314,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  JoinRoute: JoinRoute,
   ApiPublicNflSyncRoute: ApiPublicNflSyncRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }

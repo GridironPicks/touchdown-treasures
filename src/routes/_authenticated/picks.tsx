@@ -25,6 +25,7 @@ import {
 import { TeamLogo } from "@/components/TeamLogo";
 import { HowToPlay } from "@/components/HowToPlay";
 import { RosterStatus } from "@/components/RosterStatus";
+import { useLeague } from "@/lib/league-context";
 
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
@@ -62,6 +63,7 @@ type Selection = { team: string; confidence: number | null };
 
 function PicksPage() {
   const queryClient = useQueryClient();
+  const { activeLeague, isLoading: leaguesLoading } = useLeague();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [selections, setSelections] = useState<Record<string, Selection>>({});
@@ -83,6 +85,7 @@ function PicksPage() {
 
   const selectSlate = (next: Slate) =>
     navigate({ search: { type: next.seasonType, week: next.week } });
+
 
   
 
@@ -133,8 +136,8 @@ function PicksPage() {
     winProbs.find((w) => w.external_id === game.external_id) ?? null;
 
   const { data: existing } = useQuery({
-    queryKey: ["my-picks", seasonType, week],
-    enabled: !!slate,
+    queryKey: ["my-picks", activeLeague?.id, seasonType, week],
+    enabled: !!slate && !!activeLeague,
     queryFn: async () => {
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user!.id;
@@ -143,6 +146,7 @@ function PicksPage() {
           .from("picks")
           .select("*")
           .eq("user_id", uid)
+          .eq("league_id", activeLeague!.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week),
@@ -150,6 +154,7 @@ function PicksPage() {
           .from("tiebreakers")
           .select("*")
           .eq("user_id", uid)
+          .eq("league_id", activeLeague!.id)
           .eq("season", SEASON)
           .eq("season_type", seasonType)
           .eq("week", week)
@@ -253,6 +258,7 @@ function PicksPage() {
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
           user_id: uid,
+          league_id: activeLeague!.id,
           game_id: g.id,
           season: SEASON,
           season_type: seasonType,
@@ -261,15 +267,21 @@ function PicksPage() {
           confidence: selections[g.id]!.confidence!,
         }));
 
-
       const ins = await supabase.from("picks").insert(rows);
       if (ins.error) throw ins.error;
 
       const total = Number.parseInt(tiebreaker, 10);
       if (!tiebreakerLocked && !Number.isNaN(total)) {
         const tb = await supabase.from("tiebreakers").upsert(
-          { user_id: uid, season: SEASON, season_type: seasonType, week, predicted_total: total },
-          { onConflict: "user_id,season,season_type,week", ignoreDuplicates: true },
+          {
+            user_id: uid,
+            league_id: activeLeague!.id,
+            season: SEASON,
+            season_type: seasonType,
+            week,
+            predicted_total: total,
+          },
+          { onConflict: "user_id,league_id,season,season_type,week", ignoreDuplicates: true },
         );
         if (tb.error) throw tb.error;
       }
@@ -291,7 +303,16 @@ function PicksPage() {
       ? "in-progress"
       : "open";
 
+  if (leaguesLoading || !activeLeague) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-5">
       <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
 
@@ -384,7 +405,7 @@ function PicksPage() {
         </section>
       )}
 
-      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} />
+      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} leagueId={activeLeague!.id} />
 
       <HowToPlay
         seasonType={isRegular ? "reg" : "pre"}
