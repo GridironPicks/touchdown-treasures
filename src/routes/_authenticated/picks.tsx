@@ -8,12 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   SEASON,
   formatCountdown,
+  isMondayNight,
   kickoffLabel,
   teamShort,
-  weekDeadline,
+  tiebreakerGameOf,
   type Game,
   type SeasonType,
 } from "@/lib/league";
+import { TeamLogo } from "@/components/TeamLogo";
 import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
