@@ -205,16 +205,18 @@ function LeaderboardPage() {
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1.5 truncate font-semibold">
+                  <p className="flex flex-wrap items-center gap-1.5 truncate font-semibold">
                     {row.team_name}
                     {onFire && (
                       <span className="flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary">
                         <Flame size={10} /> {streak}W
                       </span>
                     )}
+                    <BadgeRow rows={badgesByUser[row.user_id as string] ?? []} limit={4} />
                   </p>
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
+
                 {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
                   <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
                     <Trophy size={13} /> 2026
