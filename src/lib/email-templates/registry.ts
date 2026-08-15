@@ -1,4 +1,6 @@
 import type { ComponentType } from 'react'
+import { template as entryReceiptTemplate } from './entry-receipt'
+import { template as lockReminderTemplate } from './lock-reminder'
 
 export interface TemplateEntry {
   component: ComponentType<any>
