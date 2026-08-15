@@ -1,13 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, EyeOff } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
+import { BadgeRow } from "@/components/BadgeRow";
 import { TeamLogo } from "@/components/TeamLogo";
+import { getHeadToHead, getManagerBadges } from "@/lib/awards.functions";
 import { SEASON, teamShort, type Game, type SeasonType } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
 import { slateLabel } from "@/lib/slate";
+
 
 type ManagerSearch = { type?: SeasonType; week?: number };
 
