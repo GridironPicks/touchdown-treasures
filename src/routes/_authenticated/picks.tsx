@@ -63,6 +63,7 @@ type Selection = { team: string; confidence: number | null };
 
 function PicksPage() {
   const queryClient = useQueryClient();
+  const { activeLeague } = useLeague();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [selections, setSelections] = useState<Record<string, Selection>>({});
