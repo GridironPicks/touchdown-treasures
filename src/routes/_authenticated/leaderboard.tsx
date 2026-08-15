@@ -39,16 +39,18 @@ function LeaderboardPage() {
   const fallback = useMemo(() => defaultSlate(slates), [slates]);
   const [picked, setPicked] = useState<Slate | null>(null);
   const slate = picked ?? fallback;
+  const { activeLeague } = useLeague();
 
   const refreshScores = useServerFn(refreshSlateScores);
 
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["leaderboard", board, slate?.seasonType, slate?.week],
-    enabled: board !== "week" || !!slate,
+    queryKey: ["leaderboard", activeLeague?.id, board, slate?.seasonType, slate?.week],
+    enabled: (!!activeLeague && board !== "week") || (!!activeLeague && !!slate),
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     queryFn: async () => {
+      if (!activeLeague) return [];
       if (slate) {
         try {
           await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
@@ -61,6 +63,7 @@ function LeaderboardPage() {
           supabase
             .from("weekly_scores")
             .select("*")
+            .eq("league_id", activeLeague.id)
             .eq("season", SEASON)
             .eq("season_type", slate!.seasonType)
             .eq("week", slate!.week),
@@ -86,6 +89,7 @@ function LeaderboardPage() {
       const { data, error } = await supabase
         .from(board === "pre" ? "preseason_leaderboard" : "leaderboard")
         .select("*")
+        .eq("league_id", activeLeague.id)
         .order("season_points", { ascending: false });
       if (error) throw error;
       return data ?? [];
