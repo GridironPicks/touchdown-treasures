@@ -72,12 +72,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur sm:hidden">
-        <div className="grid grid-cols-4">
+        <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
+              className="flex w-[4.5rem] shrink-0 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
               activeProps={{ className: "text-primary" }}
             >
               <item.icon size={20} />
@@ -85,6 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </div>
+
       </nav>
     </div>
   );
