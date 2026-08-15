@@ -50,6 +50,7 @@ function timeLabel(iso: string) {
 
 function ChatPage() {
   const queryClient = useQueryClient();
+  const { activeLeague } = useLeague();
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -68,11 +69,13 @@ function ChatPage() {
   });
 
   const { data: messages = [] } = useQuery({
-    queryKey: ["messages"],
+    queryKey: ["messages", activeLeague?.id],
+    enabled: !!activeLeague,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("messages")
         .select("*")
+        .eq("league_id", activeLeague!.id)
         .order("created_at", { ascending: true })
         .limit(300);
       if (error) throw error;
@@ -81,9 +84,16 @@ function ChatPage() {
   });
 
   const { data: reactions = [] } = useQuery({
-    queryKey: ["message-reactions"],
+    queryKey: ["message-reactions", activeLeague?.id],
+    enabled: !!activeLeague,
     queryFn: async () => {
-      const { data, error } = await supabase.from("message_reactions").select("*");
+      const { data, error } = await supabase
+        .from("message_reactions")
+        .select("*")
+        .in(
+          "message_id",
+          messages.map((m) => m.id),
+        );
       if (error) throw error;
       return (data ?? []) as Reaction[];
     },
