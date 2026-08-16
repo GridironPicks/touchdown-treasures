@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { SlatePicker } from "@/components/SlatePicker";
 import { BadgeRow } from "@/components/BadgeRow";
+import { WinnerTrophy } from "@/components/WinnerTrophy";
 import { HeadToHead } from "@/components/HeadToHead";
 import { LivePoints } from "@/components/LivePoints";
 import { getManagerBadges } from "@/lib/awards.functions";
@@ -148,9 +149,9 @@ function LeaderboardPage() {
   });
 
   const badgesByUser = useMemo(() => {
-    const map: Record<string, { badge: string; week: number | null }[]> = {};
+    const map: Record<string, { badge: string; week: number | null; detail: string | null }[]> = {};
     for (const r of badgeRows) {
-      (map[r.user_id] ??= []).push({ badge: r.badge, week: r.week });
+      (map[r.user_id] ??= []).push({ badge: r.badge, week: r.week, detail: r.detail });
     }
     return map;
   }, [badgeRows]);
@@ -227,9 +228,17 @@ function LeaderboardPage() {
             {rows.map((row, i) => {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
+              const weekChampion = board === "week" && i === 0 && (row.season_points ?? 0) > 0;
               return (
-              <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">
-                <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
+              <li
+                key={row.user_id}
+                className={`flex items-center gap-3 px-4 py-3 ${weekChampion ? "trophy-row" : ""}`}
+              >
+                {weekChampion ? (
+                  <WinnerTrophy size="md" label={`Winner of ${slate ? slateLabel(slate) : "the week"}`} />
+                ) : (
+                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
+                )}
                 <span className="relative">
                   <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
                   {onFire && (

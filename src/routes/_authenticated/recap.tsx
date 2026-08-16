@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { BadgeRow } from "@/components/BadgeRow";
+import { WinnerTrophy } from "@/components/WinnerTrophy";
 import { SlatePicker } from "@/components/SlatePicker";
 import { getManagerBadges } from "@/lib/awards.functions";
 import { useLeague } from "@/lib/league-context";
@@ -85,11 +86,11 @@ function RecapPage() {
   });
 
   const weekBadges = useMemo(() => {
-    const map = new Map<string, { badge: string; week: number | null }[]>();
+    const map = new Map<string, { badge: string; week: number | null; detail: string | null }[]>();
     for (const b of badgeRows) {
       if (b.week !== null && b.week !== slate?.week) continue;
       const list = map.get(b.user_id) ?? [];
-      list.push({ badge: b.badge, week: b.week });
+      list.push({ badge: b.badge, week: b.week, detail: b.detail });
       map.set(b.user_id, list);
     }
     return [...map.entries()].map(([userId, rows]) => ({ userId, rows }));
@@ -143,12 +144,15 @@ function RecapPage() {
           {winner && (
             <section className="field-panel rounded-2xl p-5">
               <div className="flex items-start gap-4">
-                <Mascot mascot={winner.mascot} color={winner.primary_color} size="lg" />
+                <div className="flex shrink-0 flex-col items-center gap-2">
+                  <WinnerTrophy size="lg" label={`${winner.team_name} won ${slate ? slateLabel(slate) : "the week"}`} />
+                  <Mascot mascot={winner.mascot} color={winner.primary_color} size="lg" />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
-                    <Crown size={14} /> Winner of the week
+                    <Crown size={14} /> {slate ? `${slateLabel(slate)} champion` : "Winner of the week"}
                   </p>
-                  <h2 className="stadium-heading mt-1 truncate text-2xl">{winner.team_name}</h2>
+                  <h2 className="stadium-heading mt-1 truncate text-3xl">{winner.team_name}</h2>
                   <p className="text-sm text-muted-foreground">
                     {winner.points} points · {winner.correct_count} correct picks
                     {runnerUp && winner.points > runnerUp.points
@@ -209,10 +213,19 @@ function RecapPage() {
             </h2>
             <ul className="divide-y divide-border">
               {data.rows.map((row) => (
-                <li key={row.user_id} className="flex items-center gap-3 px-4 py-3">
-                  <span className="stadium-heading w-6 text-lg text-muted-foreground">
-                    {row.place}
-                  </span>
+                <li
+                  key={row.user_id}
+                  className={`flex items-center gap-3 px-4 py-3 ${
+                    row.place === 1 ? "trophy-row" : ""
+                  }`}
+                >
+                  {row.place === 1 ? (
+                    <WinnerTrophy size="sm" label="Winner of the week" />
+                  ) : (
+                    <span className="stadium-heading w-6 text-lg text-muted-foreground">
+                      {row.place}
+                    </span>
+                  )}
                   <Mascot mascot={row.mascot} color={row.primary_color} size="sm" />
                   <div className="min-w-0 flex-1">
                     <Link
