@@ -25,3 +25,13 @@ Today each badge chip only shows a generic hover tooltip ("Gutsy Call — Bigges
 - `src/components/BadgeRow.tsx`: `EarnedBadge` carries `entries: { week: number | null; detail: string | null }[]` instead of just `weeks`. `BadgeChip` renders inside a shadcn `Popover` with the earned-list content.
 - All three call sites (`leaderboard.tsx`, `recap.tsx`, `manager.$userId.tsx`) already pass the raw rows through, so they only need to forward `detail`.
 - New `src/components/BadgeGlossary.tsx` driven by the existing `BADGE_META` map in `src/lib/badges.ts`.
+
+## Weekly winner trophy
+
+Right now the week's winner is only marked with a small crown/flame chip in the standings and a mascot in the recap header. Instead:
+
+- **Recap page**: the winner card gets a large metallic gold trophy graphic (glowing, stadium-lit) next to the mascot, with "Week N Champion" in big type over the winner's team colors.
+- **Standings / Leaderboard**: the manager who won the currently selected week gets a full-size gold trophy icon in the rank column instead of the small crown chip, sized to stand out on both phone and desktop.
+- **Roster / weekly list**: the winning row gets a soft gold glow border so the champion reads at a glance.
+
+Technical: new `src/components/WinnerTrophy.tsx` (SVG/lucide `Trophy` with gradient + glow classes, `size` prop), reused by `recap.tsx` and `leaderboard.tsx`; gold/metallic tokens added to `src/styles.css` rather than hardcoded colors.
