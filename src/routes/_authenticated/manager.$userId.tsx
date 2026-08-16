@@ -6,6 +6,7 @@ import { ArrowLeft, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { BadgeRow } from "@/components/BadgeRow";
+import { BadgeGlossary } from "@/components/BadgeGlossary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getHeadToHead, getManagerBadges } from "@/lib/awards.functions";
 import { SEASON, teamShort, type Game, type SeasonType } from "@/lib/league";
@@ -116,7 +117,7 @@ function ManagerPage() {
   });
   const myBadges = badgeRows
     .filter((b) => b.user_id === userId)
-    .map((b) => ({ badge: b.badge, week: b.week }));
+    .map((b) => ({ badge: b.badge, week: b.week, detail: b.detail }));
 
   const fetchH2H = useServerFn(getHeadToHead);
   const { data: h2hRows = [] } = useQuery({
@@ -155,7 +156,10 @@ function ManagerPage() {
       </header>
 
       <section className="field-panel rounded-2xl p-5">
-        <h2 className="stadium-heading mb-3 text-lg">Trophy case</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="stadium-heading text-lg">Trophy case</h2>
+          <BadgeGlossary />
+        </div>
         {myBadges.length === 0 ? (
           <p className="text-sm text-muted-foreground">No awards earned yet this season.</p>
         ) : (
