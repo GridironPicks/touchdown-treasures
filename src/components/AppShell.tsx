@@ -36,57 +36,59 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3">
-          <Link to="/picks" className="stadium-heading text-lg leading-none">
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
+          <Link to="/picks" className="stadium-heading truncate text-lg leading-none">
             <span className="chrome-text">GRIDIRON</span>{" "}
             <span className="text-primary">CONFIDENCE</span>
           </Link>
-          <div className="hidden items-center gap-3 sm:flex">
-            <LeagueSwitcher />
-            <nav className="flex items-center gap-1">
-              {NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  activeProps={{ className: "bg-secondary text-primary" }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden sm:block">
+              <LeagueSwitcher />
+            </div>
+            <button
+              onClick={signOut}
+              aria-label="Sign out"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
-          <button
-            onClick={signOut}
-            aria-label="Sign out"
-            className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <LogOut size={18} />
-          </button>
         </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-5 sm:pb-10">
-        <InstallAppCard />
-        {children}
-      </main>
-
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur sm:hidden">
-        <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav className="mx-auto hidden w-full max-w-5xl flex-wrap items-center gap-1 px-3 pb-2 sm:flex">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="flex w-[4.5rem] shrink-0 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
-              activeProps={{ className: "text-primary" }}
+              className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground lg:px-3 lg:py-2"
+              activeProps={{ className: "bg-secondary text-primary" }}
             >
-              <item.icon size={20} />
               {item.label}
             </Link>
           ))}
-        </div>
+        </nav>
+      </header>
 
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-40 pt-5 sm:pb-10">
+        <InstallAppCard />
+        {children}
+      </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
+        <div className="grid grid-cols-5">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-[9px] font-semibold leading-tight text-muted-foreground"
+              activeProps={{ className: "text-primary" }}
+            >
+              <item.icon size={18} className="shrink-0" />
+              <span className="w-full truncate text-center">{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </nav>
     </div>
   );
 }
+
