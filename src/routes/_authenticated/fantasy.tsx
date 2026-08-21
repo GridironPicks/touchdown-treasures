@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Crown, Lock, Search, Star, Timer, Trophy, UserPlus, X, Zap } from "lucide-react";
+import { BookOpen, Crown, Lock, Search, Star, Timer, Trophy, UserPlus, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -463,6 +463,9 @@ function FantasyPage() {
           <TabsTrigger value="season" className="flex-1">
             Season
           </TabsTrigger>
+          <TabsTrigger value="rules" className="flex-1">
+            Rules
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="lineup" className="space-y-4 pt-4">
@@ -711,19 +714,103 @@ function FantasyPage() {
             <p className="text-sm text-muted-foreground">No fantasy results yet this season.</p>
           )}
         </TabsContent>
+
+        <TabsContent value="rules" className="space-y-4 pt-4">
+          <section className="field-panel rounded-2xl border border-border p-5">
+            <h2 className="stadium-heading flex items-center gap-2 text-lg">
+              <BookOpen className="text-primary" size={18} /> How to Play
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <span className="font-semibold text-foreground">The Draft:</span> one manager can
+                own a player each week. First click claims him. If another manager beats you to it,
+                the app refreshes and shows he's taken.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Your Lineup:</span> fill 5 slots —
+                QB, RB, WR, TE and FLEX (RB/WR/TE only). Every player comes from the teams playing
+                in that week's slate.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Star Cap:</span> each player costs
+                1–5 stars and you have 15 stars total. Mix expensive stars with cheap sleepers.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Captain:</span> tap the crown on
+                any filled slot to make that player score 1.5x points.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Release:</span> before lock you can
+                release a player and he goes straight back into the pool for anyone to grab.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Lock Times:</span> regular season
+                lineups open Tuesday 12:00 AM ET and lock Wednesday 6:00 PM ET. Preseason lineups
+                lock at the first kickoff of that week. No edits after lock.
+              </li>
+            </ul>
+          </section>
+
+          <section className="field-panel rounded-2xl border border-border p-5">
+            <h2 className="stadium-heading text-lg">Scoring — Full PPR</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Live stats refresh every 30 seconds from ESPN box scores.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-sm font-semibold">Passing</p>
+                <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+                  <li>1 pt per 25 yards</li>
+                  <li>4 pts per TD</li>
+                  <li>-2 pts per interception</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-sm font-semibold">Rushing</p>
+                <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+                  <li>1 pt per 10 yards</li>
+                  <li>6 pts per TD</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-sm font-semibold">Receiving</p>
+                <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+                  <li>1 pt per reception</li>
+                  <li>1 pt per 10 yards</li>
+                  <li>6 pts per TD</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-sm font-semibold">Turnovers</p>
+                <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+                  <li>-2 pts per fumble lost</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section className="field-panel rounded-2xl border border-border p-5">
+            <h2 className="stadium-heading flex items-center gap-2 text-lg">
+              <Trophy className="text-primary" size={18} /> Winning
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <span className="font-semibold text-foreground">Weekly Winner:</span> the manager
+                with the highest total PPR score wins the week.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Season Standings:</span> ranked by
+                cumulative fantasy points, with weekly wins tracked as a tiebreaker.
+              </li>
+              <li>
+                <span className="font-semibold text-foreground">Live Board:</span> everyone's lineup
+                stays hidden until the slate locks, then the full league board is revealed.
+              </li>
+            </ul>
+          </section>
+        </TabsContent>
       </Tabs>
 
-      <section className="field-panel rounded-2xl border border-border p-5">
-        <h2 className="stadium-heading text-lg">How the fantasy game works</h2>
-        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-          <li>• Fill 5 slots: QB, RB, WR, TE and a FLEX (RB/WR/TE), 15 stars or fewer.</li>
-          <li>• Draft style — once a manager takes a player, he's off the board for everyone else that week.</li>
-          <li>• Release a player any time before lock and he goes straight back in the pool.</li>
-          <li>• Tap the crown to make one slot your captain: that player scores 1.5x.</li>
-          <li>• Scoring is full PPR: 1 per catch, 0.1/yard, 6 per TD, 4 per passing TD, 0.04/passing yard, -2 per INT or lost fumble.</li>
-          <li>• Lineups open Tuesday and lock Wednesday 6:00 PM ET in the regular season, at first kickoff in preseason. Everyone's lineup unlocks at the deadline.</li>
-        </ul>
-      </section>
     </div>
   );
 }
