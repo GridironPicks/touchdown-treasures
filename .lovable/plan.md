@@ -1,94 +1,95 @@
-# Weekly NFL Squares (Lucky Squares)
+# Weekly Mini DFS Lineup
 
-Add a simple, social, luck-based side game to Gridiron Confidence using the existing weekly schedule. Each week the league gets a 10×10 grid for the final/tiebreaker game of the slate. Players claim squares before kickoff, and winners are decided by the last digit of each team's score at the end of every quarter.
+Add a weekly fantasy-football side game where each manager builds a 5-player lineup under a salary cap. The lineup scores real fantasy points from that week's games, and the highest weekly total wins.
 
 ## Why this one
 
-- Pure luck — no NFL knowledge required, so everyone feels welcome.
-- Highly social; quarter-by-quarter winners keep trash talk alive all game.
-- Reuses the schedule and score data we already sync from ESPN.
-- Free-to-play, matching the rest of the app.
-
-## What it looks like
-
-```text
-Picks | Scores | Standings | Survivor | Squares | Trash Talk | ...
-```
-
-A new **Squares** tab shows:
-- The featured game for the week (last kickoff of the slate).
-- A 10×10 grid with rows = away-team score digit (0–9), columns = home-team score digit (0–9).
-- Each claimed square shows the manager's mascot.
-- Empty squares can be clicked to claim while the game is not final.
-- After each quarter, winning squares are highlighted and a results panel lists who won.
+- It feels like a real fantasy spin instead of just picking winners.
+- Managers can root for individual players across all games.
+- It runs in parallel to the existing confidence pool without replacing it.
+- ESPN boxscore data gives us live player stats as games progress.
 
 ## Game rules
 
-- One grid per league per week.
-- Featured game = the week's tiebreaker game (last scheduled kickoff).
-- Managers claim up to a configurable number of squares before kickoff (default 2 per manager).
-- Digits are revealed randomly once the game kicks off (or pre-revealed at lock).
-- Winners at end of 1st quarter, halftime, 3rd quarter, and final.
-- Payouts are bragging-rights only (coins/trophy points), no real money.
+- Each week every manager submits one lineup.
+- Lineup slots: **1 QB, 1 RB, 1 WR, 1 TE, 1 Flex** (RB/WR/TE only).
+- **Salary cap**: each player costs 1–5 "stars" derived from projected fantasy points for that week. A valid lineup must total ≤ 15 stars.
+- One player is designated **Captain** and scores **1.5×** fantasy points.
+- Lineups lock at the same time as the week's first kickoff.
+- Scoring is standard PPR:
+  - Passing: 1 pt per 25 yards, 4 pts per TD, -2 per INT.
+  - Rushing/Receiving: 1 pt per 10 yards, 6 pts per TD.
+  - Receptions: 1 PPR point each.
+  - 2-pt conversion: 2 pts.
+- The manager with the highest weekly fantasy total wins the week. Season standings accumulate weekly fantasy points.
 
-## Technical work
+## Data source
 
-### Database
+- Use ESPN's `/summary` and boxscore endpoints for the games in the selected week.
+- For each game, parse passing/rushing/receiving leaders and stats.
+- Build a player pool of the top performers from the week's games.
+- Player "salary" (stars) is computed from ESPN's projected fantasy points when available; otherwise from a simple tier based on season averages or name recognition.
 
-1. New `squares_grids` table:
-   - `id`, `league_id`, `season`, `season_type`, `week`, `game_id`, `locked_at`, `created_at`.
-2. New `squares_picks` table:
-   - `id`, `grid_id`, `user_id`, `row_digit`, `col_digit`, `claimed_at`.
-3. New `squares_results` table (or computed on read):
-   - `grid_id`, `quarter`, `winning_user_id`, `away_digit`, `home_digit`, `awarded_at`.
-4. RLS policies so users can only see/claim squares in leagues they belong to.
-5. Database function `squares_winners(grid_id)` returns the winner per quarter using live scores.
+## Database changes
 
-### Backend
+1. New `fantasy_lineups` table:
+   - `id`, `user_id`, `league_id`, `season`, `season_type`, `week`, `captain_player_id`, `submitted_at`.
+2. New `fantasy_lineup_players` table:
+   - `id`, `lineup_id`, `player_id`, `slot` (qb/rb/wr/te/flex), `salary` (1–5 stars).
+3. New `fantasy_player_stats` table:
+   - `id`, `season`, `week`, `player_id`, `name`, `team`, `position`, `pass_yds`, `pass_td`, `pass_int`, `rush_yds`, `rush_td`, `rec_yds`, `rec_td`, `rec`, `fantasy_points`.
+4. RLS policies:
+   - Users can read all fantasy stats (public within the league once the week starts).
+   - Users can insert/update only their own lineup before lock.
+   - Lineups are hidden from other users until the lock time, then revealed to all league members.
 
-1. Server function to create the week's grid for a league (idempotent — called on first visit or by commissioner).
-2. Server function to claim a square with validation:
-   - Game not started.
-   - Square unclaimed.
-   - Manager under per-week square limit.
-   - Manager is a league member.
-3. Server function to compute and cache winners after each quarter.
+## Backend work
 
-### Frontend
+1. Server function `syncFantasyStats({ season, seasonType, week })`:
+   - Fetches ESPN boxscores for every game in the week.
+   - Parses player stats and upserts into `fantasy_player_stats`.
+   - Called on page load/refocus and on a 60-second interval while games are live.
+2. Server function `submitFantasyLineup({ ... })`:
+   - Validates slot constraints, no duplicate players, salary cap, and lock time.
+   - Inserts or replaces the user's lineup for the week.
+3. Server function `getFantasyStandings({ leagueId, seasonType })`:
+   - Returns cumulative fantasy points and weekly wins per manager.
+4. Database function `fantasy_weekly_scores(...)`:
+   - Computes weekly total fantasy points for each lineup using `fantasy_player_stats` and captain multiplier.
 
-1. New route `/squares` added to the authenticated nav.
-2. `SquaresGrid` component:
-   - Render 10×10 grid.
-   - Show manager mascot in claimed squares.
-   - Highlight current quarter winner.
-   - Disable claiming once kickoff passes.
-3. `SquaresHeader` component:
-   - Featured game info, kickoff time, live score.
-   - Countdown to lock.
-   - Rules explainer.
-4. `SquaresResults` component:
-   - List quarter winners with trophy icons.
+## Frontend work
 
-### Navigation
+1. New route `/fantasy` added to authenticated navigation.
+2. `FantasyLineupBuilder` component:
+   - Position filters (QB, RB, WR, TE).
+   - Player list with name, team, position, and star cost.
+   - Lineup slots at the top showing selected players, remaining salary, and captain toggle.
+   - Submit/lock button with countdown to first kickoff.
+3. `FantasyLeaderboard` component:
+   - Shows weekly fantasy scores and season-long fantasy standings.
+   - Highlights the weekly winner with the large trophy.
+4. `FantasyPlayerCard` component:
+   - Displays live fantasy points as games progress.
+5. Navigation:
+   - Add **Fantasy** tab to `AppShell` nav.
+   - Keep mobile nav two-row layout so all tabs remain visible.
 
-- Add **Squares** to `AppShell` nav between Survivor and Trash Talk.
-- Ensure mobile grid still shows all tabs (two-row layout already in place).
+## Integration with existing features
 
-### Badges
-
-- Add `squares_winner` badge for any quarter win.
-- Add `squares_sweep` badge if one manager wins 2+ quarters in the same game.
+- Badges: add `fantasy_week_win` and `fantasy_sweep` (win both confidence and fantasy in the same week).
+- Recap: optional summary on the weekly recap page showing the fantasy winner.
+- Push notifications: notify managers when their fantasy players score TDs or when the week locks.
 
 ## Out of scope
 
-- Real-money buy-ins or payouts.
-- Multiple grids per week.
-- Custom digit randomization strategies.
-- Squares for playoff games (can be added later).
+- Real-money entry fees or prizes (app remains free-to-play).
+- Draft-style rosters or season-long player ownership.
+- Defense/special-teams slots.
+- College football players.
 
 ## Success criteria
 
-- Managers can open the Squares tab, see the grid, and claim squares.
-- Once the featured game starts, claiming is locked and digits are visible.
-- As the game progresses, winning squares per quarter are highlighted automatically.
-- Winners appear in the results panel and earn a badge.
+- Managers can open the Fantasy tab, see the player pool, and build a valid lineup under the star cap.
+- Lineups lock at first kickoff and cannot be changed after.
+- As games progress, live fantasy points update automatically.
+- A weekly fantasy winner is crowned and season fantasy standings accumulate.
