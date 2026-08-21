@@ -420,7 +420,10 @@ function FantasyPage() {
 
   return (
     <div className="space-y-5">
+      <SlatePicker slates={slates} value={slate} onChange={setSlate} />
+
       <header className="flex flex-wrap items-end justify-between gap-3">
+
         <div>
           <h1 className="stadium-heading flex items-center gap-2 text-3xl">
             <Zap className="text-primary" /> Fantasy Lineup
