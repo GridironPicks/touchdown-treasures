@@ -110,10 +110,31 @@ function FantasyPage() {
   const now = Date.now();
 
   const { data: slates = [] } = useSlates();
-  const activeSlate = slates.find((s) => !s.allFinal) ?? slates[slates.length - 1] ?? null;
+
+  // Default to the first slate that hasn't locked yet, so managers land on the
+  // week they can actually draft instead of one already in progress.
+  const suggested = useMemo(() => {
+    const open = slates.find((s) => {
+      const first = Math.min(...s.games.map((g) => new Date(g.kickoff).getTime()));
+      const lock = s.seasonType === "reg" ? (s.deadline?.getTime() ?? first) : first;
+      return lock > Date.now();
+    });
+    const fallback = slates.find((s) => !s.allFinal) ?? slates[slates.length - 1] ?? null;
+    const chosen = open ?? fallback;
+    return chosen ? { seasonType: chosen.seasonType, week: chosen.week } : null;
+  }, [slates]);
+
+  const [slate, setSlate] = useState<{ seasonType: "pre" | "reg"; week: number } | null>(null);
+  useEffect(() => {
+    if (!slate && suggested) setSlate(suggested);
+  }, [slate, suggested]);
+
+  const activeSlate =
+    slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week) ?? null;
   const seasonType = activeSlate?.seasonType ?? "pre";
   const week = activeSlate?.week ?? 1;
   const games = useMemo(() => activeSlate?.games ?? [], [activeSlate]);
+
 
   const { data: me } = useQuery({
     queryKey: ["me-id"],
