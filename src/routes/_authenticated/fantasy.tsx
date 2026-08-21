@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Crown, Lock, Search, Star, Timer, Trophy, UserPlus, X, Zap } from "lucide-react";
+import { BookOpen, Crown, Lock, Search, Star, Timer, Trophy, UserPlus, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
