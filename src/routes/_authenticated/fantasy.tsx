@@ -811,17 +811,6 @@ function FantasyPage() {
         </TabsContent>
       </Tabs>
 
-      <section className="field-panel rounded-2xl border border-border p-5">
-        <h2 className="stadium-heading text-lg">How the fantasy game works</h2>
-        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-          <li>• Fill 5 slots: QB, RB, WR, TE and a FLEX (RB/WR/TE), 15 stars or fewer.</li>
-          <li>• Draft style — once a manager takes a player, he's off the board for everyone else that week.</li>
-          <li>• Release a player any time before lock and he goes straight back in the pool.</li>
-          <li>• Tap the crown to make one slot your captain: that player scores 1.5x.</li>
-          <li>• Scoring is full PPR: 1 per catch, 0.1/yard, 6 per TD, 4 per passing TD, 0.04/passing yard, -2 per INT or lost fumble.</li>
-          <li>• Lineups open Tuesday and lock Wednesday 6:00 PM ET in the regular season, at first kickoff in preseason. Everyone's lineup unlocks at the deadline.</li>
-        </ul>
-      </section>
     </div>
   );
 }
