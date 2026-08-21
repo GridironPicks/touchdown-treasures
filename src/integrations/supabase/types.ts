@@ -14,6 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
+      fantasy_lineup_slots: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          lineup_id: string
+          player_id: string
+          season: number
+          season_type: Database["public"]["Enums"]["season_type"]
+          slot: string
+          user_id: string
+          week: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          lineup_id: string
+          player_id: string
+          season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          slot: string
+          user_id: string
+          week: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          lineup_id?: string
+          player_id?: string
+          season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          slot?: string
+          user_id?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fantasy_lineup_slots_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fantasy_lineup_slots_lineup_id_fkey"
+            columns: ["lineup_id"]
+            isOneToOne: false
+            referencedRelation: "fantasy_lineups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fantasy_lineup_slots_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "fantasy_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fantasy_lineups: {
+        Row: {
+          captain_slot: string | null
+          created_at: string
+          id: string
+          league_id: string
+          season: number
+          season_type: Database["public"]["Enums"]["season_type"]
+          updated_at: string
+          user_id: string
+          week: number
+        }
+        Insert: {
+          captain_slot?: string | null
+          created_at?: string
+          id?: string
+          league_id: string
+          season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          updated_at?: string
+          user_id: string
+          week: number
+        }
+        Update: {
+          captain_slot?: string | null
+          created_at?: string
+          id?: string
+          league_id?: string
+          season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          updated_at?: string
+          user_id?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fantasy_lineups_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fantasy_player_stats: {
+        Row: {
+          espn_id: string
+          id: string
+          is_final: boolean
+          line: string | null
+          points: number
+          season: number
+          season_type: Database["public"]["Enums"]["season_type"]
+          updated_at: string
+          week: number
+        }
+        Insert: {
+          espn_id: string
+          id?: string
+          is_final?: boolean
+          line?: string | null
+          points?: number
+          season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          updated_at?: string
+          week: number
+        }
+        Update: {
+          espn_id?: string
+          id?: string
+          is_final?: boolean
+          line?: string | null
+          points?: number
+          season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          updated_at?: string
+          week?: number
+        }
+        Relationships: []
+      }
+      fantasy_players: {
+        Row: {
+          cost: number
+          espn_id: string
+          headshot: string | null
+          id: string
+          name: string
+          opponent: string | null
+          position: string
+          season: number
+          season_type: Database["public"]["Enums"]["season_type"]
+          team: string
+          updated_at: string
+          week: number
+        }
+        Insert: {
+          cost?: number
+          espn_id: string
+          headshot?: string | null
+          id?: string
+          name: string
+          opponent?: string | null
+          position: string
+          season: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          team: string
+          updated_at?: string
+          week: number
+        }
+        Update: {
+          cost?: number
+          espn_id?: string
+          headshot?: string | null
+          id?: string
+          name?: string
+          opponent?: string | null
+          position?: string
+          season?: number
+          season_type?: Database["public"]["Enums"]["season_type"]
+          team?: string
+          updated_at?: string
+          week?: number
+        }
+        Relationships: []
+      }
       games: {
         Row: {
           away_score: number | null
@@ -523,6 +709,80 @@ export type Database = {
           _season_type?: Database["public"]["Enums"]["season_type"]
         }
         Returns: number
+      }
+      fantasy_board: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          display_name: string
+          is_captain: boolean
+          mascot: string
+          pl_cost: number
+          pl_name: string
+          pl_points: number
+          pl_pos: string
+          pl_team: string
+          primary_color: string
+          revealed: boolean
+          slot: string
+          team_name: string
+          user_id: string
+        }[]
+      }
+      fantasy_pool: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: {
+          claimed_by: string
+          claimed_team: string
+          pl_cost: number
+          pl_espn_id: string
+          pl_headshot: string
+          pl_id: string
+          pl_name: string
+          pl_opp: string
+          pl_points: number
+          pl_pos: string
+          pl_team: string
+        }[]
+      }
+      fantasy_standings: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          display_name: string
+          mascot: string
+          primary_color: string
+          team_name: string
+          total: number
+          user_id: string
+          weeks_played: number
+          wins: number
+        }[]
+      }
+      fantasy_weekly_totals: {
+        Args: {
+          _league_id: string
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+        }
+        Returns: {
+          filled: number
+          points: number
+          user_id: string
+          week: number
+        }[]
       }
       generate_join_code: { Args: never; Returns: string }
       head_to_head: {
