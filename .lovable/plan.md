@@ -1,95 +1,45 @@
-# Weekly Mini DFS Lineup
+# Weekly Mini DFS Lineup — Draft Style (Exclusive Player Ownership)
 
-Add a weekly fantasy-football side game where each manager builds a 5-player lineup under a salary cap. The lineup scores real fantasy points from that week's games, and the highest weekly total wins.
+A new weekly fantasy game alongside the confidence pool. Each manager builds a 5-slot lineup from real NFL players, but **every player can only be owned by one manager per week** — first come, first served.
 
-## Why this one
+## How it plays
 
-- It feels like a real fantasy spin instead of just picking winners.
-- Managers can root for individual players across all games.
-- It runs in parallel to the existing confidence pool without replacing it.
-- ESPN boxscore data gives us live player stats as games progress.
+1. **Lineup opens** when the week's pick window opens (Tuesday for regular season, immediately for preseason).
+2. Each manager fills 5 slots: **QB, RB, WR, TE, FLEX (RB/WR/TE)**.
+3. Each player has a **star cost of 1–5**; total lineup must be **15 stars or fewer**.
+4. **Exclusive ownership**: the moment a manager locks a player into a slot, that player is claimed for the week in that league. Everyone else sees him greyed out as "Rostered by <team name>". Claims are per week and per league — the pool resets fresh every week.
+5. Managers can **swap players out** until the week locks; releasing a player instantly returns him to the available pool for others.
+6. **Captain**: one of the 5 gets a 1.5x multiplier.
+7. Lineups lock at the same deadline as picks; after lock, all lineups become visible to the league.
 
-## Game rules
+## Player pool screen
 
-- Each week every manager submits one lineup.
-- Lineup slots: **1 QB, 1 RB, 1 WR, 1 TE, 1 Flex** (RB/WR/TE only).
-- **Salary cap**: each player costs 1–5 "stars" derived from projected fantasy points for that week. A valid lineup must total ≤ 15 stars.
-- One player is designated **Captain** and scores **1.5×** fantasy points.
-- Lineups lock at the same time as the week's first kickoff.
-- Scoring is standard PPR:
-  - Passing: 1 pt per 25 yards, 4 pts per TD, -2 per INT.
-  - Rushing/Receiving: 1 pt per 10 yards, 6 pts per TD.
-  - Receptions: 1 PPR point each.
-  - 2-pt conversion: 2 pts.
-- The manager with the highest weekly fantasy total wins the week. Season standings accumulate weekly fantasy points.
+- Tabs by position (QB / RB / WR / TE), searchable by name or team.
+- Each row: headshot, name, team logo, opponent, star cost, and status (Available / Yours / Rostered by someone).
+- Filters: "Available only", "Fits my remaining stars".
+- Running header shows stars used, slots filled, and a countdown to lock.
+- If two managers grab the same player at once, the second gets a clear "Just claimed by <team>" message and the pool refreshes live.
 
-## Data source
+## Scoring
 
-- Use ESPN's `/summary` and boxscore endpoints for the games in the selected week.
-- For each game, parse passing/rushing/receiving leaders and stats.
-- Build a player pool of the top performers from the week's games.
-- Player "salary" (stars) is computed from ESPN's projected fantasy points when available; otherwise from a simple tier based on season averages or name recognition.
+Standard PPR from live ESPN box scores: 0.04/pass yd, 4/pass TD, -2 INT, 0.1/rush-rec yd, 6/rush-rec TD, 1/reception, -2 fumble lost. Captain slot x1.5.
 
-## Database changes
+- Live fantasy scoreboard during games, updating with the same refresh cycle as the main scoreboard.
+- Weekly fantasy winner announced when all games are final, plus a season-long fantasy standings table (cumulative points, weekly wins).
 
-1. New `fantasy_lineups` table:
-   - `id`, `user_id`, `league_id`, `season`, `season_type`, `week`, `captain_player_id`, `submitted_at`.
-2. New `fantasy_lineup_players` table:
-   - `id`, `lineup_id`, `player_id`, `slot` (qb/rb/wr/te/flex), `salary` (1–5 stars).
-3. New `fantasy_player_stats` table:
-   - `id`, `season`, `week`, `player_id`, `name`, `team`, `position`, `pass_yds`, `pass_td`, `pass_int`, `rush_yds`, `rush_td`, `rec_yds`, `rec_td`, `rec`, `fantasy_points`.
-4. RLS policies:
-   - Users can read all fantasy stats (public within the league once the week starts).
-   - Users can insert/update only their own lineup before lock.
-   - Lineups are hidden from other users until the lock time, then revealed to all league members.
+## New "Fantasy" tab
 
-## Backend work
+- **My Lineup**: slot builder + player pool.
+- **Live**: everyone's lineups and live fantasy totals (hidden until lock).
+- **Season**: fantasy standings.
 
-1. Server function `syncFantasyStats({ season, seasonType, week })`:
-   - Fetches ESPN boxscores for every game in the week.
-   - Parses player stats and upserts into `fantasy_player_stats`.
-   - Called on page load/refocus and on a 60-second interval while games are live.
-2. Server function `submitFantasyLineup({ ... })`:
-   - Validates slot constraints, no duplicate players, salary cap, and lock time.
-   - Inserts or replaces the user's lineup for the week.
-3. Server function `getFantasyStandings({ leagueId, seasonType })`:
-   - Returns cumulative fantasy points and weekly wins per manager.
-4. Database function `fantasy_weekly_scores(...)`:
-   - Computes weekly total fantasy points for each lineup using `fantasy_player_stats` and captain multiplier.
+## Technical notes
 
-## Frontend work
+- Tables: `fantasy_players` (weekly pool with star costs, synced from ESPN rosters/depth charts), `fantasy_lineups` (one per user/league/week, captain flag), `fantasy_lineup_slots` (slot, player, unique constraint on league+season+week+player to enforce exclusive ownership at the database level), `fantasy_player_stats` (synced live).
+- RLS mirrors picks: own lineup always readable; others' lineups only after reveal. Claimed-player *names* are visible to everyone pre-lock (needed for the draft), but not which slot or the rest of a rival's lineup.
+- A trigger enforces the same lock windows as `enforce_pick_lock`, plus the 15-star cap and position eligibility.
+- Player pool and stats sync through the existing ESPN server functions and pg_cron sync job.
 
-1. New route `/fantasy` added to authenticated navigation.
-2. `FantasyLineupBuilder` component:
-   - Position filters (QB, RB, WR, TE).
-   - Player list with name, team, position, and star cost.
-   - Lineup slots at the top showing selected players, remaining salary, and captain toggle.
-   - Submit/lock button with countdown to first kickoff.
-3. `FantasyLeaderboard` component:
-   - Shows weekly fantasy scores and season-long fantasy standings.
-   - Highlights the weekly winner with the large trophy.
-4. `FantasyPlayerCard` component:
-   - Displays live fantasy points as games progress.
-5. Navigation:
-   - Add **Fantasy** tab to `AppShell` nav.
-   - Keep mobile nav two-row layout so all tabs remain visible.
+## Open item
 
-## Integration with existing features
-
-- Badges: add `fantasy_week_win` and `fantasy_sweep` (win both confidence and fantasy in the same week).
-- Recap: optional summary on the weekly recap page showing the fantasy winner.
-- Push notifications: notify managers when their fantasy players score TDs or when the week locks.
-
-## Out of scope
-
-- Real-money entry fees or prizes (app remains free-to-play).
-- Draft-style rosters or season-long player ownership.
-- Defense/special-teams slots.
-- College football players.
-
-## Success criteria
-
-- Managers can open the Fantasy tab, see the player pool, and build a valid lineup under the star cap.
-- Lineups lock at first kickoff and cannot be changed after.
-- As games progress, live fantasy points update automatically.
-- A weekly fantasy winner is crowned and season fantasy standings accumulate.
+Star costs need a source. Plan is to derive them from ESPN season stats (top producers cost 5, down to 1 for low-usage starters), recalculated weekly. Can be overridden by the commissioner if you want manual control.
