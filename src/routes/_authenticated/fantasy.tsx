@@ -463,6 +463,9 @@ function FantasyPage() {
           <TabsTrigger value="season" className="flex-1">
             Season
           </TabsTrigger>
+          <TabsTrigger value="rules" className="flex-1">
+            Rules
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="lineup" className="space-y-4 pt-4">
