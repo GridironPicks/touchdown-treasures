@@ -1,5 +1,11 @@
 import { teamLogo } from "@/lib/teams";
 
+import cartelCowboyz from "@/assets/mascots/cartel-cowboyz.png.asset.json";
+import heavyHitters from "@/assets/mascots/heavy-hitters.png.asset.json";
+import junkyardDogs from "@/assets/mascots/junkyard-dogs.png.asset.json";
+import mamaBear from "@/assets/mascots/mama-bear.png.asset.json";
+import treyTors from "@/assets/mascots/trey-tors.png.asset.json";
+
 import bear from "@/assets/mascots/bear.png.asset.json";
 import bison from "@/assets/mascots/bison.png.asset.json";
 import bolt from "@/assets/mascots/bolt.png.asset.json";
@@ -42,6 +48,11 @@ export const MASCOT_ART: Record<string, string> = {
   viper: viper.url,
   knight: knight.url,
   outlaw: outlaw.url,
+  "crest-cartel-cowboyz": cartelCowboyz.url,
+  "crest-heavy-hitters": heavyHitters.url,
+  "crest-mama-bear": mamaBear.url,
+  "crest-junkyard-dogs": junkyardDogs.url,
+  "crest-trey-tors": treyTors.url,
 };
 
 /** Resolves a stored mascot id to artwork. `nfl:dal` maps to the franchise logo. */

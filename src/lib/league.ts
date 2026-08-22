@@ -46,6 +46,15 @@ export const MASCOTS = [
   { id: "outlaw", label: "Outlaw" },
 ] as const;
 
+/** Premium 3D crests — optional, nobody's badge changes unless they pick one. */
+export const SIGNATURE_CRESTS = [
+  { id: "crest-cartel-cowboyz", label: "Cartel Cowboyz" },
+  { id: "crest-heavy-hitters", label: "Heavy Hitters" },
+  { id: "crest-mama-bear", label: "Mama Bear" },
+  { id: "crest-junkyard-dogs", label: "Junkyard Dogs" },
+  { id: "crest-trey-tors", label: "The Trey-tors" },
+] as const;
+
 export const TEAM_COLORS = [
   "#00E676",
   "#4FC3F7",
