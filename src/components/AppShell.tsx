@@ -11,7 +11,7 @@ const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
   { to: "/scoreboard", label: "Scores", icon: Radio },
   { to: "/leaderboard", label: "Standings", icon: Trophy },
-  { to: "/fantasy", label: "Fantasy", icon: Zap },
+  
   { to: "/survivor", label: "Survivor", icon: ShieldCheck },
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
   { to: "/team", label: "Team", icon: Shirt },
