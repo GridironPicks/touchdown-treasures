@@ -15,7 +15,8 @@ All rendered as circular esports crests on a dark slate background with beveling
 ## How they show up
 
 - A new "Signature crests" group appears in the team branding picker, next to the current mascot emblems and NFL logos.
-- Anyone can pick one — they are not locked to a specific manager — so a crest chosen here replaces that manager's mascot everywhere their team appears.
+- Entirely opt-in: nothing changes for anyone automatically. Every manager keeps their current logo unless they go to team branding and pick a new crest, and they can switch back at any time.
+- Anyone can pick any crest — they are not locked to a specific manager.
 - After you see the first renders, any crest can be regenerated with tweaks (color, angle, detail) before we finalize.
 
 ## Technical notes
