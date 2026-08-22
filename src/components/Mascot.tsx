@@ -50,6 +50,7 @@ export const MASCOT_ART: Record<string, string> = {
   knight: knight.url,
   outlaw: outlaw.url,
   "crest-cartel-cowboyz": cartelCowboyz.url,
+  "crest-dustin-off-my-trophy": dustinOffMyTrophy.url,
   "crest-heavy-hitters": heavyHitters.url,
   "crest-mama-bear": mamaBear.url,
   "crest-junkyard-dogs": junkyardDogs.url,
