@@ -1,6 +1,7 @@
 import { teamLogo } from "@/lib/teams";
 
 import cartelCowboyz from "@/assets/mascots/cartel-cowboyz.png.asset.json";
+import dustinOffMyTrophy from "@/assets/mascots/dustin-off-my-trophy.png.asset.json";
 import heavyHitters from "@/assets/mascots/heavy-hitters.png.asset.json";
 import junkyardDogs from "@/assets/mascots/junkyard-dogs.png.asset.json";
 import mamaBear from "@/assets/mascots/mama-bear.png.asset.json";

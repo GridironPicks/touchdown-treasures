@@ -49,6 +49,7 @@ export const MASCOTS = [
 /** Premium 3D crests — optional, nobody's badge changes unless they pick one. */
 export const SIGNATURE_CRESTS = [
   { id: "crest-cartel-cowboyz", label: "Cartel Cowboyz" },
+  { id: "crest-dustin-off-my-trophy", label: "Dustin Off My Trophy" },
   { id: "crest-heavy-hitters", label: "Heavy Hitters" },
   { id: "crest-mama-bear", label: "Mama Bear" },
   { id: "crest-junkyard-dogs", label: "Junkyard Dogs" },
