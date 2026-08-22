@@ -6,6 +6,7 @@ import { refreshSlateScores } from "@/lib/scores.functions";
 import { useMemo, useState } from "react";
 import { Flame, ScrollText, Trophy } from "lucide-react";
 
+import { LivePoints } from "@/components/LivePoints";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { SlatePicker } from "@/components/SlatePicker";
@@ -221,6 +222,10 @@ function LeaderboardPage() {
       </div>
 
       <SlatePicker slates={slates} value={slate} onChange={setPicked} />
+
+      {mode === "week" && activeLeague && slate && (
+        <LivePoints leagueId={activeLeague.id} seasonType={slate.seasonType} week={slate.week} />
+      )}
 
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
