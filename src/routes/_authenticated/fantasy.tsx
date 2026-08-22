@@ -118,7 +118,7 @@ function FantasyPage() {
   const suggested = useMemo(() => {
     const open = slates.find((s) => {
       const first = Math.min(...s.games.map((g) => new Date(g.kickoff).getTime()));
-      const lock = s.deadline?.getTime() ?? first;
+      const lock = s.seasonType === "reg" ? (s.deadline?.getTime() ?? first) : first;
       return lock > Date.now();
     });
     const fallback = slates.find((s) => !s.allFinal) ?? slates[slates.length - 1] ?? null;
