@@ -280,8 +280,6 @@ function FantasyPage() {
   const starsUsed = [...slotMap.values()].reduce((sum, s) => sum + (s.player?.pl_cost ?? 0), 0);
   const starsLeft = CAP - starsUsed;
   const filled = slotMap.size;
-  // Managers who never drafted are shut out once the week locks.
-  const lockedOut = locked && !notOpenYet && filled === 0;
 
 
   const myLive = useMemo(() => {
