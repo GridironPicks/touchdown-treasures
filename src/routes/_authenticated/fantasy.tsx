@@ -475,20 +475,7 @@ function FantasyPage() {
         </TabsList>
 
         <TabsContent value="lineup" className="space-y-4 pt-4">
-          {locked && (
-            <section className="field-panel rounded-2xl border border-border p-4">
-              <h2 className="stadium-heading flex items-center gap-2 text-lg">
-                <Lock size={16} /> {notOpenYet ? "Week not open yet" : "Lineups locked"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {notOpenYet
-                  ? "Drafting opens Tuesday at 12:00 AM ET and locks Wednesday at 6:00 PM ET."
-                  : lockedOut
-                    ? "This week locked at Wednesday 6:00 PM ET and you didn't draft a lineup — you're out for the week. Every lineup is now public on the Live tab."
-                    : "This week locked at Wednesday 6:00 PM ET. No changes can be made, and every lineup is now public on the Live tab."}
-              </p>
-            </section>
-          )}
+
 
           <section className="field-panel rounded-2xl border border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
