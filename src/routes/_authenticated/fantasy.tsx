@@ -118,7 +118,7 @@ function FantasyPage() {
   const suggested = useMemo(() => {
     const open = slates.find((s) => {
       const first = Math.min(...s.games.map((g) => new Date(g.kickoff).getTime()));
-      const lock = s.deadline?.getTime() ?? first;
+      const lock = s.seasonType === "reg" ? (s.deadline?.getTime() ?? first) : first;
       return lock > Date.now();
     });
     const fallback = slates.find((s) => !s.allFinal) ?? slates[slates.length - 1] ?? null;
@@ -143,12 +143,19 @@ function FantasyPage() {
     queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
   });
 
-  // Same window as confidence picks, preseason included:
-  // opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET.
-  const deadline = useMemo(() => (games.length ? weekDeadline(games) : null), [games]);
-  const opensAt = useMemo(() => (games.length ? weekOpensAt(games) : null), [games]);
+  const deadline = useMemo(() => {
+    if (games.length === 0) return null;
+    if (seasonType === "reg") return weekDeadline(games);
+    const first = Math.min(...games.map((g) => new Date(g.kickoff).getTime()));
+    return new Date(first);
+  }, [games, seasonType]);
+  const opensAt = useMemo(
+    () => (seasonType === "reg" ? weekOpensAt(games) : null),
+    [games, seasonType],
+  );
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
   const locked = notOpenYet || (deadline ? deadline.getTime() <= now : false);
+
   
 
 
@@ -273,8 +280,6 @@ function FantasyPage() {
   const starsUsed = [...slotMap.values()].reduce((sum, s) => sum + (s.player?.pl_cost ?? 0), 0);
   const starsLeft = CAP - starsUsed;
   const filled = slotMap.size;
-  // Managers who never drafted are shut out once the week locks.
-  const lockedOut = locked && !notOpenYet && filled === 0;
 
 
   const myLive = useMemo(() => {
@@ -468,20 +473,7 @@ function FantasyPage() {
         </TabsList>
 
         <TabsContent value="lineup" className="space-y-4 pt-4">
-          {locked && (
-            <section className="field-panel rounded-2xl border border-border p-4">
-              <h2 className="stadium-heading flex items-center gap-2 text-lg">
-                <Lock size={16} /> {notOpenYet ? "Week not open yet" : "Lineups locked"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {notOpenYet
-                  ? "Drafting opens Tuesday at 12:00 AM ET and locks Wednesday at 6:00 PM ET."
-                  : lockedOut
-                    ? "This week locked at Wednesday 6:00 PM ET and you didn't draft a lineup — you're out for the week. Every lineup is now public on the Live tab."
-                    : "This week locked at Wednesday 6:00 PM ET. No changes can be made, and every lineup is now public on the Live tab."}
-              </p>
-            </section>
-          )}
+
 
           <section className="field-panel rounded-2xl border border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
