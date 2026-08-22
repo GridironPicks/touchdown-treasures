@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { MASCOTS, TEAM_COLORS } from "@/lib/league";
+import { MASCOTS, SIGNATURE_CRESTS, TEAM_COLORS } from "@/lib/league";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,10 +126,21 @@ function TeamPage() {
 
         <div className="space-y-3">
           <Label>Team badge</Label>
-          <Tabs defaultValue={mascot.startsWith("nfl:") ? "nfl" : "mascots"}>
+          <Tabs
+            defaultValue={
+              mascot.startsWith("nfl:")
+                ? "nfl"
+                : mascot.startsWith("crest-")
+                  ? "crests"
+                  : "mascots"
+            }
+          >
             <TabsList className="w-full">
               <TabsTrigger className="flex-1" value="mascots">
                 Mascots
+              </TabsTrigger>
+              <TabsTrigger className="flex-1" value="crests">
+                Crests
               </TabsTrigger>
               <TabsTrigger className="flex-1" value="nfl">
                 NFL Teams
@@ -151,6 +162,29 @@ function TeamPage() {
                   >
                     <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
                     {m.label}
+                  </button>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="crests" className="mt-3">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Optional 3D signature crests — your current badge stays put unless you pick one.
+              </p>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                {SIGNATURE_CRESTS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMascot(m.id)}
+                    className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[11px] transition-colors ${
+                      mascot === m.id
+                        ? "glow-ring border-primary text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
+                    <span className="w-full truncate text-center">{m.label}</span>
                   </button>
                 ))}
               </div>
