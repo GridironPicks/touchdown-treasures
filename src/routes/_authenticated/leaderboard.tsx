@@ -37,68 +37,90 @@ export const Route = createFileRoute("/_authenticated/leaderboard")({
   component: LeaderboardPage,
 });
 
-type Board = "reg" | "pre" | "week";
+type Mode = "week" | "season";
+
+type Row = {
+  user_id: string;
+  display_name: string;
+  team_name: string;
+  mascot: string;
+  primary_color: string;
+  season_points: number;
+  weeks_played: number | null;
+  place: number;
+};
 
 function LeaderboardPage() {
-  const [board, setBoard] = useState<Board>("reg");
+  const [mode, setMode] = useState<Mode>("week");
   const { data: slates = [] } = useSlates();
   const fallback = useMemo(() => defaultSlate(slates), [slates]);
   const [picked, setPicked] = useState<Slate | null>(null);
   const slate = picked ?? fallback;
   const { activeLeague } = useLeague();
+  const board = slate?.seasonType ?? "reg";
 
   const refreshScores = useServerFn(refreshSlateScores);
 
-  const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["leaderboard", activeLeague?.id, board, slate?.seasonType, slate?.week],
-    enabled: (!!activeLeague && board !== "week") || (!!activeLeague && !!slate),
+  const { data: rows = [], isLoading } = useQuery<Row[]>({
+    queryKey: ["leaderboard", activeLeague?.id, mode, slate?.seasonType, slate?.week],
+    enabled: !!activeLeague && !!slate,
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     queryFn: async () => {
-      if (!activeLeague) return [];
-      if (slate) {
-        try {
-          await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
-        } catch {
-          /* keep showing stored standings */
-        }
+      if (!activeLeague || !slate) return [];
+      try {
+        await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
+      } catch {
+        /* keep showing stored standings */
       }
-      if (board === "week") {
-        const [scores, profiles] = await Promise.all([
-          supabase
-            .from("weekly_scores")
-            .select("*")
-            .eq("league_id", activeLeague.id)
-            .eq("season", SEASON)
-            .eq("season_type", slate!.seasonType)
-            .eq("week", slate!.week),
-          supabase.from("profiles").select("*"),
+      const profilesQuery = supabase.from("profiles").select("*");
+
+      if (mode === "week") {
+        const [weekly, profiles] = await Promise.all([
+          supabase.rpc("league_weekly_points", {
+            _season: SEASON,
+            _season_type: slate.seasonType,
+            _league_id: activeLeague.id,
+          }),
+          profilesQuery,
         ]);
-        if (scores.error) throw scores.error;
+        if (weekly.error) throw weekly.error;
         if (profiles.error) throw profiles.error;
-        return (scores.data ?? [])
-          .map((s) => {
-            const p = (profiles.data ?? []).find((x) => x.id === s.user_id);
+        return (weekly.data ?? [])
+          .filter((r) => r.week === slate.week)
+          .map((r) => {
+            const p = (profiles.data ?? []).find((x) => x.id === r.user_id);
             return {
-              user_id: s.user_id,
+              user_id: r.user_id,
               display_name: p?.display_name ?? "Manager",
               team_name: p?.team_name ?? "Unnamed Squad",
               mascot: p?.mascot ?? "eagle",
               primary_color: p?.primary_color ?? "#00E676",
-              season_points: s.points ?? 0,
-              weeks_played: null as number | null,
-            };
+              season_points: r.points ?? 0,
+              weeks_played: null,
+              place: r.place ?? 0,
+            } satisfies Row;
           })
-          .sort((a, b) => (b.season_points ?? 0) - (a.season_points ?? 0));
+          .sort((a, b) => a.place - b.place || b.season_points - a.season_points);
       }
+
       const { data, error } = await supabase
-        .from(board === "pre" ? "preseason_leaderboard" : "leaderboard")
+        .from(slate.seasonType === "pre" ? "preseason_leaderboard" : "leaderboard")
         .select("*")
         .eq("league_id", activeLeague.id)
         .order("season_points", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((r: any, i: number) => ({
+        user_id: r.user_id as string,
+        display_name: r.display_name ?? "Manager",
+        team_name: r.team_name ?? "Unnamed Squad",
+        mascot: r.mascot ?? "eagle",
+        primary_color: r.primary_color ?? "#00E676",
+        season_points: r.season_points ?? 0,
+        weeks_played: r.weeks_played ?? 0,
+        place: i + 1,
+      }));
     },
     refetchInterval: () => {
       const info = slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week);
@@ -106,6 +128,7 @@ function LeaderboardPage() {
       return live ? 60_000 : false;
     },
   });
+
 
   const streakType = board === "pre" ? "pre" : "reg";
   const { data: streaks = {} } = useQuery({
@@ -166,12 +189,12 @@ function LeaderboardPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="stadium-heading text-3xl">Season Standings</h1>
+          <h1 className="stadium-heading text-3xl">Standings</h1>
           <p className="text-sm text-muted-foreground">
-            {board === "pre"
-              ? "2026 preseason · free-play practice points"
-              : board === "week"
-                ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+            {mode === "week"
+              ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+              : board === "pre"
+                ? "2026 preseason · cumulative practice points"
                 : "2026 season · cumulative confidence points"}
           </p>
         </div>
@@ -186,27 +209,25 @@ function LeaderboardPage() {
 
 
       <div className="field-panel inline-flex rounded-xl p-1">
-        {(["reg", "pre", "week"] as const).map((key) => (
+        {(["week", "season"] as const).map((key) => (
           <button
             key={key}
             type="button"
-            onClick={() => setBoard(key)}
+            onClick={() => setMode(key)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-              board === key
+              mode === key
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {key === "reg" ? "Regular season" : key === "pre" ? "Preseason" : "By week"}
+            {key === "week" ? "By week" : "Season total"}
           </button>
         ))}
       </div>
 
-      {board === "week" && (
-        <SlatePicker slates={slates} value={slate} onChange={setPicked} />
-      )}
+      <SlatePicker slates={slates} value={slate} onChange={setPicked} />
 
-      {board === "week" && activeLeague && slate && (
+      {mode === "week" && activeLeague && slate && (
         <LivePoints
           leagueId={activeLeague.id}
           seasonType={slate.seasonType}
@@ -221,14 +242,16 @@ function LeaderboardPage() {
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
         ) : rows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">
-            {board === "week" ? "No scored picks for this week yet." : "No managers yet."}
+            {mode === "week" ? "No scored picks for this week yet." : "No managers yet."}
           </p>
         ) : (
           <ul className="divide-y divide-border">
             {rows.map((row, i) => {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
-              const weekChampion = board === "week" && i === 0 && (row.season_points ?? 0) > 0;
+              const place = mode === "week" ? (row.place || i + 1) : i + 1;
+              const weekChampion = mode === "week" && place === 1 && (row.season_points ?? 0) > 0;
+
               return (
               <li
                 key={row.user_id}
@@ -237,7 +260,7 @@ function LeaderboardPage() {
                 {weekChampion ? (
                   <WinnerTrophy size="md" label={`Winner of ${slate ? slateLabel(slate) : "the week"}`} />
                 ) : (
-                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
+                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{place}</span>
                 )}
                 <span className="relative">
                   <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
@@ -263,7 +286,7 @@ function LeaderboardPage() {
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
 
-                {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
+                {mode === "season" && board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
                   <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
                     <Trophy size={13} /> 2026
                   </span>
@@ -272,7 +295,8 @@ function LeaderboardPage() {
                 <div className="text-right">
                   <p className="stadium-heading text-xl text-primary">{row.season_points ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {board === "week" ? "pts" : `${row.weeks_played ?? 0} wks scored`}
+                    {mode === "week" ? "pts" : `${row.weeks_played ?? 0} wks scored`}
+
                   </p>
                 </div>
               </li>
