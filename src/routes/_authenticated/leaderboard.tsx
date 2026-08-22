@@ -37,68 +37,90 @@ export const Route = createFileRoute("/_authenticated/leaderboard")({
   component: LeaderboardPage,
 });
 
-type Board = "reg" | "pre" | "week";
+type Mode = "week" | "season";
+
+type Row = {
+  user_id: string;
+  display_name: string;
+  team_name: string;
+  mascot: string;
+  primary_color: string;
+  season_points: number;
+  weeks_played: number | null;
+  place: number;
+};
 
 function LeaderboardPage() {
-  const [board, setBoard] = useState<Board>("reg");
+  const [mode, setMode] = useState<Mode>("week");
   const { data: slates = [] } = useSlates();
   const fallback = useMemo(() => defaultSlate(slates), [slates]);
   const [picked, setPicked] = useState<Slate | null>(null);
   const slate = picked ?? fallback;
   const { activeLeague } = useLeague();
+  const board = slate?.seasonType ?? "reg";
 
   const refreshScores = useServerFn(refreshSlateScores);
 
-  const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["leaderboard", activeLeague?.id, board, slate?.seasonType, slate?.week],
-    enabled: (!!activeLeague && board !== "week") || (!!activeLeague && !!slate),
+  const { data: rows = [], isLoading } = useQuery<Row[]>({
+    queryKey: ["leaderboard", activeLeague?.id, mode, slate?.seasonType, slate?.week],
+    enabled: !!activeLeague && !!slate,
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     queryFn: async () => {
-      if (!activeLeague) return [];
-      if (slate) {
-        try {
-          await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
-        } catch {
-          /* keep showing stored standings */
-        }
+      if (!activeLeague || !slate) return [];
+      try {
+        await refreshScores({ data: { seasonType: slate.seasonType, week: slate.week } });
+      } catch {
+        /* keep showing stored standings */
       }
-      if (board === "week") {
-        const [scores, profiles] = await Promise.all([
-          supabase
-            .from("weekly_scores")
-            .select("*")
-            .eq("league_id", activeLeague.id)
-            .eq("season", SEASON)
-            .eq("season_type", slate!.seasonType)
-            .eq("week", slate!.week),
-          supabase.from("profiles").select("*"),
+      const profilesQuery = supabase.from("profiles").select("*");
+
+      if (mode === "week") {
+        const [weekly, profiles] = await Promise.all([
+          supabase.rpc("league_weekly_points", {
+            _season: SEASON,
+            _season_type: slate.seasonType,
+            _league_id: activeLeague.id,
+          }),
+          profilesQuery,
         ]);
-        if (scores.error) throw scores.error;
+        if (weekly.error) throw weekly.error;
         if (profiles.error) throw profiles.error;
-        return (scores.data ?? [])
-          .map((s) => {
-            const p = (profiles.data ?? []).find((x) => x.id === s.user_id);
+        return (weekly.data ?? [])
+          .filter((r) => r.week === slate.week)
+          .map((r) => {
+            const p = (profiles.data ?? []).find((x) => x.id === r.user_id);
             return {
-              user_id: s.user_id,
+              user_id: r.user_id,
               display_name: p?.display_name ?? "Manager",
               team_name: p?.team_name ?? "Unnamed Squad",
               mascot: p?.mascot ?? "eagle",
               primary_color: p?.primary_color ?? "#00E676",
-              season_points: s.points ?? 0,
-              weeks_played: null as number | null,
-            };
+              season_points: r.points ?? 0,
+              weeks_played: null,
+              place: r.place ?? 0,
+            } satisfies Row;
           })
-          .sort((a, b) => (b.season_points ?? 0) - (a.season_points ?? 0));
+          .sort((a, b) => a.place - b.place || b.season_points - a.season_points);
       }
+
       const { data, error } = await supabase
-        .from(board === "pre" ? "preseason_leaderboard" : "leaderboard")
+        .from(slate.seasonType === "pre" ? "preseason_leaderboard" : "leaderboard")
         .select("*")
         .eq("league_id", activeLeague.id)
         .order("season_points", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((r: any, i: number) => ({
+        user_id: r.user_id as string,
+        display_name: r.display_name ?? "Manager",
+        team_name: r.team_name ?? "Unnamed Squad",
+        mascot: r.mascot ?? "eagle",
+        primary_color: r.primary_color ?? "#00E676",
+        season_points: r.season_points ?? 0,
+        weeks_played: r.weeks_played ?? 0,
+        place: i + 1,
+      }));
     },
     refetchInterval: () => {
       const info = slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week);
@@ -106,6 +128,7 @@ function LeaderboardPage() {
       return live ? 60_000 : false;
     },
   });
+
 
   const streakType = board === "pre" ? "pre" : "reg";
   const { data: streaks = {} } = useQuery({
