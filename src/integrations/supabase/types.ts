@@ -733,6 +733,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      fantasy_lock_at: {
+        Args: {
+          _season: number
+          _season_type: Database["public"]["Enums"]["season_type"]
+          _week: number
+        }
+        Returns: string
+      }
       fantasy_pool: {
         Args: {
           _league_id: string
