@@ -149,7 +149,7 @@ function FantasyPage() {
   const opensAt = useMemo(() => (games.length ? weekOpensAt(games) : null), [games]);
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
   const locked = notOpenYet || (deadline ? deadline.getTime() <= now : false);
-  const lockedOut = locked && !notOpenYet && mySlotCount === 0;
+  
 
 
   const slateKey = [activeLeague?.id, SEASON, seasonType, week] as const;
