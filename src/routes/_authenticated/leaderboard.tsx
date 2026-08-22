@@ -189,12 +189,12 @@ function LeaderboardPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="stadium-heading text-3xl">Season Standings</h1>
+          <h1 className="stadium-heading text-3xl">Standings</h1>
           <p className="text-sm text-muted-foreground">
-            {board === "pre"
-              ? "2026 preseason · free-play practice points"
-              : board === "week"
-                ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+            {mode === "week"
+              ? `2026 ${slate ? slateLabel(slate) : ""} · points scored this week`
+              : board === "pre"
+                ? "2026 preseason · cumulative practice points"
                 : "2026 season · cumulative confidence points"}
           </p>
         </div>
@@ -209,27 +209,25 @@ function LeaderboardPage() {
 
 
       <div className="field-panel inline-flex rounded-xl p-1">
-        {(["reg", "pre", "week"] as const).map((key) => (
+        {(["week", "season"] as const).map((key) => (
           <button
             key={key}
             type="button"
-            onClick={() => setBoard(key)}
+            onClick={() => setMode(key)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-              board === key
+              mode === key
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {key === "reg" ? "Regular season" : key === "pre" ? "Preseason" : "By week"}
+            {key === "week" ? "By week" : "Season total"}
           </button>
         ))}
       </div>
 
-      {board === "week" && (
-        <SlatePicker slates={slates} value={slate} onChange={setPicked} />
-      )}
+      <SlatePicker slates={slates} value={slate} onChange={setPicked} />
 
-      {board === "week" && activeLeague && slate && (
+      {mode === "week" && activeLeague && slate && (
         <LivePoints
           leagueId={activeLeague.id}
           seasonType={slate.seasonType}
@@ -244,14 +242,16 @@ function LeaderboardPage() {
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
         ) : rows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">
-            {board === "week" ? "No scored picks for this week yet." : "No managers yet."}
+            {mode === "week" ? "No scored picks for this week yet." : "No managers yet."}
           </p>
         ) : (
           <ul className="divide-y divide-border">
             {rows.map((row, i) => {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
-              const weekChampion = board === "week" && i === 0 && (row.season_points ?? 0) > 0;
+              const place = mode === "week" ? (row.place || i + 1) : i + 1;
+              const weekChampion = mode === "week" && place === 1 && (row.season_points ?? 0) > 0;
+
               return (
               <li
                 key={row.user_id}
