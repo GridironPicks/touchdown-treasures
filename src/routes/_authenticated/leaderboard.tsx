@@ -260,7 +260,7 @@ function LeaderboardPage() {
                 {weekChampion ? (
                   <WinnerTrophy size="md" label={`Winner of ${slate ? slateLabel(slate) : "the week"}`} />
                 ) : (
-                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{i + 1}</span>
+                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{place}</span>
                 )}
                 <span className="relative">
                   <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
