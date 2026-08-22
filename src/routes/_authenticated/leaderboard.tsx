@@ -286,7 +286,7 @@ function LeaderboardPage() {
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
 
-                {board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
+                {mode === "season" && board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
                   <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
                     <Trophy size={13} /> 2026
                   </span>
@@ -295,7 +295,8 @@ function LeaderboardPage() {
                 <div className="text-right">
                   <p className="stadium-heading text-xl text-primary">{row.season_points ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {board === "week" ? "pts" : `${row.weeks_played ?? 0} wks scored`}
+                    {mode === "week" ? "pts" : `${row.weeks_played ?? 0} wks scored`}
+
                   </p>
                 </div>
               </li>
