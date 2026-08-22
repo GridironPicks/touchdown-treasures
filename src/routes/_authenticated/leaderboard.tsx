@@ -178,10 +178,6 @@ function LeaderboardPage() {
     return map;
   }, [badgeRows]);
 
-  const { data: meId = null } = useQuery({
-    queryKey: ["me-id"],
-    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
-  });
 
 
   return (
