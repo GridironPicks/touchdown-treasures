@@ -12,7 +12,6 @@ import { SlatePicker } from "@/components/SlatePicker";
 import { BadgeRow } from "@/components/BadgeRow";
 import { WinnerTrophy } from "@/components/WinnerTrophy";
 import { HeadToHead } from "@/components/HeadToHead";
-import { LivePoints } from "@/components/LivePoints";
 import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
@@ -179,10 +178,6 @@ function LeaderboardPage() {
     return map;
   }, [badgeRows]);
 
-  const { data: meId = null } = useQuery({
-    queryKey: ["me-id"],
-    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
-  });
 
 
   return (
@@ -226,16 +221,6 @@ function LeaderboardPage() {
       </div>
 
       <SlatePicker slates={slates} value={slate} onChange={setPicked} />
-
-      {mode === "week" && activeLeague && slate && (
-        <LivePoints
-          leagueId={activeLeague.id}
-          seasonType={slate.seasonType}
-          week={slate.week}
-          meId={meId}
-        />
-      )}
-
 
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
