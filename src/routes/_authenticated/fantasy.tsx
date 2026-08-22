@@ -143,18 +143,14 @@ function FantasyPage() {
     queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
   });
 
-  const deadline = useMemo(() => {
-    if (games.length === 0) return null;
-    if (seasonType === "reg") return weekDeadline(games);
-    const first = Math.min(...games.map((g) => new Date(g.kickoff).getTime()));
-    return new Date(first);
-  }, [games, seasonType]);
-  const opensAt = useMemo(
-    () => (seasonType === "reg" ? weekOpensAt(games) : null),
-    [games, seasonType],
-  );
+  // Same window as confidence picks, preseason included:
+  // opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET.
+  const deadline = useMemo(() => (games.length ? weekDeadline(games) : null), [games]);
+  const opensAt = useMemo(() => (games.length ? weekOpensAt(games) : null), [games]);
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
   const locked = notOpenYet || (deadline ? deadline.getTime() <= now : false);
+  const lockedOut = locked && !notOpenYet && mySlotCount === 0;
+
 
   const slateKey = [activeLeague?.id, SEASON, seasonType, week] as const;
 
