@@ -12,7 +12,7 @@ import { ManagerCabinet, type CabinetManager } from "@/components/TrophyCase";
 import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON, type SeasonType } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
-import { defaultSlate, useSlates } from "@/lib/slate";
+import { allPlayedWeeksSettled, defaultSlate, settledWeeks, useSlates } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/trophy-case")({
   head: () => ({
