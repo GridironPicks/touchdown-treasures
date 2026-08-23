@@ -1,36 +1,31 @@
-# Manager Stats & Picking DNA
+# Trophy Case tab
 
-A personal analytics dashboard on every manager profile that turns the season's picks into insight cards: what this manager is good at, where they struggle, and how their confidence evolves week to week.
+A new league-wide Trophy Case: a display-cabinet style page where every manager's badges and weekly trophies sit on lit glass shelves.
 
-## What you will see
+## What you'll get
 
-On each manager profile page (`/manager/:userId`), a new **Picking DNA** panel appears above the weekly picks:
+- A **Trophy Case** tab in the nav (desktop + mobile) at `/trophy-case`.
+- **Hall of Fame shelf** at the top: the current season leader with the big metallic trophy, plus a hardware count (weekly wins, total badges) for the league.
+- **One cabinet per manager**, sorted by hardware earned:
+  - Manager crest/mascot, team name, manager name.
+  - A row of gold weekly-win trophies — one per week they won, week number engraved on each.
+  - Their badge collection as glowing medallion chips (Perfect Week, Bullseye, Gutsy Call, Hot Streak, etc.) with the existing tap-to-see-details popover showing exactly which week/game earned it.
+  - Empty shelf state: "No hardware yet — the case is waiting."
+- **Season type toggle** (Preseason / Regular Season), matching the rest of the app.
+- Tapping a manager opens their existing manager page.
+- Badge glossary link so newcomers know what each award means.
 
-- **Overall accuracy** — correct picks / total picks submitted.
-- **Average confidence** — average confidence points they assign to winning picks vs losing picks.
-- **Confidence heat map** — win rate grouped by confidence band (high 13-16, mid 7-12, low 1-6).
-- **Spotlight traits** — auto-generated badges like:
-  - *Primetime Player* — best win rate on Thursday/Sunday/Monday night games.
-  - *Road Warrior* — best win rate picking away teams.
-  - *Underdog Whisperer* — best win rate when picking the team that was not favored (we infer underdog by lower confidence usage, or by spread if odds are added later).
-  - *Choker* — lowest win rate on their highest-confidence picks.
-  - *Closer* — best win rate in the final month of the regular season.
-- **Weekly trend sparkline** — a tiny bar chart of points earned per week for the selected season type.
-- **Best and worst weeks** — week number, points, and a link to that week's picks.
+## Look and feel
 
-The panel respects the existing reveal rules: it only includes weeks whose picks have been revealed to the viewer, so you cannot reverse-engineer hidden picks.
+Dark walnut/navy cabinet with metallic silver framing, backlit glass shelves (soft green stadium glow behind each shelf), reflection strip under each trophy, and subtle shine sweep on hover. Uses existing app tokens — no new color scheme.
 
-## Technical details
+## Technical notes
 
-- New security-definer SQL function `manager_picking_dna(_season int, _season_type text, _league_id uuid, _user_id uuid)` returns one row of aggregate stats plus JSON arrays for the weekly trend and confidence heat map.
-- New `src/lib/stats.functions.ts` wrapping the RPC call in a thin `createServerFn`.
-- New `src/components/PickingDNA.tsx` card component, used on the manager profile route.
-- Extend `src/routes/_authenticated/manager.$userId.tsx` to fetch and render the new card.
-- All calculations read only `games` and `picks` rows where `status = 'final'` and the week is revealed via `picks_revealed()`.
-- No new tables required; this is a read-only analytics layer over existing data.
-
-## Out of scope
-
-- Spread/odds integration is not required for launch; underdog detection can use confidence rank relative to the league average for that game.
-- No comparison to other managers yet; this release is per-manager only.
-- No email/export of the stats.
+- New route `src/routes/_authenticated/trophy-case.tsx` with its own `head()` meta.
+- Data comes from existing sources, no schema changes:
+  - `getManagerBadges` server fn (`manager_badges` RPC) for badges.
+  - `league_week_winners` RPC for weekly trophies.
+  - `profiles` (via existing league membership query pattern) for crest/team name.
+- Reuses `BadgeRow`/`BadgeChip`, `WinnerTrophy`, `Mascot`, `BadgeGlossary`.
+- New presentational component `src/components/TrophyCase.tsx` (shelf + cabinet styling); shelf/glass classes added to `src/styles.css` as reusable utilities.
+- Add `{ to: "/trophy-case", label: "Trophies", icon: Trophy }` to `NAV` in `AppShell.tsx`.
