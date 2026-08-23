@@ -163,47 +163,6 @@ function TrophyCasePage() {
         </div>
       </header>
 
-      <section className="trophy-cabinet p-5">
-        <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          Hall of fame
-        </p>
-        <div className="trophy-shelf flex flex-wrap items-center gap-4 px-4 py-5">
-          <WinnerTrophy size="lg" label="Season points leader" />
-          {leader ? (
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <Mascot mascot={leader.mascot} color={leader.primary_color} size="lg" />
-              <div className="min-w-0">
-                <p className="stadium-heading truncate text-xl">{leader.team_name}</p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {leader.display_name} · {leader.seasonPoints} points
-                </p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No hardware handed out yet this season.
-            </p>
-          )}
-          <div className="flex gap-4">
-            <div className="text-center">
-              <p className="stadium-heading flex items-center gap-1.5 text-2xl text-primary">
-                <Trophy size={18} /> {totalTrophies}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Week wins
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="stadium-heading flex items-center gap-1.5 text-2xl text-primary">
-                <Medal size={18} /> {totalBadges}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Medals</p>
-            </div>
-          </div>
-          <span className="shelf-glass pointer-events-none absolute inset-0" aria-hidden />
-        </div>
-      </section>
-
       {pendingWeek && (
         <p className="text-sm text-muted-foreground">
           {seasonType === "pre" ? "Preseason week" : "Week"} {pendingWeek.week} is still being
