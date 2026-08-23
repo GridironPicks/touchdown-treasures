@@ -261,7 +261,8 @@ function LeaderboardPage() {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
               const place = mode === "week" ? (row.place || i + 1) : i + 1;
-              const weekChampion = mode === "week" && place === 1 && (row.season_points ?? 0) > 0;
+              const weekChampion =
+                mode === "week" && weekSettled && place === 1 && (row.season_points ?? 0) > 0;
 
               return (
               <li
