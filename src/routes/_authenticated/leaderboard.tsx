@@ -138,11 +138,19 @@ function LeaderboardPage() {
 
 
   const streakType = board === "pre" ? "pre" : "reg";
-  const { data: streaks = {} } = useQuery({
-    queryKey: ["streaks", activeLeague?.id, streakType],
+  // Awards only count once every game of a week is final.
+  const settled = useMemo(() => settledWeeks(slates, streakType), [slates, streakType]);
+  const seasonSettled = useMemo(
+    () => allPlayedWeeksSettled(slates, streakType),
+    [slates, streakType],
+  );
+  const weekSettled = slate ? settledWeeks(slates, slate.seasonType).has(slate.week) : false;
+
+  const { data: winnersByWeekData = [] } = useQuery({
+    queryKey: ["week-winners", activeLeague?.id, streakType],
     enabled: !!activeLeague,
     queryFn: async () => {
-      if (!activeLeague) return {};
+      if (!activeLeague) return [];
       // One winner per completed week, decided by the shared tiebreaker ladder.
       const { data, error } = await supabase.rpc("league_week_winners", {
         _season: SEASON,
@@ -150,18 +158,7 @@ function LeaderboardPage() {
         _league_id: activeLeague.id,
       });
       if (error) throw error;
-      const winnersByWeek = new Map<number, string>();
-      for (const r of data ?? []) {
-        if (r.week !== null && r.user_id) winnersByWeek.set(r.week, r.user_id);
-      }
-      const weeks = [...winnersByWeek.keys()].sort((a, b) => b - a);
-      const result: Record<string, number> = {};
-      for (const [i, w] of weeks.entries()) {
-        const uid = winnersByWeek.get(w)!;
-        // Only extend a streak that is still unbroken from the newest week back.
-        if ((result[uid] ?? 0) === i) result[uid] = i + 1;
-      }
-      return result;
+      return data ?? [];
     },
     refetchInterval: () => {
       const info = slates.find((s) => s.seasonType === slate?.seasonType && s.week === slate?.week);
@@ -169,6 +166,21 @@ function LeaderboardPage() {
       return live ? 60_000 : false;
     },
   });
+
+  const streaks = useMemo(() => {
+    const winnersByWeek = new Map<number, string>();
+    for (const r of winnersByWeekData) {
+      if (r.week !== null && r.user_id && settled.has(r.week)) winnersByWeek.set(r.week, r.user_id);
+    }
+    const weeks = [...winnersByWeek.keys()].sort((a, b) => b - a);
+    const result: Record<string, number> = {};
+    for (const [i, w] of weeks.entries()) {
+      const uid = winnersByWeek.get(w)!;
+      // Only extend a streak that is still unbroken from the newest week back.
+      if ((result[uid] ?? 0) === i) result[uid] = i + 1;
+    }
+    return result;
+  }, [winnersByWeekData, settled]);
 
   const fetchBadges = useServerFn(getManagerBadges);
   const { data: badgeRows = [] } = useQuery({
@@ -181,10 +193,12 @@ function LeaderboardPage() {
   const badgesByUser = useMemo(() => {
     const map: Record<string, { badge: string; week: number | null; detail: string | null }[]> = {};
     for (const r of badgeRows) {
+      const official = r.week === null ? seasonSettled : settled.has(r.week);
+      if (!official) continue;
       (map[r.user_id] ??= []).push({ badge: r.badge, week: r.week, detail: r.detail });
     }
     return map;
-  }, [badgeRows]);
+  }, [badgeRows, settled, seasonSettled]);
 
 
 
