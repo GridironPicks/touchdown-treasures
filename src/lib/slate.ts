@@ -72,6 +72,23 @@ export function slateLabel(slate: Slate): string {
   return slate.seasonType === "pre" ? `Preseason Week ${slate.week}` : `Week ${slate.week}`;
 }
 
+/**
+ * Awards (week trophies, badges) are only official once every game of the week
+ * is final — a week still in progress can flip its winner with the last game.
+ */
+export function settledWeeks(slates: SlateInfo[], seasonType: SeasonType): Set<number> {
+  return new Set(
+    slates.filter((s) => s.seasonType === seasonType && s.allFinal).map((s) => s.week),
+  );
+}
+
+/** True when every week of the slate type that has kicked off is fully final. */
+export function allPlayedWeeksSettled(slates: SlateInfo[], seasonType: SeasonType): boolean {
+  return slates
+    .filter((s) => s.seasonType === seasonType && s.anyStarted)
+    .every((s) => s.allFinal);
+}
+
 /** Backwards-compatible single-slate hook. */
 export function useCurrentSlate() {
   return useQuery({
