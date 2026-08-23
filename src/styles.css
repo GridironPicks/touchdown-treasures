@@ -171,3 +171,37 @@
   letter-spacing: 0.06em;
   font-weight: 700;
 }
+
+@utility trophy-cabinet {
+  background:
+    linear-gradient(180deg, oklch(0.28 0.03 60 / 0.55), oklch(0.16 0.02 250 / 0.85)),
+    var(--gradient-field);
+  border: 1px solid oklch(0.85 0.15 88 / 0.28);
+  border-radius: 1rem;
+  box-shadow:
+    var(--shadow-stadium),
+    inset 0 1px 0 oklch(0.95 0.05 90 / 0.18);
+}
+
+@utility trophy-shelf {
+  position: relative;
+  background:
+    linear-gradient(180deg, oklch(0.83 0.22 153 / 0.1), transparent 55%),
+    oklch(0.18 0.02 250 / 0.55);
+  border: 1px solid oklch(0.85 0.15 88 / 0.18);
+  border-radius: 0.85rem;
+  box-shadow:
+    inset 0 14px 26px -18px oklch(0.83 0.22 153 / 0.8),
+    inset 0 -3px 0 oklch(0.85 0.15 88 / 0.35);
+  overflow: hidden;
+}
+
+@utility shelf-glass {
+  background: linear-gradient(115deg, oklch(1 0 0 / 0.07) 0%, transparent 42%, oklch(1 0 0 / 0.04) 70%, transparent 100%);
+}
+
+@utility trophy-plaque {
+  background: var(--gradient-chrome);
+  color: oklch(0.2 0.02 250);
+  letter-spacing: 0.12em;
+}
