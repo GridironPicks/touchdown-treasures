@@ -100,14 +100,16 @@ function TrophyCasePage() {
       };
 
       for (const r of weekly.data ?? []) {
-        if (!r.user_id) continue;
+        if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
         ensure(r.user_id).seasonPoints += r.points ?? 0;
       }
       for (const r of winners.data ?? []) {
-        if (!r.user_id || r.week === null) continue;
+        if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
         ensure(r.user_id).weekWins.push(r.week);
       }
       for (const r of badgeRows) {
+        const official = r.week === null ? seasonSettled : settled.has(r.week);
+        if (!official) continue;
         ensure(r.user_id).badges.push({ badge: r.badge, week: r.week, detail: r.detail });
       }
 
