@@ -16,7 +16,14 @@ import { HeadToHead } from "@/components/HeadToHead";
 import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
-import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
+import {
+  allPlayedWeeksSettled,
+  defaultSlate,
+  settledWeeks,
+  slateLabel,
+  useSlates,
+  type Slate,
+} from "@/lib/slate";
 
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
