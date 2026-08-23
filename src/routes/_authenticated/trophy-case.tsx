@@ -207,11 +207,18 @@ function TrophyCasePage() {
         </div>
       </section>
 
+      {pendingWeek && (
+        <p className="text-sm text-muted-foreground">
+          {seasonType === "pre" ? "Preseason week" : "Week"} {pendingWeek.week} is still being
+          played — its trophy and medals get engraved once every game is final.
+        </p>
+      )}
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Polishing the silverware…</p>
       ) : managers.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No managers have played this slate yet — trophies show up once weeks are scored.
+          No hardware yet — trophies show up once a week&apos;s games are all final.
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
