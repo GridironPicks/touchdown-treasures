@@ -36,7 +36,12 @@ export const Route = createFileRoute("/_authenticated/trophy-case")({
 
 function TrophyCasePage() {
   const { activeLeague } = useLeague();
-  const [seasonType, setSeasonType] = useState<SeasonType>("reg");
+  const { data: slates = [] } = useSlates();
+  // Show the slate the league is actually playing (preseason until week 1 arrives).
+  const current = useMemo(() => defaultSlate(slates)?.seasonType ?? null, [slates]);
+  const [override, setOverride] = useState<SeasonType | null>(null);
+  const seasonType: SeasonType = override ?? current ?? "reg";
+  const setSeasonType = setOverride;
   const fetchBadges = useServerFn(getManagerBadges);
 
   const { data, isLoading } = useQuery({
