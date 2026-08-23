@@ -23,6 +23,7 @@ import { Route as AuthenticatedRecapRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
 import { Route as AuthenticatedSurvivorRouteImport } from './routes/_authenticated/survivor'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedTrophyCaseRouteImport } from './routes/_authenticated/trophy-case'
 import { Route as AuthenticatedLeaguesIndexRouteImport } from './routes/_authenticated/leagues.index'
 import { Route as AuthenticatedManagerUserIdRouteImport } from './routes/_authenticated/manager.$userId'
 import { Route as ApiPublicNflSyncRouteImport } from './routes/api/public/nfl-sync'
@@ -100,6 +101,11 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTrophyCaseRoute = AuthenticatedTrophyCaseRouteImport.update({
+  id: '/trophy-case',
+  path: '/trophy-case',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLeaguesIndexRoute =
   AuthenticatedLeaguesIndexRouteImport.update({
     id: '/leagues/',
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/trophy-case': typeof AuthenticatedTrophyCaseRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/trophy-case': typeof AuthenticatedTrophyCaseRoute
   '/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRoute
   '/_authenticated/survivor': typeof AuthenticatedSurvivorRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/trophy-case': typeof AuthenticatedTrophyCaseRoute
   '/_authenticated/manager/$userId': typeof AuthenticatedManagerUserIdRoute
   '/api/public/nfl-sync': typeof ApiPublicNflSyncRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/scoreboard'
     | '/survivor'
     | '/team'
+    | '/trophy-case'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
     | '/api/public/notify'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/scoreboard'
     | '/survivor'
     | '/team'
+    | '/trophy-case'
     | '/manager/$userId'
     | '/api/public/nfl-sync'
     | '/api/public/notify'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/_authenticated/scoreboard'
     | '/_authenticated/survivor'
     | '/_authenticated/team'
+    | '/_authenticated/trophy-case'
     | '/_authenticated/manager/$userId'
     | '/api/public/nfl-sync'
     | '/api/public/notify'
@@ -366,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/trophy-case': {
+      id: '/_authenticated/trophy-case'
+      path: '/trophy-case'
+      fullPath: '/trophy-case'
+      preLoaderRoute: typeof AuthenticatedTrophyCaseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leagues/': {
       id: '/_authenticated/leagues/'
       path: '/leagues'
@@ -414,6 +433,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRoute
   AuthenticatedSurvivorRoute: typeof AuthenticatedSurvivorRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedTrophyCaseRoute: typeof AuthenticatedTrophyCaseRoute
   AuthenticatedManagerUserIdRoute: typeof AuthenticatedManagerUserIdRoute
   AuthenticatedLeaguesIndexRoute: typeof AuthenticatedLeaguesIndexRoute
 }
@@ -428,6 +448,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScoreboardRoute: AuthenticatedScoreboardRoute,
   AuthenticatedSurvivorRoute: AuthenticatedSurvivorRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedTrophyCaseRoute: AuthenticatedTrophyCaseRoute,
   AuthenticatedManagerUserIdRoute: AuthenticatedManagerUserIdRoute,
   AuthenticatedLeaguesIndexRoute: AuthenticatedLeaguesIndexRoute,
 }
