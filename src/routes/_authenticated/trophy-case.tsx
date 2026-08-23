@@ -127,8 +127,6 @@ function TrophyCasePage() {
     () => [...managers].sort((a, b) => b.seasonPoints - a.seasonPoints)[0] ?? null,
     [managers],
   );
-  const totalTrophies = managers.reduce((n, m) => n + m.weekWins.length, 0);
-  const totalBadges = managers.reduce((n, m) => n + m.badges.length, 0);
 
   return (
     <div className="space-y-6">
