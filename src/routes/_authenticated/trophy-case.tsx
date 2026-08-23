@@ -45,8 +45,19 @@ function TrophyCasePage() {
   const setSeasonType = setOverride;
   const fetchBadges = useServerFn(getManagerBadges);
 
+  // Hardware is only official once every game of a week is final.
+  const settled = useMemo(() => settledWeeks(slates, seasonType), [slates, seasonType]);
+  const seasonSettled = useMemo(
+    () => allPlayedWeeksSettled(slates, seasonType),
+    [slates, seasonType],
+  );
+  const pendingWeek = useMemo(
+    () => slates.find((s) => s.seasonType === seasonType && s.anyStarted && !s.allFinal) ?? null,
+    [slates, seasonType],
+  );
+
   const { data, isLoading } = useQuery({
-    queryKey: ["trophy-case", activeLeague?.id, seasonType],
+    queryKey: ["trophy-case", activeLeague?.id, seasonType, [...settled].join(","), seasonSettled],
     enabled: !!activeLeague,
     queryFn: async (): Promise<CabinetManager[]> => {
       if (!activeLeague) return [];
