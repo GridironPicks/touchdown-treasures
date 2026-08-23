@@ -12,7 +12,7 @@ import { ManagerCabinet, type CabinetManager } from "@/components/TrophyCase";
 import { getManagerBadges } from "@/lib/awards.functions";
 import { SEASON, type SeasonType } from "@/lib/league";
 import { useLeague } from "@/lib/league-context";
-import { defaultSlate, useSlates } from "@/lib/slate";
+import { allPlayedWeeksSettled, defaultSlate, settledWeeks, useSlates } from "@/lib/slate";
 
 export const Route = createFileRoute("/_authenticated/trophy-case")({
   head: () => ({
@@ -45,8 +45,19 @@ function TrophyCasePage() {
   const setSeasonType = setOverride;
   const fetchBadges = useServerFn(getManagerBadges);
 
+  // Hardware is only official once every game of a week is final.
+  const settled = useMemo(() => settledWeeks(slates, seasonType), [slates, seasonType]);
+  const seasonSettled = useMemo(
+    () => allPlayedWeeksSettled(slates, seasonType),
+    [slates, seasonType],
+  );
+  const pendingWeek = useMemo(
+    () => slates.find((s) => s.seasonType === seasonType && s.anyStarted && !s.allFinal) ?? null,
+    [slates, seasonType],
+  );
+
   const { data, isLoading } = useQuery({
-    queryKey: ["trophy-case", activeLeague?.id, seasonType],
+    queryKey: ["trophy-case", activeLeague?.id, seasonType, [...settled].join(","), seasonSettled],
     enabled: !!activeLeague,
     queryFn: async (): Promise<CabinetManager[]> => {
       if (!activeLeague) return [];
@@ -89,14 +100,16 @@ function TrophyCasePage() {
       };
 
       for (const r of weekly.data ?? []) {
-        if (!r.user_id) continue;
+        if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
         ensure(r.user_id).seasonPoints += r.points ?? 0;
       }
       for (const r of winners.data ?? []) {
-        if (!r.user_id || r.week === null) continue;
+        if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
         ensure(r.user_id).weekWins.push(r.week);
       }
       for (const r of badgeRows) {
+        const official = r.week === null ? seasonSettled : settled.has(r.week);
+        if (!official) continue;
         ensure(r.user_id).badges.push({ badge: r.badge, week: r.week, detail: r.detail });
       }
 
@@ -194,11 +207,18 @@ function TrophyCasePage() {
         </div>
       </section>
 
+      {pendingWeek && (
+        <p className="text-sm text-muted-foreground">
+          {seasonType === "pre" ? "Preseason week" : "Week"} {pendingWeek.week} is still being
+          played — its trophy and medals get engraved once every game is final.
+        </p>
+      )}
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Polishing the silverware…</p>
       ) : managers.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No managers have played this slate yet — trophies show up once weeks are scored.
+          No hardware yet — trophies show up once a week&apos;s games are all final.
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
