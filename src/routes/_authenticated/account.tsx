@@ -1,13 +1,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Mail, ShieldCheck, LogOut, KeyRound } from "lucide-react";
+import { Mail, ShieldCheck, LogOut, KeyRound, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useLeague } from "@/lib/league-context";
+import { deleteMyAccount } from "@/lib/account.functions";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
