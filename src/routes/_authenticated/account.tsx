@@ -229,6 +229,52 @@ function AccountPage() {
               </Button>
             </div>
           </section>
+
+          <section className="field-panel space-y-3 rounded-2xl border-destructive/40 p-5">
+            <h2 className="stadium-heading text-xl text-destructive">Danger zone</h2>
+            <p className="text-sm text-muted-foreground">
+              Deleting your account permanently removes your profile, picks, survivor picks,
+              messages, badges and league memberships. This cannot be undone.
+            </p>
+            <AlertDialog
+              onOpenChange={(open) => {
+                if (!open) setConfirmText("");
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full sm:w-auto">
+                  <Trash2 size={16} /> Delete my account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes {user?.email ?? "your account"} and every pick,
+                    trophy and message tied to it. Type DELETE below to confirm.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Input
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  aria-label="Type DELETE to confirm"
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={confirmText.trim().toUpperCase() !== "DELETE" || deleting}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      void deleteAccount();
+                    }}
+                  >
+                    {deleting ? "Deleting…" : "Delete forever"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </section>
         </>
       )}
     </div>
