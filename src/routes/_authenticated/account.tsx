@@ -57,6 +57,24 @@ function AccountPage() {
   const queryClient = useQueryClient();
   const { leagues } = useLeague();
   const [busy, setBusy] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const removeAccount = useServerFn(deleteMyAccount);
+
+  async function deleteAccount() {
+    setDeleting(true);
+    try {
+      await removeAccount({ data: undefined });
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+      toast.success("Your account has been deleted.");
+      navigate({ to: "/auth", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete your account");
+      setDeleting(false);
+    }
+  }
 
   const { data: account, isLoading } = useQuery({
     queryKey: ["account"],
