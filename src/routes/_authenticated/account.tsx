@@ -1,13 +1,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Mail, ShieldCheck, LogOut, KeyRound } from "lucide-react";
+import { Mail, ShieldCheck, LogOut, KeyRound, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useLeague } from "@/lib/league-context";
+import { deleteMyAccount } from "@/lib/account.functions";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -43,6 +57,24 @@ function AccountPage() {
   const queryClient = useQueryClient();
   const { leagues } = useLeague();
   const [busy, setBusy] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const removeAccount = useServerFn(deleteMyAccount);
+
+  async function deleteAccount() {
+    setDeleting(true);
+    try {
+      await removeAccount({ data: undefined });
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+      toast.success("Your account has been deleted.");
+      navigate({ to: "/auth", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete your account");
+      setDeleting(false);
+    }
+  }
 
   const { data: account, isLoading } = useQuery({
     queryKey: ["account"],
@@ -196,6 +228,52 @@ function AccountPage() {
                 <LogOut size={16} /> Sign out
               </Button>
             </div>
+          </section>
+
+          <section className="field-panel space-y-3 rounded-2xl border-destructive/40 p-5">
+            <h2 className="stadium-heading text-xl text-destructive">Danger zone</h2>
+            <p className="text-sm text-muted-foreground">
+              Deleting your account permanently removes your profile, picks, survivor picks,
+              messages, badges and league memberships. This cannot be undone.
+            </p>
+            <AlertDialog
+              onOpenChange={(open) => {
+                if (!open) setConfirmText("");
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full sm:w-auto">
+                  <Trash2 size={16} /> Delete my account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes {user?.email ?? "your account"} and every pick,
+                    trophy and message tied to it. Type DELETE below to confirm.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Input
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  aria-label="Type DELETE to confirm"
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={confirmText.trim().toUpperCase() !== "DELETE" || deleting}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      void deleteAccount();
+                    }}
+                  >
+                    {deleting ? "Deleting…" : "Delete forever"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </section>
         </>
       )}
