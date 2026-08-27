@@ -408,8 +408,15 @@ function PicksPage() {
           <p className="text-sm text-muted-foreground">
             {isRegular
               ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
-              : "Submit before the first kickoff of the week. Miss it and you sit this week out — picks are final once submitted."}
+              : "Pick the games that haven't kicked off yet. Every game that starts burns the highest confidence number off your board, so the longer you wait the less you can score. Picks are final once submitted."}
           </p>
+          {burnedTop > 0 ? (
+            <p className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-300">
+              {burnedTop} {burnedTop === 1 ? "game has" : "games have"} started — confidence{" "}
+              {burnedNumbers.join(", ")} {burnedTop === 1 ? "is" : "are"} off the board for you this
+              week. You can still assign {pointsCeiling} down to 1.
+            </p>
+          ) : null}
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
@@ -422,11 +429,12 @@ function PicksPage() {
               : deadlinePassed
                 ? isRegular
                   ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
-                  : "This week kicked off before you submitted, so you're sitting this week out. Scores are shown below."
+                  : "The last game of this week has kicked off, so the week is closed. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
       )}
+
 
       <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} leagueId={activeLeague!.id} />
 
