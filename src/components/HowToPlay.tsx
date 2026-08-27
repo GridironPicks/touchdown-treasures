@@ -82,11 +82,14 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
               </>
             ) : (
               <>
-                <strong className="text-foreground">Free preseason play:</strong> no weekly
-                deadline. Each game locks at its own kickoff, and you can edit picks for any game
-                that hasn't started yet.
+                <strong className="text-foreground">Free preseason play:</strong> each game locks
+                at its own kickoff, and the week closes when the last game starts. Every game that
+                kicks off before you submit burns the highest confidence number off your board — if
+                3 games have started, {maxPoints}, {maxPoints - 1} and {maxPoints - 2} are gone for
+                you that week.
               </>
             )}
+
           </p>
 
           <ul className="list-disc space-y-1.5 pl-4">
