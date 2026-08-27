@@ -370,7 +370,7 @@ function PicksPage() {
               </p>
             ) : status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
-                {formatCountdown(isRegular ? untilDeadline : nextKickoff)}
+                {formatCountdown(untilDeadline)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
