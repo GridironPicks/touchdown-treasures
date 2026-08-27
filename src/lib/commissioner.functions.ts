@@ -116,7 +116,7 @@ export const renameLeague = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => renameSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase as never, data.leagueId, context.userId);
+    await assertOwner(context.supabase as never, data.leagueId, context.userId, { allowGlobalPool: true });
     const { error } = await context.supabase
       .from("leagues")
       .update({ name: data.name.trim(), updated_at: new Date().toISOString() })
@@ -140,7 +140,7 @@ export const removeMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => memberSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase as never, data.leagueId, context.userId);
+    await assertOwner(context.supabase as never, data.leagueId, context.userId, { allowGlobalPool: true });
     if (data.userId === context.userId) throw new Error("You can't remove yourself as owner");
     const { error } = await context.supabase
       .from("league_memberships")
@@ -168,7 +168,7 @@ export const nudgeUnsubmitted = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => nudgeSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const league = await assertOwner(context.supabase as never, data.leagueId, context.userId);
+    const league = await assertOwner(context.supabase as never, data.leagueId, context.userId, { allowGlobalPool: true });
 
     const { data: status, error } = await context.supabase.rpc("week_submission_status", {
       _season: SEASON,
