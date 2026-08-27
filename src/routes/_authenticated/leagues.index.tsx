@@ -220,6 +220,8 @@ function LeaguesPage() {
         </div>
       </section>
 
+      <RequestToJoinPool />
+
       <section className="field-panel rounded-2xl p-5">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <Users size={18} className="text-primary" /> Join a league
