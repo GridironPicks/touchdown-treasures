@@ -210,6 +210,27 @@ function PicksPage() {
   const pointsCeiling = Math.max(0, maxPoints - burnedTop);
   const burnedNumbers = Array.from({ length: burnedTop }, (_, i) => maxPoints - i).reverse();
 
+  // If a game kicks off while you're mid-pick, any number that just burned off
+  // the board is cleared so you can't submit an illegal value.
+  useEffect(() => {
+    if (pointsCeiling <= 0) return;
+    setSelections((prev) => {
+      let changed = false;
+      const next: Record<string, Selection> = {};
+      for (const [id, sel] of Object.entries(prev)) {
+        if (sel.confidence !== null && sel.confidence > pointsCeiling) {
+          next[id] = { ...sel, confidence: null };
+          changed = true;
+        } else {
+          next[id] = sel;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [pointsCeiling]);
+
+
+
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
   
