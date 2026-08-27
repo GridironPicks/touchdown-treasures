@@ -18,12 +18,18 @@ If you'd rather not run money through a processor at all, the same ledger works 
 **Unpaid managers**
 - Configurable by you: either blocked from submitting picks until paid, or allowed to play but marked "not eligible for payouts" with a badge on the standings row. Default is the softer option — nobody gets locked out of the fun mid-week.
 
-## What you see as commissioner
+## What you see as commissioner (owner-only tab)
+
+A new "Pot" section inside the commissioner panel on the Leagues page, only visible when you're the league owner:
 
 - **Pot setup**: buy-in amount, and the split — a weekly-winner share plus season prizes (1st/2nd/3rd), with a live preview showing exact dollar amounts as you type. Must add to 100% before it saves.
 - **Roster of payments**: who paid, when, how much; a **Mark as paid** button for anyone who hands you cash or Venmos you outside the app.
 - **Payout log**: for each week's winner and each season prize, a **Mark paid** button with an optional note ("Venmo 8/12"). This is what fills the players' payout board.
 - **Refund** on any collected buy-in, in case someone drops out early.
+- **Block unpaid managers** toggle. Default off.
+
+Players never see the setup, roster, or payout-log controls. They only see the public pot banner and their own payment status.
+
 
 ## Order of work
 
