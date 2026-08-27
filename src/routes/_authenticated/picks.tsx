@@ -183,10 +183,7 @@ function PicksPage() {
   // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const firstKickoff = useMemo(() => {
-    const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
-    return times.length ? new Date(Math.min(...times)) : null;
-  }, [games]);
+  
   const lastKickoff = useMemo(() => {
     const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
     return times.length ? new Date(Math.max(...times)) : null;
