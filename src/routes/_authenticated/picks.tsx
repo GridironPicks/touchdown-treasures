@@ -516,17 +516,17 @@ function PicksPage() {
                   className="h-12 w-full rounded-xl border border-border bg-input px-3 text-base font-bold text-foreground sm:w-28"
                 >
                   <option value="">Pts</option>
-                  {Array.from({ length: maxPoints }, (_, i) => maxPoints - i).map((n) => (
-                    <option
-                      key={n}
-                      value={n}
-                      disabled={
-                        (usedPoints.has(n) || reservedPoints.has(n)) && sel?.confidence !== n
-                      }
-                    >
-                      {n}
-                    </option>
-                  ))}
+                  {Array.from({ length: maxPoints }, (_, i) => maxPoints - i)
+                    .filter(
+                      (n) =>
+                        sel?.confidence === n ||
+                        (!usedPoints.has(n) && !reservedPoints.has(n)),
+                    )
+                    .map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
                 </select>
               </div>
               {(() => {
