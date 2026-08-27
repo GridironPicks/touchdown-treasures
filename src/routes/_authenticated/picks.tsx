@@ -183,14 +183,16 @@ function PicksPage() {
   // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const firstKickoff = useMemo(() => {
+  
+  const lastKickoff = useMemo(() => {
     const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
-    return times.length ? new Date(Math.min(...times)) : null;
+    return times.length ? new Date(Math.max(...times)) : null;
   }, [games]);
-  // Preseason: the whole week closes at the first kickoff — miss it and you sit the week out.
+  // Preseason: each game locks at its own kickoff and the week closes when the
+  // last game starts. Late entries lose the highest confidence numbers.
   const deadline = useMemo(
-    () => (isRegular ? weekDeadline(games) : firstKickoff),
-    [isRegular, games, firstKickoff],
+    () => (isRegular ? weekDeadline(games) : lastKickoff),
+    [isRegular, games, lastKickoff],
   );
   const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
@@ -200,6 +202,32 @@ function PicksPage() {
   const submitted = hasPicks;
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
+
+  // Preseason penalty: every game that has kicked off burns the next highest
+  // confidence number off the board for anyone who hasn't submitted yet.
+  const startedCount = games.length - openGames.length;
+  const burnedTop = !isRegular && !submitted ? startedCount : 0;
+  const pointsCeiling = Math.max(0, maxPoints - burnedTop);
+  const burnedNumbers = Array.from({ length: burnedTop }, (_, i) => maxPoints - i).reverse();
+
+  // If a game kicks off while you're mid-pick, any number that just burned off
+  // the board is cleared so you can't submit an illegal value.
+  useEffect(() => {
+    if (pointsCeiling <= 0) return;
+    setSelections((prev) => {
+      let changed = false;
+      const next: Record<string, Selection> = {};
+      for (const [id, sel] of Object.entries(prev)) {
+        if (sel.confidence !== null && sel.confidence > pointsCeiling) {
+          next[id] = { ...sel, confidence: null };
+          changed = true;
+        } else {
+          next[id] = sel;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [pointsCeiling]);
 
 
 
@@ -229,6 +257,7 @@ function PicksPage() {
     openGames.length > 0 &&
     openGames.every((g) => selections[g.id]?.team && selections[g.id]?.confidence) &&
     (tiebreakerLocked || tiebreaker.trim() !== "");
+
 
   function pickTeam(gameId: string, team: string) {
     if (locked) return;
@@ -343,7 +372,7 @@ function PicksPage() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {maxPoints} games · assign {maxPoints} down to 1
+              {maxPoints} games · assign {burnedTop > 0 ? pointsCeiling : maxPoints} down to 1
               {openGames.length < maxPoints ? ` · ${openGames.length} still open` : ""}
             </p>
           </div>
@@ -355,7 +384,7 @@ function PicksPage() {
                 : status === "open"
                   ? isRegular
                     ? "Locks Wed 6:00 PM ET"
-                    : "Locks at first kickoff"
+                    : "Closes at last kickoff"
                   : submitted
                     ? "Picks submitted"
                     : status === "in-progress"
@@ -397,8 +426,15 @@ function PicksPage() {
           <p className="text-sm text-muted-foreground">
             {isRegular
               ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
-              : "Submit before the first kickoff of the week. Miss it and you sit this week out — picks are final once submitted."}
+              : "Pick the games that haven't kicked off yet. Every game that starts burns the highest confidence number off your board, so the longer you wait the less you can score. Picks are final once submitted."}
           </p>
+          {burnedTop > 0 ? (
+            <p className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-300">
+              {burnedTop} {burnedTop === 1 ? "game has" : "games have"} started — confidence{" "}
+              {burnedNumbers.join(", ")} {burnedTop === 1 ? "is" : "are"} off the board for you this
+              week. You can still assign {pointsCeiling} down to 1.
+            </p>
+          ) : null}
         </section>
       ) : (
         <section className="field-panel rounded-2xl border border-border p-5">
@@ -411,11 +447,12 @@ function PicksPage() {
               : deadlinePassed
                 ? isRegular
                   ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
-                  : "This week kicked off before you submitted, so you're sitting this week out. Scores are shown below."
+                  : "The last game of this week has kicked off, so the week is closed. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
       )}
+
 
       <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} leagueId={activeLeague!.id} />
 
@@ -527,7 +564,7 @@ function PicksPage() {
                   className="h-12 w-full rounded-xl border border-border bg-input px-3 text-base font-bold text-foreground sm:w-28"
                 >
                   <option value="">Pts</option>
-                  {Array.from({ length: maxPoints }, (_, i) => maxPoints - i)
+                  {Array.from({ length: pointsCeiling }, (_, i) => pointsCeiling - i)
                     .filter(
                       (n) =>
                         sel?.confidence === n ||
