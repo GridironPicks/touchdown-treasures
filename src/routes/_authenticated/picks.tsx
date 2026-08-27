@@ -187,10 +187,15 @@ function PicksPage() {
     const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
     return times.length ? new Date(Math.min(...times)) : null;
   }, [games]);
-  // Preseason: the whole week closes at the first kickoff — miss it and you sit the week out.
+  const lastKickoff = useMemo(() => {
+    const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
+    return times.length ? new Date(Math.max(...times)) : null;
+  }, [games]);
+  // Preseason: each game locks at its own kickoff and the week closes when the
+  // last game starts. Late entries lose the highest confidence numbers.
   const deadline = useMemo(
-    () => (isRegular ? weekDeadline(games) : firstKickoff),
-    [isRegular, games, firstKickoff],
+    () => (isRegular ? weekDeadline(games) : lastKickoff),
+    [isRegular, games, lastKickoff],
   );
   const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
@@ -201,7 +206,12 @@ function PicksPage() {
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
-
+  // Preseason penalty: every game that has kicked off burns the next highest
+  // confidence number off the board for anyone who hasn't submitted yet.
+  const startedCount = games.length - openGames.length;
+  const burnedTop = !isRegular && !submitted ? startedCount : 0;
+  const pointsCeiling = Math.max(0, maxPoints - burnedTop);
+  const burnedNumbers = Array.from({ length: burnedTop }, (_, i) => maxPoints - i).reverse();
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
@@ -229,6 +239,7 @@ function PicksPage() {
     openGames.length > 0 &&
     openGames.every((g) => selections[g.id]?.team && selections[g.id]?.confidence) &&
     (tiebreakerLocked || tiebreaker.trim() !== "");
+
 
   function pickTeam(gameId: string, team: string) {
     if (locked) return;
