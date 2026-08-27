@@ -538,7 +538,7 @@ function PicksPage() {
                   className="h-12 w-full rounded-xl border border-border bg-input px-3 text-base font-bold text-foreground sm:w-28"
                 >
                   <option value="">Pts</option>
-                  {Array.from({ length: maxPoints }, (_, i) => maxPoints - i)
+                  {Array.from({ length: pointsCeiling }, (_, i) => pointsCeiling - i)
                     .filter(
                       (n) =>
                         sel?.confidence === n ||
