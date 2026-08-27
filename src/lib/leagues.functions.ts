@@ -126,7 +126,7 @@ export const deleteLeague = createServerFn({ method: "POST" })
       .maybeSingle();
     if (readError) throw readError;
     if (!league) throw new Error("League not found");
-    if (league.is_global_pool) throw new Error("The Global Pool can't be deleted");
+    if (league.is_global_pool) throw new Error("The 2026 Gridiron Pool can't be deleted");
     if (league.owner_id !== context.userId) throw new Error("Only the league owner can delete it");
 
     const { error } = await context.supabase.from("leagues").delete().eq("id", data.leagueId);

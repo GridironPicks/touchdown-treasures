@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/leagues/")({
       { title: "Leagues — Gridiron Confidence" },
       {
         name: "description",
-        content: "Create or join private Gridiron Confidence leagues. The Global Pool is always available.",
+        content: "Create or join private Gridiron Confidence leagues. The 2026 Gridiron Pool is invite-only.",
       },
       { property: "og:title", content: "Leagues — Gridiron Confidence" },
       {
@@ -165,7 +165,7 @@ function LeaguesPage() {
       <header>
         <h1 className="stadium-heading text-3xl">Leagues</h1>
         <p className="text-sm text-muted-foreground">
-          Play in the Global Pool or create private leagues for your crew.
+          Play in the 2026 Gridiron Pool or create private leagues for your crew.
         </p>
       </header>
 
