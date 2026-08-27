@@ -205,7 +205,7 @@ function PicksPage() {
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
-  const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
+  
   const untilDeadline = deadline ? deadline.getTime() - now : 0;
   const untilOpen = opensAt ? opensAt.getTime() - now : 0;
 
