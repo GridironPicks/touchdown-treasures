@@ -223,14 +223,16 @@ export function CommissionerPanel({ league }: { league: League }) {
                     </div>
                     {m.role !== "owner" && (
                       <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-1 text-xs"
-                          onClick={() => setConfirm({ type: "transfer", member: m })}
-                        >
-                          <Crown size={13} /> Make owner
-                        </Button>
+                        {!league.is_global_pool && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() => setConfirm({ type: "transfer", member: m })}
+                          >
+                            <Crown size={13} /> Make owner
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -246,7 +248,10 @@ export function CommissionerPanel({ league }: { league: League }) {
               </ul>
             )}
           </div>
+
+          {league.is_global_pool && <RejoinPicker leagueId={league.id} />}
         </div>
+
       )}
 
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
