@@ -392,12 +392,12 @@ function PicksPage() {
       ) : status === "open" ? (
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">
-            {isRegular ? "Picks open" : "Free preseason play"}
+            {isRegular ? "Picks open" : "Preseason picks open"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
               ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
-              : "No deadline in the preseason. Edit your picks any time — each game locks only when it kicks off."}
+              : "Submit before the first kickoff of the week. Miss it and you sit this week out — picks are final once submitted."}
           </p>
         </section>
       ) : (
@@ -408,8 +408,10 @@ function PicksPage() {
           <p className="text-sm text-muted-foreground">
             {submitted
               ? "You've submitted this week's picks — they're locked in and can't be changed."
-              : isRegular && deadlinePassed
-                ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+              : deadlinePassed
+                ? isRegular
+                  ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+                  : "This week kicked off before you submitted, so you're sitting this week out. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
