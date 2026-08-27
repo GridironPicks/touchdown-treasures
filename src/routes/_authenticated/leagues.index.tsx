@@ -262,7 +262,7 @@ function LeaguesPage() {
                       {league.name}
                       {league.is_global_pool && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                          GLOBAL
+                          MAIN POOL
                         </span>
                       )}
                       {league.role === "owner" && (
