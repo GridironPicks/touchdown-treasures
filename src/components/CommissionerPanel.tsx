@@ -28,6 +28,7 @@ import {
   type LeagueMember,
 } from "@/lib/commissioner.functions";
 import { LeagueRulesEditor } from "@/components/LeagueRulesEditor";
+import { JoinRequests } from "@/components/JoinRequests";
 import { RejoinPicker } from "@/components/RejoinPicker";
 import type { League } from "@/lib/leagues.functions";
 import { defaultSlate, slateLabel, useSlates } from "@/lib/slate";
@@ -248,6 +249,8 @@ export function CommissionerPanel({ league }: { league: League }) {
               </ul>
             )}
           </div>
+
+          <JoinRequests leagueId={league.id} />
 
           {league.is_global_pool && <RejoinPicker leagueId={league.id} />}
         </div>

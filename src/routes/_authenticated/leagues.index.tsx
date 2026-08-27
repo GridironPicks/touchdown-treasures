@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { CommissionerPanel } from "@/components/CommissionerPanel";
+import { RequestToJoinPool } from "@/components/RequestToJoinPool";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/leagues/")({
       { title: "Leagues — Gridiron Confidence" },
       {
         name: "description",
-        content: "Create or join private Gridiron Confidence leagues. The Global Pool is always available.",
+        content: "Create or join private Gridiron Confidence leagues. The 2026 Gridiron Pool is invite-only.",
       },
       { property: "og:title", content: "Leagues — Gridiron Confidence" },
       {
@@ -164,7 +165,7 @@ function LeaguesPage() {
       <header>
         <h1 className="stadium-heading text-3xl">Leagues</h1>
         <p className="text-sm text-muted-foreground">
-          Play in the Global Pool or create private leagues for your crew.
+          Play in the 2026 Gridiron Pool or create private leagues for your crew.
         </p>
       </header>
 
@@ -220,6 +221,8 @@ function LeaguesPage() {
         </div>
       </section>
 
+      <RequestToJoinPool />
+
       <section className="field-panel rounded-2xl p-5">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <Users size={18} className="text-primary" /> Join a league
@@ -259,7 +262,7 @@ function LeaguesPage() {
                       {league.name}
                       {league.is_global_pool && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                          GLOBAL
+                          MAIN POOL
                         </span>
                       )}
                       {league.role === "owner" && (

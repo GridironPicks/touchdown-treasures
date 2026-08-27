@@ -47,7 +47,7 @@ async function assertOwner(
   if (error) throw error;
   if (!data) throw new Error("League not found");
   if (data.is_global_pool && !options.allowGlobalPool) {
-    throw new Error("That isn't available for the Global Pool");
+    throw new Error("That isn't available for the 2026 Gridiron Pool");
   }
   if (data.owner_id !== userId) throw new Error("Only the league owner can do that");
   return data as { id: string; owner_id: string; name: string; is_global_pool: boolean };
