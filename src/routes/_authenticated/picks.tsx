@@ -354,7 +354,7 @@ function PicksPage() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {maxPoints} games · assign {maxPoints} down to 1
+              {maxPoints} games · assign {burnedTop > 0 ? pointsCeiling : maxPoints} down to 1
               {openGames.length < maxPoints ? ` · ${openGames.length} still open` : ""}
             </p>
           </div>
@@ -366,7 +366,7 @@ function PicksPage() {
                 : status === "open"
                   ? isRegular
                     ? "Locks Wed 6:00 PM ET"
-                    : "Locks at first kickoff"
+                    : "Closes at last kickoff"
                   : submitted
                     ? "Picks submitted"
                     : status === "in-progress"
