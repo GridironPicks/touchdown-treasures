@@ -1,46 +1,35 @@
-# Pot, buy-ins, and payouts
+# 2026 Gridiron Pool — rename and request-to-join
 
-Recommendation: **collect buy-ins with card / Apple Pay through the app, track the pot and payouts in a ledger you control.** Automatic payouts straight to winners' bank accounts aren't a good fit here — that requires each player to onboard as a payment recipient, and payment processors treat prize-pot contests as restricted business, so an automated payout rail is the piece most likely to get the account frozen mid-season. Money in through checkout, money out by you (Venmo/Zelle/cash) with the app recording it, keeps everything transparent without that risk.
+Yes, this works. Confirmed against the live data: there is exactly one league, "Global Pool", flagged as the global pool, with 9 members — you're the owner. Nothing about picks, scoring, locks, standings, trophies, or the chat changes. Two things change: the name, and how new people get in.
 
-If you'd rather not run money through a processor at all, the same ledger works in "honor system" mode: you just mark who paid. Everything below except the checkout button applies either way.
+## What changes
 
-## What players see
+**1. Rename**
+- "Global Pool" becomes **2026 Gridiron Pool** everywhere it appears (league switcher, standings header, commissioner panel, notification text).
+- The same league row is renamed — all 9 current members, every pick, every result, and the full trophy case stay exactly as they are. Nobody has to re-join.
 
-**Pot banner (Picks page and Standings)**
-- "Pot: $180 — 36 of 40 buy-ins collected" with the prize split underneath.
-- Your own status chip: "You're paid up" or "Buy-in due — $20", with a **Pay now** button that opens Apple Pay / card checkout.
-- Paying is instant: the chip flips to paid as soon as the payment confirms.
+**2. New signups no longer auto-join**
+- Today, anyone who creates an account is dropped straight into the pool. That stops.
+- A new account lands on a **"Request to join 2026 Gridiron Pool"** screen instead: they set their team name and colors, then hit Request. They see "Waiting on the commissioner" until you act.
+- Existing members are untouched — they keep full access on their next sign-in.
 
-**Payout board**
-- A "Pot & payouts" section showing the split you configured, each week's winner and their amount, and whether it's been sent yet ("Paid Aug 12" / "Pending").
-- Season prizes listed the same way, filled in once the season settles.
+**3. Your approval queue**
+- A **Join requests** section appears in your commissioner panel with a count badge, listing each requester's team name, display name, and when they asked.
+- **Approve** adds them to the pool immediately; **Decline** removes the request. A declined person can ask again, and you can also just ignore it.
+- You get a push notification when a new request comes in (same alert system as the nudge).
+- The existing **Re-add** picker stays for anyone you removed who you want back without them asking.
 
-**Unpaid managers**
-- Configurable by you: either blocked from submitting picks until paid, or allowed to play but marked "not eligible for payouts" with a badge on the standings row. Default is the softer option — nobody gets locked out of the fun mid-week.
+**4. Removed members**
+- Removing someone from the pool now also means they can't get back in on their own — they'd have to send a request, or you re-add them. That's the behavior you want and it comes free with this change.
 
-## What you see as commissioner (owner-only tab)
+## What does not change
 
-A new "Pot" section inside the commissioner panel on the Leagues page, only visible when you're the league owner:
-
-- **Pot setup**: buy-in amount, and the split — a weekly-winner share plus season prizes (1st/2nd/3rd), with a live preview showing exact dollar amounts as you type. Must add to 100% before it saves.
-- **Roster of payments**: who paid, when, how much; a **Mark as paid** button for anyone who hands you cash or Venmos you outside the app.
-- **Payout log**: for each week's winner and each season prize, a **Mark paid** button with an optional note ("Venmo 8/12"). This is what fills the players' payout board.
-- **Refund** on any collected buy-in, in case someone drops out early.
-- **Block unpaid managers** toggle. Default off.
-
-Players never see the setup, roster, or payout-log controls. They only see the public pot banner and their own payment status.
-
-
-## Order of work
-
-1. Pot configuration + ledger tables and the commissioner setup screen (usable immediately in honor-system mode).
-2. Player pot banner, payout board, and eligibility badges.
-3. Card / Apple Pay checkout wired to the ledger.
+Rules editor, nudges, rename, remove, the Wednesday 6:00 PM lock, confidence scoring, survivor pool, fantasy, chat, trophy case — all identical.
 
 ## Technical notes
 
-- New tables: `league_pots` (buy-in cents, split percentages, whether unpaid managers are blocked), `pot_entries` (per member: amount, status paid/refunded, source checkout/manual, paid_at), `pot_payouts` (week or season prize, winner, amount, sent_at, note). All with GRANTs, RLS scoped so league members read their league's rows and only the owner writes; entries are only ever written server-side.
-- Payments go through the Lovable payments connector (Stripe in test until published) with a one-time price per league buy-in amount. A webhook route under `src/routes/api/public/` verifies the signature and marks the matching `pot_entries` row paid — the client is never trusted to confirm a payment.
-- Weekly winners come from the existing `week_recap` / `league_week_winners` functions, so payout amounts are derived from real settled results rather than entered by hand.
-- Blocking unpaid managers, if you enable it, is enforced in the pick-submission path server-side, not just hidden in the UI.
-- Worth knowing: prize-pot contests fall under payment processors' restricted business rules, and pooled-money contests are regulated differently state by state. This build tracks and collects money; it doesn't give legal cover. The honor-system mode avoids the processor question entirely.
+- Data change: `UPDATE leagues SET name = '2026 Gridiron Pool'`. The `is_global_pool` flag stays `true` so the league keeps its role as the default pool everywhere in the app; it just no longer means "auto-join".
+- Migration edits `handle_new_user()` to stop inserting a `league_memberships` row for new signups. It keeps creating the `profiles` row, so team branding still works pre-approval.
+- New table `league_join_requests` (league_id, user_id, status pending/approved/declined, created_at, decided_at, decided_by) with GRANTs and RLS: a user reads and creates only their own request; the league owner reads and updates all requests for their league.
+- New server functions in `commissioner.functions.ts`: `requestToJoin`, `listJoinRequests`, `decideJoinRequest` (owner-gated, adds the membership on approve via the same admin path `addMember` already uses).
+- New UI: a pending-approval state on the app's entry path for users with no membership, plus a `JoinRequests` section in `CommissionerPanel`. Membership checks already gate every data function, so someone with a pending request simply sees no league data.
