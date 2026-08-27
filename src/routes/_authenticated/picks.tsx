@@ -414,6 +414,10 @@ function PicksPage() {
         deadline={deadline}
       />
 
+      <LeagueRules leagueId={activeLeague!.id} />
+
+
+
 
       <ul className="space-y-3">
         {games.map((game) => {
