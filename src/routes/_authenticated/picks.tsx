@@ -355,11 +355,11 @@ function PicksPage() {
                 : status === "open"
                   ? isRegular
                     ? "Locks Wed 6:00 PM ET"
-                    : "Next kickoff"
+                    : "Locks at first kickoff"
                   : submitted
                     ? "Picks submitted"
                     : status === "in-progress"
-                      ? isRegular && deadlinePassed
+                      ? deadlinePassed
                         ? "Deadline passed"
                         : "All games started"
                       : "Final"}
