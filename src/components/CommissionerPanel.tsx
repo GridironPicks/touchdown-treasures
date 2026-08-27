@@ -249,6 +249,8 @@ export function CommissionerPanel({ league }: { league: League }) {
             )}
           </div>
 
+          <JoinRequests leagueId={league.id} />
+
           {league.is_global_pool && <RejoinPicker leagueId={league.id} />}
         </div>
 
