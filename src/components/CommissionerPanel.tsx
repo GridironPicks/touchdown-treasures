@@ -27,6 +27,8 @@ import {
   transferOwnership,
   type LeagueMember,
 } from "@/lib/commissioner.functions";
+import { LeagueRulesEditor } from "@/components/LeagueRulesEditor";
+import { RejoinPicker } from "@/components/RejoinPicker";
 import type { League } from "@/lib/leagues.functions";
 import { defaultSlate, slateLabel, useSlates } from "@/lib/slate";
 
@@ -148,39 +150,44 @@ export function CommissionerPanel({ league }: { league: League }) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Invite</Label>
-            <div className="flex flex-wrap items-center gap-2">
-              <code className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold">
-                {league.join_code}
-              </code>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/join?code=${league.join_code}`,
-                  );
-                  toast.success("Invite link copied");
-                }}
-              >
-                <Copy size={14} /> Copy link
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => newCode.mutate()}
-                disabled={newCode.isPending}
-              >
-                <RefreshCw size={14} /> New code
-              </Button>
+          {!league.is_global_pool && (
+            <div className="space-y-2">
+              <Label>Invite</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold">
+                  {league.join_code}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/join?code=${league.join_code}`,
+                    );
+                    toast.success("Invite link copied");
+                  }}
+                >
+                  <Copy size={14} /> Copy link
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => newCode.mutate()}
+                  disabled={newCode.isPending}
+                >
+                  <RefreshCw size={14} /> New code
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A new code immediately invalidates old invite links.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              A new code immediately invalidates old invite links.
-            </p>
-          </div>
+          )}
+
+          <LeagueRulesEditor leagueId={league.id} />
+
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -216,14 +223,16 @@ export function CommissionerPanel({ league }: { league: League }) {
                     </div>
                     {m.role !== "owner" && (
                       <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-1 text-xs"
-                          onClick={() => setConfirm({ type: "transfer", member: m })}
-                        >
-                          <Crown size={13} /> Make owner
-                        </Button>
+                        {!league.is_global_pool && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() => setConfirm({ type: "transfer", member: m })}
+                          >
+                            <Crown size={13} /> Make owner
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -239,7 +248,10 @@ export function CommissionerPanel({ league }: { league: League }) {
               </ul>
             )}
           </div>
+
+          {league.is_global_pool && <RejoinPicker leagueId={league.id} />}
         </div>
+
       )}
 
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>

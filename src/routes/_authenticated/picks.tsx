@@ -24,6 +24,7 @@ import {
 } from "@/lib/league";
 import { TeamLogo } from "@/components/TeamLogo";
 import { HowToPlay } from "@/components/HowToPlay";
+import { LeagueRules } from "@/components/LeagueRules";
 import { RosterStatus } from "@/components/RosterStatus";
 import { useLeague } from "@/lib/league-context";
 
@@ -413,6 +414,10 @@ function PicksPage() {
         opensAt={opensAt}
         deadline={deadline}
       />
+
+      <LeagueRules leagueId={activeLeague!.id} />
+
+
 
 
       <ul className="space-y-3">
