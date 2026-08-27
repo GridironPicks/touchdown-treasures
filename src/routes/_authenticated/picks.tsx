@@ -183,7 +183,15 @@ function PicksPage() {
   // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const deadline = useMemo(() => (isRegular ? weekDeadline(games) : null), [isRegular, games]);
+  const firstKickoff = useMemo(() => {
+    const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
+    return times.length ? new Date(Math.min(...times)) : null;
+  }, [games]);
+  // Preseason: the whole week closes at the first kickoff — miss it and you sit the week out.
+  const deadline = useMemo(
+    () => (isRegular ? weekDeadline(games) : firstKickoff),
+    [isRegular, games, firstKickoff],
+  );
   const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
@@ -192,6 +200,7 @@ function PicksPage() {
   const submitted = hasPicks;
   const locked =
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
+
 
 
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
