@@ -37,6 +37,7 @@ async function assertOwner(
   supabase: { from: (t: string) => any },
   leagueId: string,
   userId: string,
+  options: { allowGlobalPool?: boolean } = {},
 ) {
   const { data, error } = await supabase
     .from("leagues")
@@ -45,9 +46,12 @@ async function assertOwner(
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error("League not found");
-  if (data.is_global_pool) throw new Error("The Global Pool can't be managed");
+  if (data.is_global_pool && !options.allowGlobalPool) {
+    throw new Error("That isn't available for the Global Pool");
+  }
   if (data.owner_id !== userId) throw new Error("Only the league owner can do that");
   return data as { id: string; owner_id: string; name: string; is_global_pool: boolean };
+
 }
 
 /** Members of a league with role, join date and this week's submission state. */
