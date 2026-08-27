@@ -183,7 +183,15 @@ function PicksPage() {
   // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
-  const deadline = useMemo(() => (isRegular ? weekDeadline(games) : null), [isRegular, games]);
+  const firstKickoff = useMemo(() => {
+    const times = games.map((g) => new Date(g.kickoff).getTime()).filter((t) => !Number.isNaN(t));
+    return times.length ? new Date(Math.min(...times)) : null;
+  }, [games]);
+  // Preseason: the whole week closes at the first kickoff — miss it and you sit the week out.
+  const deadline = useMemo(
+    () => (isRegular ? weekDeadline(games) : firstKickoff),
+    [isRegular, games, firstKickoff],
+  );
   const opensAt = useMemo(() => (isRegular ? weekOpensAt(games) : null), [isRegular, games]);
   const deadlinePassed = deadline ? deadline.getTime() <= now : false;
   const notOpenYet = opensAt ? now < opensAt.getTime() : false;
@@ -194,9 +202,10 @@ function PicksPage() {
     (games.length > 0 && openGames.length === 0) || deadlinePassed || notOpenYet || submitted;
 
 
+
   const tiebreakerGame = useMemo(() => tiebreakerGameOf(games), [games]);
   const tiebreakerLocked = locked || (tiebreakerGame ? hasStarted(tiebreakerGame) : true);
-  const nextKickoff = openGames[0] ? new Date(openGames[0].kickoff).getTime() - now : 0;
+  
   const untilDeadline = deadline ? deadline.getTime() - now : 0;
   const untilOpen = opensAt ? opensAt.getTime() - now : 0;
 
@@ -346,11 +355,11 @@ function PicksPage() {
                 : status === "open"
                   ? isRegular
                     ? "Locks Wed 6:00 PM ET"
-                    : "Next kickoff"
+                    : "Locks at first kickoff"
                   : submitted
                     ? "Picks submitted"
                     : status === "in-progress"
-                      ? isRegular && deadlinePassed
+                      ? deadlinePassed
                         ? "Deadline passed"
                         : "All games started"
                       : "Final"}
@@ -361,7 +370,7 @@ function PicksPage() {
               </p>
             ) : status === "open" ? (
               <p className="stadium-heading text-2xl tabular-nums text-primary">
-                {formatCountdown(isRegular ? untilDeadline : nextKickoff)}
+                {formatCountdown(untilDeadline)}
               </p>
             ) : (
               <p className="stadium-heading text-2xl text-muted-foreground">
@@ -383,12 +392,12 @@ function PicksPage() {
       ) : status === "open" ? (
         <section className="field-panel rounded-2xl border border-primary/40 p-5">
           <h2 className="stadium-heading text-lg text-primary">
-            {isRegular ? "Picks open" : "Free preseason play"}
+            {isRegular ? "Picks open" : "Preseason picks open"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
               ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
-              : "No deadline in the preseason. Edit your picks any time — each game locks only when it kicks off."}
+              : "Submit before the first kickoff of the week. Miss it and you sit this week out — picks are final once submitted."}
           </p>
         </section>
       ) : (
@@ -399,8 +408,10 @@ function PicksPage() {
           <p className="text-sm text-muted-foreground">
             {submitted
               ? "You've submitted this week's picks — they're locked in and can't be changed."
-              : isRegular && deadlinePassed
-                ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+              : deadlinePassed
+                ? isRegular
+                  ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+                  : "This week kicked off before you submitted, so you're sitting this week out. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
         </section>
