@@ -1,17 +1,20 @@
-# Late-pick penalty visibility
+# Turn off payments so the project can be remixed
 
-The penalty is already visible to late players on the Picks page: reduced max in the header, an amber banner listing the burned numbers, and dropdowns that omit them.
+## What's going on
 
-One gap worth closing: players get no warning before numbers start burning.
+The app's code already has zero payment functionality — no checkout, no pot, no entry-fee UI, and no payment tables in the database. What's still there is the project-level **Payments (Stripe sandbox) integration**, which stays attached even after the payment code was deleted. Lovable blocks remixing any project that has payments enabled, which is the error you hit.
 
-## Add a pre-kickoff burn warning
+## The fix
 
-- Send a push notification to managers who haven't submitted, timed shortly before the week's first kickoff, saying their top confidence number is about to come off the board.
-- Show a countdown line on the Picks page ("First kickoff in 45m — confidence 16 burns then") for unsubmitted managers during preseason weeks.
+Disconnect the Stripe sandbox integration from this project. Nothing in the app uses it, so nothing breaks:
 
-## Technical notes
+- No page, button, or database table references Stripe.
+- The league stays free-to-play exactly as it is today.
+- Standings, picks, survivor, trophies, chat, and commissioner tools are untouched.
+- Your published site at gridironconfidence.com keeps working; no re-publish needed.
 
-- Reuse the existing nudge notification path for the push send, triggered on a schedule keyed to the week's earliest game time.
-- Countdown lives in `src/routes/_authenticated/picks.tsx` next to the existing burn banner, using the already-computed first kickoff time.
+After that, Remix will be available and you can spin up a copy to experiment in.
 
-No changes to scoring, lock rules, or the database.
+## Note
+
+If you ever want buy-ins and a real pot later, payments can be re-enabled — it's a reversible switch, not a one-way door.
