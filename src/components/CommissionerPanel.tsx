@@ -29,6 +29,7 @@ import {
 } from "@/lib/commissioner.functions";
 import { LeagueRulesEditor } from "@/components/LeagueRulesEditor";
 import { JoinRequests } from "@/components/JoinRequests";
+import { AlertHistory } from "@/components/AlertHistory";
 import { RejoinPicker } from "@/components/RejoinPicker";
 import type { League } from "@/lib/leagues.functions";
 import { defaultSlate, slateLabel, useSlates } from "@/lib/slate";
@@ -251,6 +252,8 @@ export function CommissionerPanel({ league }: { league: League }) {
           </div>
 
           <JoinRequests leagueId={league.id} />
+
+          <AlertHistory leagueId={league.id} />
 
           {league.is_global_pool && <RejoinPicker leagueId={league.id} />}
         </div>

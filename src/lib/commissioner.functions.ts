@@ -18,7 +18,7 @@ const memberSchema = z.object({
 
 const nudgeSchema = z.object({
   leagueId: z.string().uuid(),
-  seasonType: z.enum(["pre", "reg"]),
+  seasonType: z.enum(["pre", "reg", "post"]),
   week: z.number().int().min(1).max(22),
 });
 
@@ -61,7 +61,7 @@ export const listLeagueMembers = createServerFn({ method: "POST" })
     z
       .object({
         leagueId: z.string().uuid(),
-        seasonType: z.enum(["pre", "reg"]),
+        seasonType: z.enum(["pre", "reg", "post"]),
         week: z.number().int().min(1).max(22),
       })
       .parse(input),
@@ -198,6 +198,65 @@ export const nudgeUnsubmitted = createServerFn({ method: "POST" })
       `nudge-${data.leagueId}-${data.seasonType}-${data.week}-${new Date().toISOString().slice(0, 10)}`,
     );
     return { sent, pending: pending.length };
+  });
+
+export type AlertEntry = {
+  id: string;
+  kind: string;
+  created_at: string;
+  team_name: string;
+  display_name: string;
+};
+
+/**
+ * Recent push alerts delivered to this league's members. Row-level security
+ * only exposes the log to league owners, so members can't read it.
+ */
+export const listAlertHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => leagueIdSchema.parse(input))
+  .handler(async ({ data, context }): Promise<AlertEntry[]> => {
+    await assertOwner(context.supabase as never, data.leagueId, context.userId, {
+      allowGlobalPool: true,
+    });
+
+    const { data: members, error: memberError } = await context.supabase
+      .from("league_memberships")
+      .select("user_id")
+      .eq("league_id", data.leagueId);
+    if (memberError) throw memberError;
+
+    const ids = (members ?? []).map((m: { user_id: string }) => m.user_id);
+    if (ids.length === 0) return [];
+
+    const { data: rows, error } = await context.supabase
+      .from("notification_log")
+      .select("id, kind, created_at, user_id")
+      .in("user_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+
+    const { data: profiles } = await context.supabase
+      .from("profiles")
+      .select("id, team_name, display_name")
+      .in("id", ids);
+    const byId = new Map(
+      ((profiles ?? []) as { id: string; team_name: string; display_name: string }[]).map((p) => [
+        p.id,
+        p,
+      ]),
+    );
+
+    return ((rows ?? []) as { id: string; kind: string; created_at: string; user_id: string }[]).map(
+      (r) => ({
+        id: r.id,
+        kind: r.kind,
+        created_at: r.created_at,
+        team_name: byId.get(r.user_id)?.team_name ?? "Unknown",
+        display_name: byId.get(r.user_id)?.display_name ?? "Unknown",
+      }),
+    );
   });
 
 export type LeagueRule = {

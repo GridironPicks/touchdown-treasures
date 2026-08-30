@@ -10,7 +10,8 @@ import { TeamLogo } from "@/components/TeamLogo";
 import { kickoffLabel, teamShort } from "@/lib/league";
 import { getLiveScoreboard } from "@/lib/scoreboard.functions";
 import type { LiveGame } from "@/lib/scoreboard.server";
-import { defaultSlate, useSlates, type Slate } from "@/lib/slate";
+import { defaultSlate, hasPlaceholderTimes, useSlates, type Slate } from "@/lib/slate";
+import { TimesTbd } from "@/components/TimesTbd";
 
 export const Route = createFileRoute("/_authenticated/scoreboard")({
   head: () => ({
@@ -170,6 +171,8 @@ function ScoreboardPage() {
       (query.state.data ?? []).some((g) => g.state === "in") ? 20_000 : false,
   });
 
+  const timesTbd = hasPlaceholderTimes(games);
+
   const groups = useMemo(() => {
     const live = games.filter((g) => g.state === "in");
     const upcoming = games.filter((g) => g.state === "pre");
@@ -195,6 +198,8 @@ function ScoreboardPage() {
           value={active}
           onChange={(s) => setSlate(s)}
         />
+
+        {timesTbd && <TimesTbd />}
 
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
           <Radio size={12} className={groups.live.length ? "text-destructive" : ""} />

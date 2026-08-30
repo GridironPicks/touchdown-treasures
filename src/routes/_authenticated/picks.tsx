@@ -28,7 +28,14 @@ import { LeagueRules } from "@/components/LeagueRules";
 import { RosterStatus } from "@/components/RosterStatus";
 import { useLeague } from "@/lib/league-context";
 
-import { useSlates, defaultSlate, slateLabel, type Slate } from "@/lib/slate";
+import {
+  useSlates,
+  defaultSlate,
+  slateLabel,
+  hasPlaceholderTimes,
+  type Slate,
+} from "@/lib/slate";
+import { TimesTbd } from "@/components/TimesTbd";
 import { SlatePicker } from "@/components/SlatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,6 +129,8 @@ function PicksPage() {
       return live ? 60_000 : false;
     },
   });
+
+  const timesTbd = hasPlaceholderTimes(games);
 
   // Live win probability straight from the provider, polled while games run.
   const fetchWinProb = useServerFn(getWinProbabilities);
@@ -454,10 +463,10 @@ function PicksPage() {
       )}
 
 
-      <RosterStatus seasonType={isRegular ? "reg" : "pre"} week={week} leagueId={activeLeague!.id} />
+      <RosterStatus seasonType={seasonType} week={week} leagueId={activeLeague!.id} />
 
       <HowToPlay
-        seasonType={isRegular ? "reg" : "pre"}
+        seasonType={seasonType}
         maxPoints={maxPoints}
         opensAt={opensAt}
         deadline={deadline}
@@ -467,6 +476,8 @@ function PicksPage() {
 
 
 
+
+      {timesTbd && <TimesTbd />}
 
       <ul className="space-y-3">
         {games.map((game) => {
@@ -486,7 +497,7 @@ function PicksPage() {
               className={`field-panel rounded-2xl p-4 ${started && !isFinal ? "opacity-70" : ""}`}
             >
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
-                <span>{kickoffLabel(game.kickoff)}</span>
+                <span>{timesTbd ? "Time TBD" : kickoffLabel(game.kickoff)}</span>
                 <span className="flex items-center gap-2">
                   {tiebreakerGame?.id === game.id && (
                     <span className="flex items-center gap-1 text-primary">

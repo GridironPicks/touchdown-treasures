@@ -36,8 +36,11 @@ export async function fetchScoreboard(
   week: number,
   seasonType: SeasonType,
 ): Promise<any> {
-  const espnSeasonType = seasonType === "pre" ? 1 : 2;
-  const query = `?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
+  const espnSeasonType = seasonType === "pre" ? 1 : seasonType === "post" ? 3 : 2;
+  // ESPN slots the Pro Bowl at postseason week 4, so our Super Bowl (round 4)
+  // maps to their week 5.
+  const espnWeek = seasonType === "post" && week === 4 ? 5 : week;
+  const query = `?dates=${season}&seasontype=${espnSeasonType}&week=${espnWeek}`;
   let lastError = "";
   for (const host of ESPN_SCOREBOARD_HOSTS) {
     try {
@@ -167,11 +170,16 @@ export async function resolveCurrentSlate(season: number): Promise<Slate> {
   return { seasonType: "pre", week: 1 };
 }
 
-/** Preseason runs Hall of Fame week + weeks 1-3; regular season runs 1-18. */
+/**
+ * Preseason runs Hall of Fame week + weeks 1-3; regular season runs 1-18;
+ * postseason runs Wild Card through the Super Bowl (ESPN weeks 1-4, where
+ * week 4 is the Super Bowl — ESPN numbers it 5, handled in the fetch layer).
+ */
 export function nextSlate(slate: Slate): Slate {
-  const maxWeek = slate.seasonType === "pre" ? 4 : 18;
+  const maxWeek = slate.seasonType === "pre" ? 4 : slate.seasonType === "post" ? 4 : 18;
   if (slate.week < maxWeek) return { seasonType: slate.seasonType, week: slate.week + 1 };
   if (slate.seasonType === "pre") return { seasonType: "reg", week: 1 };
+  if (slate.seasonType === "reg") return { seasonType: "post", week: 1 };
   return slate;
 }
 
