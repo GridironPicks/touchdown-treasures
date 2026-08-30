@@ -130,6 +130,8 @@ function PicksPage() {
     },
   });
 
+  const timesTbd = hasPlaceholderTimes(games);
+
   // Live win probability straight from the provider, polled while games run.
   const fetchWinProb = useServerFn(getWinProbabilities);
   const anyLive = games.some((g) => g.status === "in_progress");
