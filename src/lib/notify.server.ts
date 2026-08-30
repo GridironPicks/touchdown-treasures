@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { SEASON, weekDeadline, weekOpensAt, type Game } from "@/lib/league";
+import { SEASON, weekDeadline, weekOpensAt, type Game, type SeasonType } from "@/lib/league";
 import { sendToUsers } from "@/lib/push.server";
 
 type Slate = { seasonType: SeasonType; week: number; games: Game[] };
