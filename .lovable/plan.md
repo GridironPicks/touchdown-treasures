@@ -22,29 +22,33 @@ Revoke direct database access to the admin-only functions (join code regeneratio
 
 ---
 
-## Playoffs — options to choose from
+## Playoffs — bracket challenge + confidence weeks (B & C)
 
-The schedule stops at Week 18 and nothing defines what happens after. Here are the directions, cheapest first. Pick one (or more) and I'll fold it into the build.
+The season currently stops dead at Week 18. This adds a full January.
 
-**A. Season ends at Week 18 (do nothing)**
-Trophy awarded on the Week 18 standings. Zero work. January goes quiet.
+### Shared groundwork
+Playoff games get pulled into the schedule as a new `post` season type — Wild Card, Divisional, Conference Championships, Super Bowl. The existing score sync picks them up automatically once the NFL seeds the field, so no manual entry.
 
-**B. Playoff confidence weeks**
-Keep the exact same game: Wild Card, Divisional, Conference Championship, Super Bowl each become their own pick week with confidence numbers sized to the slate (6, 4, 2, 1). Separate "Playoff Standings" tab so it doesn't distort the regular-season race. Cheapest way to keep everyone engaged through February.
+### C. Bracket challenge (filled once, before Wild Card weekend)
+- After Week 18 ends, a **Bracket** tab opens for everyone.
+- You fill the entire postseason in one sitting: every matchup in every round, advancing your winners through to a Super Bowl champion, plus a total-score tiebreaker.
+- One submission, final, locked at the first Wild Card kickoff. Everyone's bracket is hidden until then, then the whole board reveals at once.
+- Escalating points: 2 per Wild Card game, 4 Divisional, 8 Conference, 16 Super Bowl — 52 possible.
+- Live bracket board shows every manager's tree with hits in green, busts struck through, and a "still alive for the win" marker.
 
-**C. Bracket challenge**
-Before Wild Card weekend, everyone fills out the full 13-game bracket in one shot — pick every round's winner plus the Super Bowl champ and total score. Points escalate by round (2/4/8/16). One submission, locked at the first kickoff, big reveal board. Most fun, most build.
+### B. Playoff confidence weeks
+- The normal weekly game continues through the playoffs: each round is its own pick week with confidence numbers sized to the slate (6 down to 1 for Wild Card, 4 for Divisional, 2 for Conference, 1 for the Super Bowl).
+- Same lock rules, same tiebreaker, same weekly winner.
+- Points land in a separate **Playoff Standings** tab so the regular-season race and its trophy stay untouched.
 
-**D. Playoff survivor**
-Survivor continues into January: one team per round, can't reuse. Brutal and short — most people are out by the Divisional round.
+### Trophies
+The 2026 season trophy is still awarded on the Week 18 standings. The playoffs add two new trophy-case awards: **Bracket Champion** and **Playoff Points Leader**.
 
-**E. Season-long playoff bonus**
-No new picking. Whoever picked the most eventual playoff teams correctly all season gets a bonus badge in the trophy case. Purely automatic.
+### Technical notes
+- `season_type` enum gains `post`. Week numbering 1-4 within `post`.
+- `picks`, `tiebreakers`, and the reporting functions already key on `season_type`, so confidence weeks mostly come free once the games exist; confidence ceiling becomes the game count for the round rather than a fixed 16.
+- New `bracket_entries` + `bracket_picks` tables (league-scoped, RLS by owner/member, GRANTs), locked by a trigger at the first `post` week 1 kickoff, same one-shot-final rule as picks.
+- New `bracket_standings` and `playoff_standings` database functions mirroring the existing membership-gated pattern.
+- Sync extended to fetch `seasontype=3` from the score feed.
+- Build order: audit fixes 1-4 first (they're small), then the playoff groundwork, then the bracket, then the confidence weeks.
 
-**F. Super Bowl props night**
-A one-off prop sheet for the Super Bowl: coin toss, first score type, halftime over/under, MVP, final margin. Great for a watch party, tiny build.
-
-### My recommendation
-**B + C together.** The bracket is filled once before the playoffs and delivers the big-picture drama; confidence weeks keep the weekly ritual alive. D and F are good add-ons if you want more. All of them need the playoff schedule pulled into the games table with a new `post` season type — that groundwork is shared, so picking two now costs much less than adding the second one later.
-
-Reply with the letters you want and I'll build 1-4 plus those.
