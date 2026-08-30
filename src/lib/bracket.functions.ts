@@ -52,7 +52,7 @@ async function postseasonGames(supabase: { from: (t: string) => any }) {
     .eq("season_type", "post")
     .order("kickoff");
   if (error) throw error;
-  return (data ?? []) as import("@/lib/bracket.server").PostGame[];
+  return (data ?? []) as import("@/lib/bracket").PostGame[];
 }
 
 /** Everything the bracket page needs: field, your entry and the standings. */
@@ -60,7 +60,7 @@ export const getBracketState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => leagueSchema.parse(input))
   .handler(async ({ data, context }): Promise<BracketState> => {
-    const { fieldFromWildCard, scoreBracket } = await import("@/lib/bracket.server");
+    const { fieldFromWildCard, scoreBracket } = await import("@/lib/bracket");
     const games = await postseasonGames(context.supabase as never);
 
     const wildCard = games.filter((g) => g.week === 1);

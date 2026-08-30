@@ -15,7 +15,7 @@ import { useLeague } from "@/lib/league-context";
 import { PLAYOFF_ROUNDS, teamShort } from "@/lib/league";
 import { conferenceOf, type Conference } from "@/lib/conference";
 import { getBracketState, submitBracket } from "@/lib/bracket.functions";
-import { ROUND_SLOTS } from "@/lib/bracket.server";
+import { ROUND_SLOTS } from "@/lib/bracket";
 
 export const Route = createFileRoute("/_authenticated/bracket")({
   head: () => ({
