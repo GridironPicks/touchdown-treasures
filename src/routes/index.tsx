@@ -15,6 +15,10 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Rank every game, beat the Wednesday lock, climb the season standings.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://gridironconfidence.lovable.app/share-card.jpg" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://gridironconfidence.lovable.app/share-card.jpg" },
 
     ],
   }),
