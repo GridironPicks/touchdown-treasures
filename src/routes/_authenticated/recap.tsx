@@ -18,7 +18,7 @@ import { getWeekRecap, type WeekRecap } from "@/lib/recap.functions";
 import { defaultSlate, slateLabel, useSlates, type Slate } from "@/lib/slate";
 
 const searchSchema = z.object({
-  st: z.enum(["pre", "reg"]).optional(),
+  st: z.enum(["pre", "reg", "post"]).optional(),
   wk: z.number().int().min(1).max(22).optional(),
 });
 

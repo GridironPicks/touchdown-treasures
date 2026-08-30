@@ -4,7 +4,7 @@ import { z } from "zod";
 import { SEASON } from "@/lib/league";
 
 const schema = z.object({
-  seasonType: z.enum(["pre", "reg"]),
+  seasonType: z.enum(["pre", "reg", "post"]),
   week: z.number().int().min(1).max(22),
 });
 

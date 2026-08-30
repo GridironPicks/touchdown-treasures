@@ -18,7 +18,7 @@ const memberSchema = z.object({
 
 const nudgeSchema = z.object({
   leagueId: z.string().uuid(),
-  seasonType: z.enum(["pre", "reg"]),
+  seasonType: z.enum(["pre", "reg", "post"]),
   week: z.number().int().min(1).max(22),
 });
 
@@ -61,7 +61,7 @@ export const listLeagueMembers = createServerFn({ method: "POST" })
     z
       .object({
         leagueId: z.string().uuid(),
-        seasonType: z.enum(["pre", "reg"]),
+        seasonType: z.enum(["pre", "reg", "post"]),
         week: z.number().int().min(1).max(22),
       })
       .parse(input),

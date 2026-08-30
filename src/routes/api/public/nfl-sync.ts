@@ -5,7 +5,7 @@ import { SEASON } from "@/lib/league";
 
 const paramsSchema = z.object({
   season: z.coerce.number().int().min(2000).max(2100).default(SEASON),
-  season_type: z.enum(["pre", "reg"]).optional(),
+  season_type: z.enum(["pre", "reg", "post"]).optional(),
   week: z.coerce.number().int().min(1).max(22).optional(),
 });
 
