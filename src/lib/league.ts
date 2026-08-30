@@ -1,7 +1,15 @@
 export const SEASON = 2026;
 export const ENTRY_FEE_CENTS = 500;
 
-export type SeasonType = "pre" | "reg";
+export type SeasonType = "pre" | "reg" | "post";
+
+/** Playoff rounds, keyed by the postseason "week" number. */
+export const PLAYOFF_ROUNDS: Record<number, { label: string; short: string; points: number }> = {
+  1: { label: "Wild Card", short: "WC", points: 2 },
+  2: { label: "Divisional", short: "DIV", points: 4 },
+  3: { label: "Conference Championships", short: "CONF", points: 8 },
+  4: { label: "Super Bowl", short: "SB", points: 16 },
+};
 
 export type Game = {
   id: string;
@@ -19,7 +27,9 @@ export type Game = {
 };
 
 export function seasonTypeLabel(type: SeasonType): string {
-  return type === "pre" ? "Preseason" : "Week";
+  if (type === "pre") return "Preseason";
+  if (type === "post") return "Playoffs";
+  return "Week";
 }
 
 

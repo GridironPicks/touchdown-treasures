@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { SEASON, weekDeadline, type Game, type SeasonType } from "@/lib/league";
+import { PLAYOFF_ROUNDS, SEASON, weekDeadline, type Game, type SeasonType } from "@/lib/league";
 
 export type Slate = { seasonType: SeasonType; week: number };
 
@@ -69,7 +69,18 @@ export function sameSlate(a: Slate | null, b: Slate | null): boolean {
 }
 
 export function slateLabel(slate: Slate): string {
-  return slate.seasonType === "pre" ? `Preseason Week ${slate.week}` : `Week ${slate.week}`;
+  if (slate.seasonType === "pre") return `Preseason Week ${slate.week}`;
+  if (slate.seasonType === "post") return PLAYOFF_ROUNDS[slate.week]?.label ?? "Playoffs";
+  return `Week ${slate.week}`;
+}
+
+/**
+ * True when every game of a slate shares one kickoff time — the NFL hasn't
+ * scheduled the week yet, so the feed serves a placeholder slot.
+ */
+export function hasPlaceholderTimes(games: Game[]): boolean {
+  if (games.length < 2) return false;
+  return new Set(games.map((g) => g.kickoff)).size === 1;
 }
 
 /**
