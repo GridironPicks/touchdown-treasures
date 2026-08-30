@@ -10,7 +10,8 @@ import { TeamLogo } from "@/components/TeamLogo";
 import { kickoffLabel, teamShort } from "@/lib/league";
 import { getLiveScoreboard } from "@/lib/scoreboard.functions";
 import type { LiveGame } from "@/lib/scoreboard.server";
-import { defaultSlate, useSlates, type Slate } from "@/lib/slate";
+import { defaultSlate, hasPlaceholderTimes, useSlates, type Slate } from "@/lib/slate";
+import { TimesTbd } from "@/components/TimesTbd";
 
 export const Route = createFileRoute("/_authenticated/scoreboard")({
   head: () => ({
