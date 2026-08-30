@@ -26,7 +26,7 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
   const isRegular = seasonType === "reg";
   const openLabel = opensAt
     ? opensAt.toLocaleString("en-US", {
-        timeZone: "America/New_York",
+        timeZone: "America/Chicago",
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -34,10 +34,10 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
         minute: "2-digit",
         timeZoneName: "short",
       })
-    : "Tuesday 12:00 AM ET";
+    : "Monday 12:00 AM CT";
   const deadlineLabel = deadline
     ? deadline.toLocaleString("en-US", {
-        timeZone: "America/New_York",
+        timeZone: "America/Chicago",
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -45,7 +45,7 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
         minute: "2-digit",
         timeZoneName: "short",
       })
-    : "Wednesday 6:00 PM ET";
+    : "Wednesday 6:00 PM CT";
 
   return (
     <section className="field-panel rounded-2xl border border-border p-4">

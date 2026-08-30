@@ -48,7 +48,7 @@ const TYPES = [
   {
     key: "deadlines" as const,
     label: "Pick deadline reminders",
-    hint: "Week opens Tuesday, plus 24-hour and 2-hour warnings before the Wednesday 6:00 PM ET lock (only if you haven't submitted).",
+    hint: "Week opens Monday, plus 24-hour and 2-hour warnings before the Wednesday 6:00 PM CT lock (only if you haven't submitted).",
   },
   {
     key: "results" as const,
