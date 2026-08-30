@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      bracket_entries: {
+        Row: {
+          champion: string
+          created_at: string
+          id: string
+          league_id: string
+          season: number
+          tiebreak_total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          champion: string
+          created_at?: string
+          id?: string
+          league_id: string
+          season: number
+          tiebreak_total: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          champion?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          season?: number
+          tiebreak_total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_entries_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bracket_picks: {
+        Row: {
+          created_at: string
+          entry_id: string
+          id: string
+          round: number
+          slot: number
+          team: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          id?: string
+          round: number
+          slot: number
+          team: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+          round?: number
+          slot?: number
+          team?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_picks_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fantasy_lineup_slots: {
         Row: {
           created_at: string
@@ -1113,7 +1189,7 @@ export type Database = {
           }
     }
     Enums: {
-      season_type: "pre" | "reg"
+      season_type: "pre" | "reg" | "post"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1241,7 +1317,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      season_type: ["pre", "reg"],
+      season_type: ["pre", "reg", "post"],
     },
   },
 } as const
