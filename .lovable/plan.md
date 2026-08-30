@@ -1,43 +1,50 @@
-# App audit — Gridiron Confidence
+# Audit fixes 1-4, plus playoff options
 
-Overall the app is in good shape heading into the regular season. No critical security holes, no vulnerable dependencies, no broken data, no debug leftovers. Here's what I actually found and what I'd change.
+## Approved work (items 1-4)
 
-## Health check (verified)
+**1. Week 18 "times TBD"**
+All 18 Week 18 games currently share one placeholder kickoff because the NFL hasn't scheduled them. Detect when every game in a week shares the same kickoff and show a "Times TBD" badge on the Picks and Scoreboard pages instead of a fake time. The score sync replaces the placeholders automatically once real times publish. Scoring and the Wednesday lock are unaffected.
 
-- 9 members, 9 profiles, 226 picks, 0 pending join requests, 5 devices signed up for push.
-- Full 2026 schedule loaded: preseason weeks 1-4 complete, all 18 regular-season weeks present starting Sep 10.
-- Both background jobs (score sync, notification sweep) are active and running every 15 minutes.
-- No finished games with missing scores.
-- Dependency scan: clean.
+**2. Social share image**
+Add a branded share card (navy field, green accent, trophy, "Gridiron Confidence") so links shared in a group text or on social show an image instead of plain text. Wired into the home, sign-in, and join pages.
 
-## What I'd change
+**3. Commissioner alert history**
+Add a "Recent alerts sent" list to the commissioner panel showing the nudges and notifications that went out, with kind and timestamp. Today that history exists but nothing can read it.
 
-### 1. Week 18 has placeholder kickoff times
-Every Week 18 game currently sits at the same time slot because the NFL hasn't set them yet. Scoring and the Wednesday lock aren't affected, but the schedule will look wrong on the Picks and Scoreboard pages until real times land. Fix: show a "times TBD" note for any week where all games share one kickoff, and let the sync overwrite them automatically when the NFL publishes.
+**4. Tighten backend function permissions**
+Revoke direct database access to the admin-only functions (join code regeneration, ownership transfer, join-request decisions and the like) so they can only run through the app's own server code. No behavior change for players.
 
-### 2. No social preview image
-Sharing a link to the app in a group text or on social shows plain text with no image. Fix: add a branded share card (trophy + Gridiron Confidence on the navy/green field) and wire it into the home, sign-in, and join pages.
+### Technical notes
+- Week 18: slate helper flags `count(distinct kickoff) = 1` for a week; UI renders a TBD badge. No schema change.
+- Share image: static asset in `public/`, absolute https `og:image` + `twitter:image` on `index.tsx`, `auth.tsx`, `join.tsx` only.
+- Alert history: migration adds a league-owner `SELECT` policy plus `GRANT SELECT ... TO authenticated` on `notification_log`, and a `listRecentAlerts` server function called from `CommissionerPanel`.
+- Permissions: `REVOKE EXECUTE ... FROM authenticated` on the admin-only `SECURITY DEFINER` functions, keeping `service_role`. The member-facing reporting functions (`week_recap`, `league_weekly_points`, `manager_badges`, `survivor_board`, etc.) keep their grants — they already gate on league membership and the UI calls them directly.
 
-### 3. Notification log table is fully locked
-The `notification_log` table has security on but zero access rules, so nothing outside the server can read it. That's safe, but it means you have no way to see a history of nudges and alerts you've sent. Fix: add a commissioner-only read rule and a small "Recent alerts sent" list in the commissioner panel.
+---
 
-### 4. Tighten backend function permissions
-24 privileged database functions are technically callable by any signed-in account. None of them currently leak anything, since each one checks who's asking, but the safer posture is to revoke direct access on the admin-only ones (member removal, rename, join-request decisions, score sync) so they can only run through the app's own server code.
+## Playoffs — options to choose from
 
-### 5. No postseason handling
-There are no playoff games in the schedule and nothing defines what happens after Week 18. Fix: decide now whether the season simply ends and the trophy is awarded after Week 18, or whether playoff weeks get added. Currently it just ends.
+The schedule stops at Week 18 and nothing defines what happens after. Here are the directions, cheapest first. Pick one (or more) and I'll fold it into the build.
 
-## Nice-to-have, not required
+**A. Season ends at Week 18 (do nothing)**
+Trophy awarded on the Week 18 standings. Zero work. January goes quiet.
 
-- **Pick reminders by email** as a fallback for the 4 members with no push device registered.
-- **Auto-fill safety net**: default an unsubmitted manager's picks to favorites at the lock instead of a zero week (regular season only).
-- **Landing page still says "Always free"** — accurate today, keep unless you revisit buy-ins.
+**B. Playoff confidence weeks**
+Keep the exact same game: Wild Card, Divisional, Conference Championship, Super Bowl each become their own pick week with confidence numbers sized to the slate (6, 4, 2, 1). Separate "Playoff Standings" tab so it doesn't distort the regular-season race. Cheapest way to keep everyone engaged through February.
 
-## Technical notes
+**C. Bracket challenge**
+Before Wild Card weekend, everyone fills out the full 13-game bracket in one shot — pick every round's winner plus the Super Bowl champ and total score. Points escalate by round (2/4/8/16). One submission, locked at the first kickoff, big reveal board. Most fun, most build.
 
-- Week 18: detect `count(distinct kickoff) = 1` in the slate helper and render a TBD badge; no schema change.
-- Share image: static asset in `public/`, referenced as an absolute https URL in `og:image` / `twitter:image` on `index.tsx`, `auth.tsx`, `join.tsx` only.
-- `notification_log`: add `SELECT` policy for the league owner plus a `GRANT SELECT ... TO authenticated`, and a `listRecentAlerts` server function.
-- Function hardening: `REVOKE EXECUTE ... FROM authenticated` on the admin-only `SECURITY DEFINER` functions; keep `service_role`. Verify each is only ever called from server-side code before revoking.
+**D. Playoff survivor**
+Survivor continues into January: one team per round, can't reuse. Brutal and short — most people are out by the Divisional round.
 
-Tell me which of these you want and I'll build them — or say "all of it" and I'll do 1-4 in one pass.
+**E. Season-long playoff bonus**
+No new picking. Whoever picked the most eventual playoff teams correctly all season gets a bonus badge in the trophy case. Purely automatic.
+
+**F. Super Bowl props night**
+A one-off prop sheet for the Super Bowl: coin toss, first score type, halftime over/under, MVP, final margin. Great for a watch party, tiny build.
+
+### My recommendation
+**B + C together.** The bracket is filled once before the playoffs and delivers the big-picture drama; confidence weeks keep the weekly ritual alive. D and F are good add-ons if you want more. All of them need the playoff schedule pulled into the games table with a new `post` season type — that groundwork is shared, so picking two now costs much less than adding the second one later.
+
+Reply with the letters you want and I'll build 1-4 plus those.
