@@ -170,6 +170,8 @@ function ScoreboardPage() {
       (query.state.data ?? []).some((g) => g.state === "in") ? 20_000 : false,
   });
 
+  const timesTbd = hasPlaceholderTimes(games as { kickoff: string }[]);
+
   const groups = useMemo(() => {
     const live = games.filter((g) => g.state === "in");
     const upcoming = games.filter((g) => g.state === "pre");
@@ -195,6 +197,8 @@ function ScoreboardPage() {
           value={active}
           onChange={(s) => setSlate(s)}
         />
+
+        {timesTbd && <TimesTbd />}
 
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
           <Radio size={12} className={groups.live.length ? "text-destructive" : ""} />
