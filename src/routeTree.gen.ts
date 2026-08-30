@@ -20,6 +20,7 @@ import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedPicksRouteImport } from './routes/_authenticated/picks'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRecapRouteImport } from './routes/_authenticated/recap'
 import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
 import { Route as AuthenticatedSurvivorRouteImport } from './routes/_authenticated/survivor'
@@ -87,6 +88,11 @@ const AuthenticatedPicksRoute = AuthenticatedPicksRouteImport.update({
   path: '/picks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRecapRoute = AuthenticatedRecapRouteImport.update({
   id: '/recap',
   path: '/recap',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/picks': typeof AuthenticatedPicksRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recap': typeof AuthenticatedRecapRoute
   '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/picks': typeof AuthenticatedPicksRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recap': typeof AuthenticatedRecapRoute
   '/scoreboard': typeof AuthenticatedScoreboardRoute
   '/survivor': typeof AuthenticatedSurvivorRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/picks': typeof AuthenticatedPicksRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recap': typeof AuthenticatedRecapRoute
   '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRoute
   '/_authenticated/survivor': typeof AuthenticatedSurvivorRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/notifications'
     | '/picks'
+    | '/profile'
     | '/recap'
     | '/scoreboard'
     | '/survivor'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/notifications'
     | '/picks'
+    | '/profile'
     | '/recap'
     | '/scoreboard'
     | '/survivor'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leaderboard'
     | '/_authenticated/notifications'
     | '/_authenticated/picks'
+    | '/_authenticated/profile'
     | '/_authenticated/recap'
     | '/_authenticated/scoreboard'
     | '/_authenticated/survivor'
@@ -369,6 +381,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPicksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recap': {
       id: '/_authenticated/recap'
       path: '/recap'
@@ -449,6 +468,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPicksRoute: typeof AuthenticatedPicksRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecapRoute: typeof AuthenticatedRecapRoute
   AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRoute
   AuthenticatedSurvivorRoute: typeof AuthenticatedSurvivorRoute
@@ -465,6 +485,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPicksRoute: AuthenticatedPicksRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecapRoute: AuthenticatedRecapRoute,
   AuthenticatedScoreboardRoute: AuthenticatedScoreboardRoute,
   AuthenticatedSurvivorRoute: AuthenticatedSurvivorRoute,
