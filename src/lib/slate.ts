@@ -78,7 +78,7 @@ export function slateLabel(slate: Slate): string {
  * True when every game of a slate shares one kickoff time — the NFL hasn't
  * scheduled the week yet, so the feed serves a placeholder slot.
  */
-export function hasPlaceholderTimes(games: Game[]): boolean {
+export function hasPlaceholderTimes(games: { kickoff: string }[]): boolean {
   if (games.length < 2) return false;
   return new Set(games.map((g) => g.kickoff)).size === 1;
 }

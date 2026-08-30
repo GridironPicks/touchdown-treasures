@@ -171,7 +171,7 @@ function ScoreboardPage() {
       (query.state.data ?? []).some((g) => g.state === "in") ? 20_000 : false,
   });
 
-  const timesTbd = hasPlaceholderTimes(games as { kickoff: string }[]);
+  const timesTbd = hasPlaceholderTimes(games);
 
   const groups = useMemo(() => {
     const live = games.filter((g) => g.state === "in");
