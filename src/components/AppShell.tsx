@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
+import { ClipboardList, Trophy, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -15,11 +15,11 @@ const NAV = [
   { to: "/survivor", label: "Survivor", icon: ShieldCheck },
   { to: "/bracket", label: "Bracket", icon: GitBranch },
   { to: "/chat", label: "Trash Talk", icon: MessageSquare },
-  { to: "/team", label: "Team", icon: Shirt },
   { to: "/leagues", label: "Leagues", icon: Users },
   { to: "/trophy-case", label: "Trophies", icon: Medal },
   { to: "/notifications", label: "Alerts", icon: Bell },
-  { to: "/account", label: "Account", icon: UserCircle },
+  { to: "/profile", label: "Profile", icon: UserCircle },
+
 ] as const;
 
 
