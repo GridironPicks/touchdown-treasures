@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, Shirt, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
+import { ClipboardList, Trophy, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
