@@ -219,7 +219,7 @@ function SurvivorPage() {
           <li>• Pick one team to win outright each regular season week — starting week 1.</li>
           <li>• Each team can only be used once all season. Used teams show as USED below.</li>
           <li>• Your team loses, you're eliminated. A tie survives.</li>
-          <li>• Picks open Tuesday 12:00 AM ET and lock Wednesday 6:00 PM ET — and are final once submitted.</li>
+          <li>• Picks open Monday 12:00 AM CT and lock Wednesday 6:00 PM CT — and are final once submitted.</li>
           <li>• Last manager standing wins bragging rights. Free to play.</li>
         </ul>
       </section>

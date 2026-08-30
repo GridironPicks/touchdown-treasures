@@ -189,7 +189,7 @@ function PicksPage() {
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
-  // Regular season: opens Tuesday 12:00 AM ET, locks Wednesday 6:00 PM ET,
+  // Regular season: opens Monday 12:00 AM CT, locks Wednesday 6:00 PM CT,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
   
@@ -389,10 +389,10 @@ function PicksPage() {
             <p className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
               {status === "open" || notOpenYet ? <Timer size={13} /> : <Lock size={13} />}
               {notOpenYet
-                ? "Opens Tue 12:00 AM ET"
+                ? "Opens Mon 12:00 AM CT"
                 : status === "open"
                   ? isRegular
-                    ? "Locks Wed 6:00 PM ET"
+                    ? "Locks Wed 6:00 PM CT"
                     : "Closes at last kickoff"
                   : submitted
                     ? "Picks submitted"
@@ -434,7 +434,7 @@ function PicksPage() {
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
-              ? "Submit by Wednesday 6:00 PM ET. Once you hit submit your picks are final — no changes after that."
+              ? "Submit by Wednesday 6:00 PM CT. Once you hit submit your picks are final — no changes after that."
               : "Pick the games that haven't kicked off yet. Every game that starts burns the highest confidence number off your board, so the longer you wait the less you can score. Picks are final once submitted."}
           </p>
           {burnedTop > 0 ? (
@@ -455,7 +455,7 @@ function PicksPage() {
               ? "You've submitted this week's picks — they're locked in and can't be changed."
               : deadlinePassed
                 ? isRegular
-                  ? "The Wednesday 6:00 PM ET deadline has passed. Your submitted picks are shown below with scores."
+                  ? "The Wednesday 6:00 PM CT deadline has passed. Your submitted picks are shown below with scores."
                   : "The last game of this week has kicked off, so the week is closed. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
