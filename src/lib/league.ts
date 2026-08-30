@@ -77,21 +77,24 @@ export const TEAM_COLORS = [
   "#C0C7D0",
 ];
 
-function etOffsetMinutes(date: Date): number {
+/** League timezone — everything the app shows or locks on is Central (Dallas). */
+export const LEAGUE_TZ = "America/Chicago";
+
+function ctOffsetMinutes(date: Date): number {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
+    timeZone: LEAGUE_TZ,
     timeZoneName: "shortOffset",
   }).formatToParts(date);
-  const name = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT-5";
+  const name = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT-6";
   const match = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(name);
-  if (!match) return -300;
+  if (!match) return -360;
   const sign = match[1] === "-" ? -1 : 1;
   return sign * (Number(match[2]) * 60 + Number(match[3] ?? 0));
 }
 
 function etCalendar(date: Date) {
   const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
+    timeZone: LEAGUE_TZ,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -109,33 +112,50 @@ function etCalendar(date: Date) {
   };
 }
 
-/**
- * Wednesday 6:00 PM ET of the week containing the earliest kickoff.
- * Mirrors the database lock rule exactly.
- */
-export function weekDeadline(games: Game[]): Date | null {
-  if (games.length === 0) return null;
-  const earliest = new Date(
-    Math.min(...games.map((g) => new Date(g.kickoff).getTime())),
-  );
+/** Monday 12:00 AM CT of the week containing the earliest kickoff. */
+function weekMondayCt(earliest: Date): { y: number; m: number; d: number } {
   const cal = etCalendar(earliest);
   const daysSinceMonday = (cal.weekdayIndex + 6) % 7;
-  const mondayUtcNoon = Date.UTC(cal.year, cal.month - 1, cal.day, 12) - daysSinceMonday * 86400000;
-  const monday = new Date(mondayUtcNoon);
+  const monday = new Date(
+    Date.UTC(cal.year, cal.month - 1, cal.day, 12) - daysSinceMonday * 86400000,
+  );
   const mCal = etCalendar(monday);
-  const approx = new Date(Date.UTC(mCal.year, mCal.month - 1, mCal.day + 2, 22));
-  const offset = etOffsetMinutes(approx);
-  return new Date(Date.UTC(mCal.year, mCal.month - 1, mCal.day + 2, 18) - offset * 60000);
+  return { y: mCal.year, m: mCal.month - 1, d: mCal.day };
+}
+
+function ctWallClock(y: number, m: number, d: number, hour: number): Date {
+  const approx = new Date(Date.UTC(y, m, d, hour + 6));
+  const offset = ctOffsetMinutes(approx);
+  return new Date(Date.UTC(y, m, d, hour) - offset * 60000);
 }
 
 /**
- * Regular season picks open Tuesday 12:00 AM ET of the week — 42 hours
- * before the Wednesday 6:00 PM ET deadline. Mirrors the database rule.
+ * Wednesday 6:00 PM CT of the week containing the earliest kickoff — or 30
+ * minutes before the first kickoff on short weeks (Thanksgiving), whichever
+ * comes first. Mirrors the database lock rule exactly.
+ */
+export function weekDeadline(games: Game[]): Date | null {
+  if (games.length === 0) return null;
+  const earliestMs = Math.min(...games.map((g) => new Date(g.kickoff).getTime()));
+  const { y, m, d } = weekMondayCt(new Date(earliestMs));
+  const wednesday = ctWallClock(y, m, d + 2, 18);
+  return new Date(Math.min(wednesday.getTime(), earliestMs - 30 * 60000));
+}
+
+/**
+ * Picks open Monday 12:00 AM CT of game week (pulled earlier if a short week
+ * moves the lock up, so the window is never under 42 hours).
  */
 export function weekOpensAt(games: Game[]): Date | null {
+  if (games.length === 0) return null;
   const deadline = weekDeadline(games);
-  return deadline ? new Date(deadline.getTime() - 42 * 3600000) : null;
+  if (!deadline) return null;
+  const earliestMs = Math.min(...games.map((g) => new Date(g.kickoff).getTime()));
+  const { y, m, d } = weekMondayCt(new Date(earliestMs));
+  const monday = ctWallClock(y, m, d, 0);
+  return new Date(Math.min(monday.getTime(), deadline.getTime() - 42 * 3600000));
 }
+
 
 
 export function formatCountdown(ms: number): string {
