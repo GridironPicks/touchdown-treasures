@@ -37,7 +37,10 @@ export async function fetchScoreboard(
   seasonType: SeasonType,
 ): Promise<any> {
   const espnSeasonType = seasonType === "pre" ? 1 : seasonType === "post" ? 3 : 2;
-  const query = `?dates=${season}&seasontype=${espnSeasonType}&week=${week}`;
+  // ESPN slots the Pro Bowl at postseason week 4, so our Super Bowl (round 4)
+  // maps to their week 5.
+  const espnWeek = seasonType === "post" && week === 4 ? 5 : week;
+  const query = `?dates=${season}&seasontype=${espnSeasonType}&week=${espnWeek}`;
   let lastError = "";
   for (const host of ESPN_SCOREBOARD_HOSTS) {
     try {
