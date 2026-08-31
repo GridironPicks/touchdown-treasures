@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LeagueSwitcher } from "@/components/LeagueSwitcher";
 import { InstallAppCard } from "@/components/InstallAppCard";
+import helmetLogo from "@/assets/helmet-logo.png";
 
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
