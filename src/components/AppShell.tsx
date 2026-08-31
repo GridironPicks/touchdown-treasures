@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LeagueSwitcher } from "@/components/LeagueSwitcher";
 import { InstallAppCard } from "@/components/InstallAppCard";
+import helmetLogo from "@/assets/helmet-logo.png";
 
 const NAV = [
   { to: "/picks", label: "Picks", icon: ClipboardList },
@@ -41,9 +42,18 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
-          <Link to="/picks" className="stadium-heading truncate text-lg leading-none">
-            <span className="chrome-text">GRIDIRON</span>{" "}
-            <span className="text-primary">CONFIDENCE</span>
+          <Link to="/picks" className="flex min-w-0 items-center gap-2">
+            <img
+              src={helmetLogo}
+              alt="Gridiron Confidence helmet logo"
+              width={1024}
+              height={1024}
+              className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8"
+            />
+            <span className="stadium-heading truncate text-lg leading-none">
+              <span className="chrome-text">GRIDIRON</span>{" "}
+              <span className="text-primary">CONFIDENCE</span>
+            </span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
             <div className="hidden sm:block">
