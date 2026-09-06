@@ -8,14 +8,16 @@ A new commissioner-only **Pot** tab where you can create and manage a season pot
 
 LeagueSafe holds player dues in escrow and pays out winners based on the payout schedule you configure on leaguesafe.com. It does not expose an API to your app, so Gridiron Confidence cannot confirm payments automatically. Players will still pay on LeagueSafe, and you (or the commissioner) will mark them as paid inside the app.
 
+Payouts can be end-of-season only, weekly to the 1st-place finisher, or a mix of both — whatever you set up inside LeagueSafe.
+
 ## Proposed design
 
 ### Commissioner controls
 
 - Create/edit a pot for a league with a buy-in amount and payout splits.
 - Mark/unmark members as paid. This is the source of truth inside the app because LeagueSafe does not push payment status to third parties.
-- Display pot total = (number paid × buy-in) − LeagueSafe fees if you want to enter the net amount, or gross if you prefer.
-- Configure payout percentages for season champion, runner-up, weekly winners, survivor winner, bracket winner, etc.
+- Display pot total = (number paid × buy-in) minus LeagueSafe fees if you want to enter the net amount, or gross if you prefer.
+- Configure payout percentages for season champion, weekly winners, survivor winner, bracket winner, etc.
 
 ### Player view
 
