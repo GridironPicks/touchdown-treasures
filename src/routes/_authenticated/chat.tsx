@@ -155,6 +155,23 @@ function ChatPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages"] }),
   });
 
+  const clearChat = useMutation({
+    mutationFn: async () => {
+      if (!activeLeague) throw new Error("No league selected");
+      const { error } = await supabase.rpc("clear_league_chat", {
+        _league_id: activeLeague.id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Chat cleared");
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      queryClient.invalidateQueries({ queryKey: ["message-reactions"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Could not clear chat"),
+  });
+
+
   if (leaguesLoading || !activeLeague) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
