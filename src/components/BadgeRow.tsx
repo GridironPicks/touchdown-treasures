@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { badgeArt } from "@/lib/badge-art";
 import { badgeMeta } from "@/lib/badges";
+import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, typeof Award> = {
   star: Star,
