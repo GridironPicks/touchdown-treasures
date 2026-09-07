@@ -1,50 +1,40 @@
-# LeagueSafe pot integration for Gridiron Confidence
+# Fix: Week 1 picks won't save
 
-## What you get
+## What's happening
 
-A new commissioner-only **Pot** tab where you can create and manage a season pot that players pay into through LeagueSafe. The app tracks who has paid, the current pot total, and how winnings will be split.
+The Picks page says Week 1 is open (it opened Monday at 12:00 AM Central), but the
+database is still refusing to accept picks until **Tuesday 12:00 AM Central**. So
+players can fill everything out and the save fails.
 
-## Key facts about LeagueSafe
+Confirmed: no Week 1 picks have been saved by anyone yet.
 
-LeagueSafe holds player dues in escrow and pays out winners based on the payout schedule you configure on leaguesafe.com. It does not expose an API to your app, so Gridiron Confidence cannot confirm payments automatically. Players will still pay on LeagueSafe, and you (or the commissioner) will mark them as paid inside the app.
+The two rules disagree:
 
-Payouts can be end-of-season only, weekly to the 1st-place finisher, or a mix of both — whatever you set up inside LeagueSafe.
+```text
+App shows open:   Mon Sep 7, 12:00 AM CT
+Database allows:  Tue Sep 8, 12:00 AM CT   <-- blocks everyone until then
+Lock (both):      Wed Sep 9, 6:00 PM CT
+```
 
-## Proposed design
+## The fix
 
-### Commissioner controls
+Make the database use the same "opens Monday 12:00 AM Central" rule the app shows,
+including the short-week adjustment for Thanksgiving. Also correct the outdated
+error wording that still says "Tuesday 12:00 AM ET".
 
-- Create/edit a pot for a league with a buy-in amount and payout splits.
-- Mark/unmark members as paid. This is the source of truth inside the app because LeagueSafe does not push payment status to third parties.
-- Display pot total = (number paid × buy-in) minus LeagueSafe fees if you want to enter the net amount, or gross if you prefer.
-- Configure payout percentages for season champion, weekly winners, survivor winner, bracket winner, etc.
+Once applied, Week 1 picks save immediately for everyone.
 
-### Player view
+## Technical detail
 
-- Members see the pot tab with: total collected, their own payment status, the payout schedule, and a link to your LeagueSafe payment page.
-- Unpaid members see a "Pay dues on LeagueSafe" button that opens your LeagueSafe league URL.
+- `enforce_pick_lock()` computes the open time inline as `picks_deadline() - 42 hours`
+  instead of calling `picks_open_at()`, which already implements Monday-midnight CT
+  with the 42-hour floor. Change the trigger to call `public.picks_open_at(...)` and
+  update the two exception messages to Central Time wording.
+- No schema or app changes needed; `src/lib/league.ts` (`weekOpensAt`) already matches
+  `picks_open_at`.
 
-### Data model
+## Also worth noting (not part of this fix)
 
-- New `league_pots` table: league_id, buy_in_amount, fee_amount, payout_schedule JSONB, commissioner_notes, timestamps.
-- New `pot_payments` table: pot_id, user_id, paid boolean, paid_at, method ('leaguesafe'), notes.
-- Grants/RLS: league members can read; only the league owner can insert/update/delete pot settings and mark payments.
-
-### UI
-
-- New `/pot` route under `_authenticated`.
-- Add a "Pot" entry to the authenticated navigation.
-- Card showing pot total, paid count, and a member checklist.
-- Payout schedule breakdown.
-- Commissioner-only edit mode for buy-in, splits, and LeagueSafe link.
-
-## Questions before building
-
-1. Do you want real in-app payments too (Stripe), or only LeagueSafe tracking?
-2. What payout splits do you want as the default (e.g., 70/20/10 season only, or include weekly/survivor/bracket payouts)?
-3. Should unpaid players be blocked from submitting picks, or allowed to play but marked as ineligible for the pot?
-
-## Technical notes
-
-- Since payments were previously removed to unblock Remix, reintroducing Stripe would require reconnecting payments. LeagueSafe tracking avoids payment code entirely.
-- LeagueSafe links can be stored as a string in `league_pots` and opened with a normal `<a>` tag.
+Week 1's stored kickoff is Wed Sep 9, 7:20 PM CT; the real season opener is Thursday
+Sep 10. If the schedule feed is a day off for that game, the Wednesday lock and the
+tiebreaker game could be wrong. Say the word and I'll verify the feed and re-sync.
