@@ -205,3 +205,11 @@
   color: oklch(0.2 0.02 250);
   letter-spacing: 0.12em;
 }
+
+@utility pick-glow {
+  border-color: color-mix(in oklab, var(--pick-color) 75%, transparent);
+  background: color-mix(in oklab, var(--pick-color) 16%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--pick-color) 45%, transparent),
+    0 0 28px color-mix(in oklab, var(--pick-color) 38%, transparent);
+}
