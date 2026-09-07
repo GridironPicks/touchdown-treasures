@@ -117,7 +117,13 @@ export async function fetchLiveScoreboard(
               .filter(Boolean)
               .join(" at ") || null
           : null,
+      ballSpot: state === "in" ? (situation?.possessionText ?? null) : null,
+      ballPercent:
+        state === "in"
+          ? ballPercentFrom(situation?.possessionText ?? null, possessionAbbr)
+          : null,
       isRedZone: state === "in" && !!situation?.isRedZone,
+
       lastPlay: state === "in" ? (situation?.lastPlay?.text ?? null) : null,
       broadcast: comp?.broadcasts?.[0]?.names?.[0] ?? null,
     });
