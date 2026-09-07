@@ -8,7 +8,7 @@ import { Mail, ShieldCheck, LogOut, KeyRound, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLeague } from "@/lib/league-context";
 import { deleteMyAccount } from "@/lib/account.functions";
-import { MASCOTS, SIGNATURE_CRESTS, TEAM_COLORS } from "@/lib/league";
+import { MASCOT_GROUPS, SIGNATURE_CRESTS, TEAM_COLORS } from "@/lib/league";
 import { NFL_BADGES } from "@/lib/teams";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
@@ -232,24 +232,40 @@ function ProfilePage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="mascots" className="mt-3">
-                  <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
-                    {MASCOTS.map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setMascot(m.id)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[11px] transition-colors ${
-                          mascot === m.id
-                            ? "glow-ring border-primary text-primary"
-                            : "border-border text-muted-foreground hover:border-primary/50"
-                        }`}
-                      >
-                        <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
+                <TabsContent value="mascots" className="mt-3 max-h-[32rem] space-y-5 overflow-y-auto pr-1">
+                  {MASCOT_GROUPS.map((group) => (
+                    <section key={group.id} aria-labelledby={`mascot-group-${group.id}`}>
+                      <div className="mb-2 flex items-center gap-2">
+                        <h3
+                          id={`mascot-group-${group.id}`}
+                          className="stadium-heading text-sm text-foreground"
+                        >
+                          {group.label}
+                        </h3>
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          {group.mascots.length}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                        {group.mascots.map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setMascot(m.id)}
+                            aria-pressed={mascot === m.id}
+                            className={`flex min-w-0 flex-col items-center gap-1.5 rounded-lg border p-2 text-[10px] transition-colors ${
+                              mascot === m.id
+                                ? "glow-ring border-primary text-primary"
+                                : "border-border text-muted-foreground hover:border-primary/50"
+                            }`}
+                          >
+                            <Mascot mascot={m.id} color={mascot === m.id ? color : null} size="sm" />
+                            <span className="w-full truncate text-center">{m.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
                 </TabsContent>
 
                 <TabsContent value="crests" className="mt-3">

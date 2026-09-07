@@ -33,28 +33,81 @@ export function seasonTypeLabel(type: SeasonType): string {
 }
 
 
-export const MASCOTS = [
-  { id: "eagle", label: "Eagle" },
-  { id: "bull", label: "Bull" },
-  { id: "shark", label: "Shark" },
-  { id: "wolf", label: "Wolf" },
-  { id: "bear", label: "Bear" },
-  { id: "falcon", label: "Falcon" },
-  { id: "ram", label: "Ram" },
-  { id: "cobra", label: "Cobra" },
-  { id: "stallion", label: "Stallion" },
-  { id: "titan", label: "Titan" },
-  { id: "hornet", label: "Hornet" },
-  { id: "bolt", label: "Bolt" },
-  { id: "lion", label: "Lion" },
-  { id: "raven", label: "Raven" },
-  { id: "panther", label: "Panther" },
-  { id: "rhino", label: "Rhino" },
-  { id: "bison", label: "Bison" },
-  { id: "viper", label: "Viper" },
-  { id: "knight", label: "Knight" },
-  { id: "outlaw", label: "Outlaw" },
+export const MASCOT_GROUPS = [
+  {
+    id: "classics",
+    label: "Classic Mascots",
+    mascots: [
+      { id: "eagle", label: "Eagle" }, { id: "bull", label: "Bull" },
+      { id: "shark", label: "Shark" }, { id: "wolf", label: "Wolf" },
+      { id: "bear", label: "Bear" }, { id: "falcon", label: "Falcon" },
+      { id: "ram", label: "Ram" }, { id: "cobra", label: "Cobra" },
+      { id: "stallion", label: "Stallion" }, { id: "titan", label: "Titan" },
+      { id: "hornet", label: "Hornet" }, { id: "bolt", label: "Bolt" },
+      { id: "lion", label: "Lion" }, { id: "raven", label: "Raven" },
+      { id: "panther", label: "Panther" }, { id: "rhino", label: "Rhino" },
+      { id: "bison", label: "Bison" }, { id: "viper", label: "Viper" },
+      { id: "knight", label: "Knight" }, { id: "outlaw", label: "Outlaw" },
+    ],
+  },
+  {
+    id: "beasts",
+    label: "Beasts",
+    mascots: [
+      { id: "gorilla", label: "Gorilla" }, { id: "panther-crest", label: "Night Panther" },
+      { id: "dragon", label: "Dragon" }, { id: "wolfpack", label: "Wolfpack" },
+      { id: "grizzly", label: "Grizzly" }, { id: "rhino-crest", label: "Armored Rhino" },
+      { id: "octopus", label: "Octopus" }, { id: "raptor", label: "Raptor" },
+      { id: "shark-crest", label: "Great White" }, { id: "hound", label: "Hound" },
+      { id: "boar", label: "Boar" }, { id: "elk", label: "Elk" },
+      { id: "scorpion", label: "Scorpion" }, { id: "crocodile", label: "Crocodile" },
+      { id: "owl", label: "Night Owl" }, { id: "phoenix", label: "Phoenix" },
+      { id: "kraken", label: "Kraken" }, { id: "mustang", label: "Mustang" },
+      { id: "wolverine", label: "Wolverine" }, { id: "badger", label: "Badger" },
+    ],
+  },
+  {
+    id: "warriors",
+    label: "Warriors",
+    mascots: [
+      { id: "spartan", label: "Spartan" }, { id: "samurai", label: "Samurai" },
+      { id: "viking", label: "Viking" }, { id: "knight-crest", label: "Dark Knight" },
+      { id: "gladiator", label: "Gladiator" }, { id: "pirate", label: "Pirate" },
+      { id: "ninja", label: "Ninja" }, { id: "bandit", label: "Bandit" },
+      { id: "marshal", label: "Marshal" }, { id: "centurion", label: "Centurion" },
+      { id: "berserker", label: "Berserker" }, { id: "pharaoh", label: "Pharaoh" },
+      { id: "aztec-sun", label: "Aztec Sun" }, { id: "tribal-chief", label: "Tribal Chief" },
+      { id: "archer", label: "Archer" }, { id: "crusader", label: "Crusader" },
+      { id: "sentinel", label: "Sentinel" }, { id: "legionnaire", label: "Legionnaire" },
+      { id: "corsair", label: "Corsair" }, { id: "warlord", label: "Warlord" },
+    ],
+  },
+  {
+    id: "future",
+    label: "Sci-Fi & Gridiron",
+    mascots: [
+      { id: "mech", label: "Mech" }, { id: "astronaut", label: "Astronaut" },
+      { id: "cyber-wolf", label: "Cyber Wolf" }, { id: "jet", label: "Fighter Jet" },
+      { id: "android", label: "Android" }, { id: "circuit-skull", label: "Circuit Skull" },
+      { id: "flaming-football", label: "Fireball" }, { id: "helmet-crest", label: "Gridiron Helmet" },
+      { id: "lightning", label: "Lightning" }, { id: "laser-hawk", label: "Laser Hawk" },
+      { id: "star-ranger", label: "Star Ranger" }, { id: "drone", label: "Drone" },
+    ],
+  },
+  {
+    id: "horror",
+    label: "Horror",
+    mascots: [
+      { id: "reaper", label: "Reaper" }, { id: "jester", label: "Jester" },
+      { id: "vampire", label: "Vampire" }, { id: "mummy", label: "Mummy" },
+      { id: "werewolf", label: "Werewolf" }, { id: "swamp-ghoul", label: "Swamp Ghoul" },
+      { id: "scarecrow", label: "Scarecrow" }, { id: "gargoyle", label: "Gargoyle" },
+      { id: "cursed-doll", label: "Cursed Doll" }, { id: "horned-demon", label: "Horned Demon" },
+    ],
+  },
 ] as const;
+
+export const MASCOTS = MASCOT_GROUPS.flatMap((group) => group.mascots);
 
 /** Premium 3D crests — optional, nobody's badge changes unless they pick one. */
 export const SIGNATURE_CRESTS = [
