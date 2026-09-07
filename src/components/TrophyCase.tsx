@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Trophy } from "lucide-react";
 
 import { Mascot } from "@/components/Mascot";
 import { BadgeChip, collapseBadges, type BadgeSource } from "@/components/BadgeRow";
+import { WEEKLY_TROPHY_ART } from "@/lib/badge-art";
 import type { SeasonType } from "@/lib/league";
 
 export type CabinetManager = {
@@ -24,9 +24,14 @@ function WeekTrophy({ week }: { week: number }) {
       aria-label={`Week ${week} winner`}
       className="group inline-flex w-14 flex-col items-center gap-1"
     >
-      <span className="trophy-badge inline-flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 group-hover:-translate-y-0.5">
-        <Trophy size={22} strokeWidth={2.2} />
-      </span>
+      <img
+        src={WEEKLY_TROPHY_ART}
+        alt=""
+        loading="lazy"
+        width={44}
+        height={44}
+        className="medal-art h-11 w-11 object-contain transition-transform duration-200 group-hover:-translate-y-0.5"
+      />
       <span className="trophy-plaque rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">
         WK {week}
       </span>

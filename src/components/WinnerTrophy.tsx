@@ -1,9 +1,9 @@
-import { Trophy } from "lucide-react";
+import { WEEKLY_TROPHY_ART } from "@/lib/badge-art";
 
 const SIZES = {
-  sm: { box: "h-10 w-10", icon: 20 },
-  md: { box: "h-14 w-14", icon: 28 },
-  lg: { box: "h-20 w-20", icon: 40 },
+  sm: { px: 34 },
+  md: { px: 52 },
+  lg: { px: 76 },
 } as const;
 
 /** Oversized metallic trophy used to crown the winner of a week. */
@@ -16,14 +16,17 @@ export function WinnerTrophy({
   label?: string;
   className?: string;
 }) {
-  const s = SIZES[size];
+  const px = SIZES[size].px;
   return (
-    <span
+    <img
+      src={WEEKLY_TROPHY_ART}
+      alt={label ?? "Winner of the week"}
       title={label ?? "Winner of the week"}
-      aria-label={label ?? "Winner of the week"}
-      className={`trophy-badge inline-flex shrink-0 items-center justify-center rounded-full ${s.box} ${className}`}
-    >
-      <Trophy size={s.icon} strokeWidth={2.2} />
-    </span>
+      loading="lazy"
+      width={px}
+      height={px}
+      style={{ width: px, height: px }}
+      className={`medal-art shrink-0 object-contain ${className}`}
+    />
   );
 }
