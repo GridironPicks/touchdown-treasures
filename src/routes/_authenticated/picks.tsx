@@ -555,11 +555,16 @@ function PicksPage() {
                         disabled={gameLocked}
                         onClick={() => pickTeam(game.id, team)}
                         style={
-                          showTint
-                            ? ({ "--pick-color": tint } as React.CSSProperties)
-                            : undefined
+                          {
+                            "--pick-color": tint,
+                            ...(showTint
+                              ? {}
+                              : {
+                                  backgroundImage: `linear-gradient(100deg, color-mix(in oklab, ${tint} ${won ? 10 : 14}%, transparent), transparent 62%)`,
+                                }),
+                          } as React.CSSProperties
                         }
-                        className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-100 ${
+                        className={`relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-3.5 text-left transition-colors disabled:opacity-100 ${
                           won
                             ? "glow-ring border-primary bg-primary/15"
                             : lost
@@ -569,8 +574,19 @@ function PicksPage() {
                                 : "border-border hover:border-primary/50"
                         }`}
                       >
-                        <TeamLogo team={team} size={32} />
-                        <span className="min-w-0 flex-1">
+                        <span
+                          aria-hidden
+                          className="absolute inset-y-0 left-0 w-[3px]"
+                          style={{ background: tint }}
+                        />
+                        <img
+                          aria-hidden
+                          src={teamLogo(team) ?? undefined}
+                          alt=""
+                          className="pointer-events-none absolute -right-4 -bottom-5 h-24 w-24 object-contain opacity-[0.13]"
+                        />
+                        <TeamLogo team={team} size={44} />
+                        <span className="relative min-w-0 flex-1">
                           <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                             {team === game.home_team ? "Home" : "Away"}
                             {picked && (
@@ -582,13 +598,13 @@ function PicksPage() {
                           <span className="flex items-center justify-between gap-2">
                             <span
                               style={showTint ? { color: tint } : undefined}
-                              className={`stadium-heading block truncate text-lg ${won ? "text-primary" : ""}`}
+                              className={`stadium-heading block truncate text-xl ${won ? "text-primary" : ""}`}
                             >
                               {teamShort(team)}
                             </span>
                             {hasScore && (
                               <span
-                                className={`stadium-heading text-xl tabular-nums ${
+                                className={`stadium-heading text-3xl leading-none tabular-nums ${
                                   won ? "text-primary" : "text-muted-foreground"
                                 }`}
                               >
@@ -597,7 +613,7 @@ function PicksPage() {
                             )}
                           </span>
                         </span>
-                        {won && <Trophy size={16} className="shrink-0 text-primary" />}
+                        {won && <Trophy size={16} className="relative shrink-0 text-primary" />}
                       </button>
                     );
                   })}
@@ -605,28 +621,34 @@ function PicksPage() {
                 </div>
 
 
-                <select
-                  aria-label="Confidence points"
-                  disabled={gameLocked}
-                  value={sel?.confidence ?? ""}
-                  onChange={(e) =>
-                    setConfidence(game.id, e.target.value ? Number(e.target.value) : null)
-                  }
-                  className="h-12 w-full rounded-xl border border-border bg-input px-3 text-base font-bold text-foreground sm:w-28"
-                >
-                  <option value="">Pts</option>
-                  {Array.from({ length: pointsCeiling }, (_, i) => pointsCeiling - i)
-                    .filter(
-                      (n) =>
-                        sel?.confidence === n ||
-                        (!usedPoints.has(n) && !reservedPoints.has(n)),
-                    )
-                    .map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                </select>
+                <div className="flex items-center gap-2 sm:w-28 sm:flex-col sm:items-stretch sm:gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-center">
+                    Confidence
+                  </span>
+                  <select
+                    aria-label="Confidence points"
+                    disabled={gameLocked}
+                    value={sel?.confidence ?? ""}
+                    onChange={(e) =>
+                      setConfidence(game.id, e.target.value ? Number(e.target.value) : null)
+                    }
+                    className="h-14 flex-1 rounded-xl border border-border bg-input px-3 text-center text-2xl font-black tabular-nums text-foreground sm:w-full"
+                  >
+                    <option value="">–</option>
+                    {Array.from({ length: pointsCeiling }, (_, i) => pointsCeiling - i)
+                      .filter(
+                        (n) =>
+                          sel?.confidence === n ||
+                          (!usedPoints.has(n) && !reservedPoints.has(n)),
+                      )
+                      .map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
               </div>
               {live && <FieldPositionBar game={live} />}
               {(() => {
