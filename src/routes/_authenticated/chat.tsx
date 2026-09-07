@@ -155,6 +155,23 @@ function ChatPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages"] }),
   });
 
+  const clearChat = useMutation({
+    mutationFn: async () => {
+      if (!activeLeague) throw new Error("No league selected");
+      const { error } = await supabase.rpc("clear_league_chat", {
+        _league_id: activeLeague.id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Chat cleared");
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      queryClient.invalidateQueries({ queryKey: ["message-reactions"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Could not clear chat"),
+  });
+
+
   if (leaguesLoading || !activeLeague) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -166,14 +183,32 @@ function ChatPage() {
   return (
 
     <div className="space-y-4">
-      <header>
-        <h1 className="stadium-heading flex items-center gap-2 text-3xl">
-          <MessageSquare className="text-primary" /> Trash Talk
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          League-wide chat — everyone playing sees every message.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="stadium-heading flex items-center gap-2 text-3xl">
+            <MessageSquare className="text-primary" /> Trash Talk
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            League-wide chat — everyone playing sees every message.
+          </p>
+        </div>
+        {activeLeague.role === "owner" && messages.length > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={clearChat.isPending}
+            onClick={() => {
+              if (window.confirm("Delete every message in this chat? This can't be undone.")) {
+                clearChat.mutate();
+              }
+            }}
+          >
+            <Trash2 size={14} className="mr-1" /> Clear chat history
+          </Button>
+        )}
       </header>
+
 
       <section className="field-panel flex h-[60vh] flex-col overflow-hidden rounded-2xl">
         <div className="flex-1 space-y-3 overflow-y-auto p-4">

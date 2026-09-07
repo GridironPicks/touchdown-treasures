@@ -850,6 +850,7 @@ export type Database = {
       }
     }
     Functions: {
+      clear_league_chat: { Args: { _league_id: string }; Returns: number }
       create_league: {
         Args: { _name: string; _owner_id: string; _settings?: Json }
         Returns: string
