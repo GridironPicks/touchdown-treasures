@@ -4,7 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { refreshSlateScores } from "@/lib/scores.functions";
 import { getWinProbabilities } from "@/lib/winprob.functions";
+import { getLiveScoreboard } from "@/lib/scoreboard.functions";
 import { WinProbability } from "@/components/WinProbability";
+import { NetworkBadge } from "@/components/NetworkBadge";
+import { FieldPositionBar } from "@/components/FieldPositionBar";
+
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame, Trophy, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
@@ -146,6 +150,21 @@ function PicksPage() {
   });
   const winProbFor = (game: Game) =>
     winProbs.find((w) => w.external_id === game.external_id) ?? null;
+
+  // Broadcast network + live clock/possession/field position from the provider.
+  const fetchScoreboard = useServerFn(getLiveScoreboard);
+  const { data: liveGames = [] } = useQuery({
+    queryKey: ["live-scoreboard", seasonType, week],
+    enabled: !!slate,
+    queryFn: async () => await fetchScoreboard({ data: { seasonType, week } }),
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((g) => g.state === "in") ? 20_000 : false,
+  });
+  const liveFor = (game: Game) =>
+    liveGames.find((g) => g.external_id === game.external_id) ?? null;
+
+
 
   const { data: existing } = useQuery({
     queryKey: ["my-picks", activeLeague?.id, seasonType, week],
@@ -493,13 +512,18 @@ function PicksPage() {
             isFinal && hasScore && game.away_score !== game.home_score
               ? (game.home_score! > game.away_score! ? game.home_team : game.away_team)
               : null;
+          const live = liveFor(game);
           return (
             <li
               key={game.id}
               className={`field-panel rounded-2xl p-4 ${started && !isFinal ? "opacity-70" : ""}`}
             >
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
-                <span>{timesTbd ? "Time TBD" : kickoffLabel(game.kickoff)}</span>
+                <span className="flex items-center gap-2">
+                  {timesTbd ? "Time TBD" : kickoffLabel(game.kickoff)}
+                  <NetworkBadge network={live?.broadcast} />
+                </span>
+
                 <span className="flex items-center gap-2">
                   {tiebreakerGame?.id === game.id && (
                     <span className="flex items-center gap-1 text-primary">
@@ -604,7 +628,9 @@ function PicksPage() {
                     ))}
                 </select>
               </div>
+              {live && <FieldPositionBar game={live} />}
               {(() => {
+
                 const wp = winProbFor(game);
                 if (!wp || isFinal) return null;
                 return (

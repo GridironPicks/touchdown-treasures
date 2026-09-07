@@ -213,3 +213,30 @@
     0 0 0 1px color-mix(in oklab, var(--pick-color) 45%, transparent),
     0 0 28px color-mix(in oklab, var(--pick-color) 38%, transparent);
 }
+
+/* Live field-position strip on game cards */
+@utility field-strip {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-primary) 12%, transparent) 0 1px,
+      transparent 1px 10%
+    ),
+    color-mix(in oklab, var(--color-primary) 8%, transparent);
+}
+
+@utility ball-dot {
+  background: var(--color-primary);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 80%, transparent);
+}
+
+@utility ball-dot-red {
+  background: var(--color-destructive);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--color-destructive) 80%, transparent);
+}
+
+@utility network-pill {
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
+  background: color-mix(in oklab, var(--color-foreground) 6%, transparent);
+  color: var(--color-muted-foreground);
+}
