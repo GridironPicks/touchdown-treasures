@@ -240,3 +240,8 @@
   background: color-mix(in oklab, var(--color-foreground) 6%, transparent);
   color: var(--color-muted-foreground);
 }
+
+/* Sculpted 3D award medals */
+.medal-art {
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.55)) drop-shadow(0 0 10px color-mix(in oklab, var(--primary) 18%, transparent));
+}
