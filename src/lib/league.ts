@@ -107,7 +107,9 @@ export const MASCOT_GROUPS = [
   },
 ] as const;
 
-export const MASCOTS = MASCOT_GROUPS.flatMap((group) => group.mascots);
+export const MASCOTS: ReadonlyArray<{ id: string; label: string }> = MASCOT_GROUPS.flatMap(
+  (group) => [...group.mascots],
+);
 
 /** Premium 3D crests — optional, nobody's badge changes unless they pick one. */
 export const SIGNATURE_CRESTS = [
