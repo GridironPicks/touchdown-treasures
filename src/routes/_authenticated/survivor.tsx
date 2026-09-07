@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Skull, ShieldCheck, Lock, Timer, HelpCircle } from "lucide-react";
+import { Skull, ShieldCheck, Lock, Timer, HelpCircle, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
+import { teamColor, teamLogo } from "@/lib/teams";
 import { Button } from "@/components/ui/button";
 import {
   SEASON,
