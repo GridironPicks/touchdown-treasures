@@ -66,7 +66,7 @@ export const listMyLeagues = createServerFn({ method: "GET" })
       .order("created_at", { referencedTable: "leagues", ascending: true });
     if (error) throw error;
 
-    return ((data ?? []).map(toLeague).filter(Boolean) as League[]);
+    return ((data ?? []).map((r) => toLeague(r, context.userId)).filter(Boolean) as League[]);
   });
 
 export const createLeague = createServerFn({ method: "POST" })
@@ -148,7 +148,7 @@ export const getLeague = createServerFn({ method: "GET" })
     if (membershipError) throw membershipError;
     if (!membership) throw new Error("League not found or you're not a member");
 
-    const league = toLeague(membership);
+    const league = toLeague(membership, context.userId);
     if (!league) throw new Error("League not found");
     return league;
   });
