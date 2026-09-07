@@ -519,19 +519,27 @@ function PicksPage() {
                     const score = team === game.home_team ? game.home_score : game.away_score;
                     const won = winner === team;
                     const lost = winner !== null && !won;
+                    const picked = sel?.team === team;
+                    const tint = teamColor(team);
+                    const showTint = picked && !won && !lost;
                     return (
                       <button
                         key={team}
                         type="button"
                         disabled={gameLocked}
                         onClick={() => pickTeam(game.id, team)}
+                        style={
+                          showTint
+                            ? ({ "--pick-color": tint } as React.CSSProperties)
+                            : undefined
+                        }
                         className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors disabled:opacity-100 ${
                           won
                             ? "glow-ring border-primary bg-primary/15"
                             : lost
                               ? "border-border/60 opacity-55"
-                              : sel?.team === team
-                                ? "glow-ring border-primary bg-primary/10 text-primary"
+                              : showTint
+                                ? "pick-glow"
                                 : "border-border hover:border-primary/50"
                         }`}
                       >
@@ -539,10 +547,15 @@ function PicksPage() {
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                             {team === game.home_team ? "Home" : "Away"}
-                            {sel?.team === team && <span className="text-primary">· your pick</span>}
+                            {picked && (
+                              <span style={showTint ? { color: tint } : undefined} className={showTint ? "" : "text-primary"}>
+                                · your pick
+                              </span>
+                            )}
                           </span>
                           <span className="flex items-center justify-between gap-2">
                             <span
+                              style={showTint ? { color: tint } : undefined}
                               className={`stadium-heading block truncate text-lg ${won ? "text-primary" : ""}`}
                             >
                               {teamShort(team)}
@@ -562,6 +575,7 @@ function PicksPage() {
                       </button>
                     );
                   })}
+
                 </div>
 
 
