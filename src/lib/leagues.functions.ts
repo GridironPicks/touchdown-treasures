@@ -40,9 +40,10 @@ function toSettings(value: unknown): LeagueSettings {
   return out;
 }
 
-function toLeague(row: any): League | null {
+function toLeague(row: any, userId?: string): League | null {
   const l = row?.leagues ?? row;
   if (!l) return null;
+  const isOwner = !!userId && l.owner_id === userId;
   return {
     id: l.id,
     name: l.name,
@@ -50,7 +51,7 @@ function toLeague(row: any): League | null {
     join_code: l.join_code,
     settings: toSettings(l.settings),
     is_global_pool: l.is_global_pool,
-    role: row.role as "owner" | "member",
+    role: isOwner ? "owner" : (row.role as "owner" | "member"),
     created_at: l.created_at,
   };
 }
