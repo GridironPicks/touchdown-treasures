@@ -151,6 +151,21 @@ function PicksPage() {
   const winProbFor = (game: Game) =>
     winProbs.find((w) => w.external_id === game.external_id) ?? null;
 
+  // Broadcast network + live clock/possession/field position from the provider.
+  const fetchScoreboard = useServerFn(getLiveScoreboard);
+  const { data: liveGames = [] } = useQuery({
+    queryKey: ["live-scoreboard", seasonType, week],
+    enabled: !!slate,
+    queryFn: async () => await fetchScoreboard({ data: { seasonType, week } }),
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((g) => g.state === "in") ? 20_000 : false,
+  });
+  const liveFor = (game: Game) =>
+    liveGames.find((g) => g.external_id === game.external_id) ?? null;
+
+
+
   const { data: existing } = useQuery({
     queryKey: ["my-picks", activeLeague?.id, seasonType, week],
     enabled: !!slate && !!activeLeague,
