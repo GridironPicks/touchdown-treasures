@@ -20,10 +20,27 @@ export type LiveGame = {
   homeRecord: string | null;
   possessionAbbr: string | null;
   downDistance: string | null;
+  /** Ball spot as shown by the provider, e.g. "KC 34". */
+  ballSpot: string | null;
+  /** 0-100 along the field from the possessing team's own goal line. */
+  ballPercent: number | null;
   isRedZone: boolean;
   lastPlay: string | null;
   broadcast: string | null;
 };
+
+/** Converts a provider ball spot ("KC 34") into 0-100 toward the opponent goal. */
+function ballPercentFrom(spot: string | null, possessionAbbr: string | null): number | null {
+  if (!spot) return null;
+  const match = spot.trim().match(/^([A-Z]{2,4})\s+(\d{1,2})$/i);
+  if (!match) return null;
+  const side = match[1]!.toUpperCase();
+  const yard = Number(match[2]);
+  if (!Number.isFinite(yard)) return null;
+  const own = possessionAbbr ? side === possessionAbbr.toUpperCase() : true;
+  return Math.min(100, Math.max(0, own ? yard : 100 - yard));
+}
+
 
 export async function fetchLiveScoreboard(
   season: number,
