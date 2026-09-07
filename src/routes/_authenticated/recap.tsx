@@ -248,17 +248,43 @@ function RecapPage() {
 
           {weekBadges.length > 0 && (
             <section className="field-panel rounded-2xl p-5">
-              <h2 className="stadium-heading mb-3 text-lg">Awards this week</h2>
-              <ul className="space-y-2 text-sm">
-                {weekBadges.map((entry) => (
-                  <li key={entry.userId} className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">
-                      {data.rows.find((r) => r.user_id === entry.userId)?.team_name ?? "Manager"}
-                    </span>
-                    <BadgeRow rows={entry.rows} size="md" />
-                  </li>
-                ))}
-              </ul>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="stadium-heading text-lg">Awards this week</h2>
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                  {weekBadges.reduce((sum, e) => sum + e.rows.length, 0)} total
+                </span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {weekBadges.map((entry) => {
+                  const manager = data.rows.find((r) => r.user_id === entry.userId);
+                  return (
+                    <div
+                      key={entry.userId}
+                      className="flex flex-col gap-3 rounded-xl border border-border bg-card/40 p-3 transition-colors hover:bg-card/60"
+                      style={manager?.primary_color ? { borderLeft: `3px solid ${manager.primary_color}` } : undefined}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Mascot
+                          mascot={manager?.mascot ?? "helmet"}
+                          color={manager?.primary_color ?? "#0B162A"}
+                          size="sm"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold leading-tight">
+                            {manager?.team_name ?? "Manager"}
+                          </p>
+                          <p className="truncate text-[10px] text-muted-foreground">
+                            {entry.rows.length} award{entry.rows.length === 1 ? "" : "s"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <BadgeRow rows={entry.rows} size="md" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </section>
           )}
 
