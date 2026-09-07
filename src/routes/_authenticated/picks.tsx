@@ -4,7 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { refreshSlateScores } from "@/lib/scores.functions";
 import { getWinProbabilities } from "@/lib/winprob.functions";
+import { getLiveScoreboard } from "@/lib/scoreboard.functions";
 import { WinProbability } from "@/components/WinProbability";
+import { NetworkBadge } from "@/components/NetworkBadge";
+import { FieldPositionBar } from "@/components/FieldPositionBar";
+
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Timer, Flame, Trophy, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
