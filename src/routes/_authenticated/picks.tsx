@@ -23,6 +23,8 @@ import {
   type SeasonType,
 } from "@/lib/league";
 import { TeamLogo } from "@/components/TeamLogo";
+import { teamColor } from "@/lib/teams";
+
 import { HowToPlay } from "@/components/HowToPlay";
 import { LeagueRules } from "@/components/LeagueRules";
 import { RosterStatus } from "@/components/RosterStatus";
