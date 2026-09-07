@@ -1,61 +1,29 @@
 import { teamLogo } from "@/lib/teams";
 
-import cartelCowboyz from "@/assets/mascots/cartel-cowboyz.png.asset.json";
-import dustinOffMyTrophy from "@/assets/mascots/dustin-off-my-trophy.png.asset.json";
-import heavyHitters from "@/assets/mascots/heavy-hitters.png.asset.json";
-import junkyardDogs from "@/assets/mascots/junkyard-dogs.png.asset.json";
-import mamaBear from "@/assets/mascots/mama-bear.png.asset.json";
-import treyTors from "@/assets/mascots/trey-tors.png.asset.json";
+type MascotAsset = { url: string };
+type MascotAssetModule = { default: MascotAsset };
 
-import bear from "@/assets/mascots/bear.png.asset.json";
-import bison from "@/assets/mascots/bison.png.asset.json";
-import bolt from "@/assets/mascots/bolt.png.asset.json";
-import bull from "@/assets/mascots/bull.png.asset.json";
-import cobra from "@/assets/mascots/cobra.png.asset.json";
-import eagle from "@/assets/mascots/eagle.png.asset.json";
-import falcon from "@/assets/mascots/falcon.png.asset.json";
-import hornet from "@/assets/mascots/hornet.png.asset.json";
-import knight from "@/assets/mascots/knight.png.asset.json";
-import lion from "@/assets/mascots/lion.png.asset.json";
-import outlaw from "@/assets/mascots/outlaw.png.asset.json";
-import panther from "@/assets/mascots/panther.png.asset.json";
-import ram from "@/assets/mascots/ram.png.asset.json";
-import raven from "@/assets/mascots/raven.png.asset.json";
-import rhino from "@/assets/mascots/rhino.png.asset.json";
-import shark from "@/assets/mascots/shark.png.asset.json";
-import stallion from "@/assets/mascots/stallion.png.asset.json";
-import titan from "@/assets/mascots/titan.png.asset.json";
-import viper from "@/assets/mascots/viper.png.asset.json";
-import wolf from "@/assets/mascots/wolf.png.asset.json";
+const mascotModules = import.meta.glob<MascotAssetModule>(
+  "../assets/mascots/*.png.asset.json",
+  { eager: true },
+);
 
-export const MASCOT_ART: Record<string, string> = {
-  eagle: eagle.url,
-  bull: bull.url,
-  shark: shark.url,
-  wolf: wolf.url,
-  bear: bear.url,
-  falcon: falcon.url,
-  ram: ram.url,
-  cobra: cobra.url,
-  stallion: stallion.url,
-  titan: titan.url,
-  hornet: hornet.url,
-  bolt: bolt.url,
-  lion: lion.url,
-  raven: raven.url,
-  panther: panther.url,
-  rhino: rhino.url,
-  bison: bison.url,
-  viper: viper.url,
-  knight: knight.url,
-  outlaw: outlaw.url,
-  "crest-cartel-cowboyz": cartelCowboyz.url,
-  "crest-dustin-off-my-trophy": dustinOffMyTrophy.url,
-  "crest-heavy-hitters": heavyHitters.url,
-  "crest-mama-bear": mamaBear.url,
-  "crest-junkyard-dogs": junkyardDogs.url,
-  "crest-trey-tors": treyTors.url,
-};
+export const MASCOT_ART: Record<string, string> = Object.fromEntries(
+  Object.entries(mascotModules).map(([path, module]) => {
+    const id = path.split("/").pop()?.replace(".png.asset.json", "") ?? "";
+    const storedId = [
+      "cartel-cowboyz",
+      "dustin-off-my-trophy",
+      "heavy-hitters",
+      "mama-bear",
+      "junkyard-dogs",
+      "trey-tors",
+    ].includes(id)
+      ? `crest-${id}`
+      : id;
+    return [storedId, module.default.url];
+  }),
+);
 
 /** Resolves a stored mascot id to artwork. `nfl:dal` maps to the franchise logo. */
 export function mascotSrc(mascot: string): string | null {
@@ -79,7 +47,7 @@ export function Mascot({
 }) {
   const src = mascotSrc(mascot);
   const box = size === "lg" ? "h-16 w-16" : size === "sm" ? "h-9 w-9" : "h-12 w-12";
-  const pad = size === "lg" ? "p-1.5" : size === "sm" ? "p-1" : "p-1";
+  const pad = size === "lg" ? "p-1.5" : "p-1";
   return (
     <span
       className={`${box} ${pad} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary`}
@@ -90,8 +58,8 @@ export function Mascot({
           src={src}
           alt={`${mascot} badge`}
           loading="lazy"
-          width={512}
-          height={512}
+          width={1024}
+          height={1024}
           className="h-full w-full object-contain"
         />
       ) : null}
