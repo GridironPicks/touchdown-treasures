@@ -245,3 +245,11 @@
 .medal-art {
   filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.55)) drop-shadow(0 0 10px color-mix(in oklab, var(--primary) 18%, transparent));
 }
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
