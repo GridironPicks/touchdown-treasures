@@ -264,8 +264,8 @@ function RecapPage() {
                     >
                       <div className="flex items-center gap-2.5">
                         <Mascot
-                          mascot={manager?.mascot}
-                          color={manager?.primary_color}
+                          mascot={manager?.mascot ?? "helmet"}
+                          color={manager?.primary_color ?? "#0B162A"}
                           size="sm"
                         />
                         <div className="min-w-0 flex-1">
