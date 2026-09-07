@@ -40,9 +40,10 @@ function toSettings(value: unknown): LeagueSettings {
   return out;
 }
 
-function toLeague(row: any): League | null {
+function toLeague(row: any, userId?: string): League | null {
   const l = row?.leagues ?? row;
   if (!l) return null;
+  const isOwner = !!userId && l.owner_id === userId;
   return {
     id: l.id,
     name: l.name,
@@ -50,7 +51,7 @@ function toLeague(row: any): League | null {
     join_code: l.join_code,
     settings: toSettings(l.settings),
     is_global_pool: l.is_global_pool,
-    role: row.role as "owner" | "member",
+    role: isOwner ? "owner" : (row.role as "owner" | "member"),
     created_at: l.created_at,
   };
 }
@@ -65,7 +66,7 @@ export const listMyLeagues = createServerFn({ method: "GET" })
       .order("created_at", { referencedTable: "leagues", ascending: true });
     if (error) throw error;
 
-    return ((data ?? []).map(toLeague).filter(Boolean) as League[]);
+    return ((data ?? []).map((r) => toLeague(r, context.userId)).filter(Boolean) as League[]);
   });
 
 export const createLeague = createServerFn({ method: "POST" })
@@ -147,7 +148,7 @@ export const getLeague = createServerFn({ method: "GET" })
     if (membershipError) throw membershipError;
     if (!membership) throw new Error("League not found or you're not a member");
 
-    const league = toLeague(membership);
+    const league = toLeague(membership, context.userId);
     if (!league) throw new Error("League not found");
     return league;
   });
