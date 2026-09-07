@@ -261,6 +261,7 @@ function RecapPage() {
                     <div
                       key={entry.userId}
                       className="flex flex-col gap-3 rounded-xl border border-border bg-card/40 p-3 transition-colors hover:bg-card/60"
+                      style={manager?.primary_color ? { borderLeft: `3px solid ${manager.primary_color}` } : undefined}
                     >
                       <div className="flex items-center gap-2.5">
                         <Mascot
