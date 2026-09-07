@@ -512,13 +512,18 @@ function PicksPage() {
             isFinal && hasScore && game.away_score !== game.home_score
               ? (game.home_score! > game.away_score! ? game.home_team : game.away_team)
               : null;
+          const live = liveFor(game);
           return (
             <li
               key={game.id}
               className={`field-panel rounded-2xl p-4 ${started && !isFinal ? "opacity-70" : ""}`}
             >
               <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
-                <span>{timesTbd ? "Time TBD" : kickoffLabel(game.kickoff)}</span>
+                <span className="flex items-center gap-2">
+                  {timesTbd ? "Time TBD" : kickoffLabel(game.kickoff)}
+                  <NetworkBadge network={live?.broadcast} />
+                </span>
+
                 <span className="flex items-center gap-2">
                   {tiebreakerGame?.id === game.id && (
                     <span className="flex items-center gap-1 text-primary">
