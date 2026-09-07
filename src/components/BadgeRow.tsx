@@ -58,7 +58,7 @@ export function BadgeChip({ badge, count, entries, size = "sm" }: EarnedBadge & 
   const art = badgeArt(badge);
   const weeks = entries.map((e) => e.week).filter((w): w is number => w !== null);
   const title = `${meta.label} — ${meta.how}${weeks.length ? ` (weeks ${weeks.join(", ")})` : ""}`;
-  const px = size === "md" ? 40 : 24;
+  const px = size === "md" ? 54 : 26;
 
   return (
     <Popover>
@@ -69,7 +69,7 @@ export function BadgeChip({ badge, count, entries, size = "sm" }: EarnedBadge & 
             title={title}
             aria-label={title}
             className={`group inline-flex flex-col items-center gap-1 transition-transform duration-200 hover:-translate-y-0.5 ${
-              size === "md" ? "w-16" : "w-auto"
+              size === "md" ? "w-[68px]" : "w-auto"
             }`}
           >
             <span className="relative inline-flex items-center justify-center">
