@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Skull, ShieldCheck, Lock, Timer, HelpCircle } from "lucide-react";
+import { Skull, ShieldCheck, Lock, Timer, HelpCircle, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
+import { teamColor, teamLogo } from "@/lib/teams";
 import { Button } from "@/components/ui/button";
 import {
   SEASON,
@@ -259,33 +260,90 @@ function SurvivorPage() {
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {[game.away_team, game.home_team].map((team) => {
-                  const used = usedTeams.has(team);
+                  const used = usedTeams.has(team) && thisWeekPick !== team;
                   const picked = thisWeekPick === team;
+                  const tint = teamColor(team);
+                  const isFinal = game.status === "final";
+                  const hasScore = game.away_score !== null && game.home_score !== null;
+                  const score = team === game.home_team ? game.home_score : game.away_score;
+                  const winner =
+                    isFinal && hasScore && game.away_score !== game.home_score
+                      ? game.home_score! > game.away_score!
+                        ? game.home_team
+                        : game.away_team
+                      : null;
+                  const won = picked && winner === team;
+                  const showTint = picked && !won;
                   return (
                     <button
                       key={team}
                       type="button"
                       disabled={busy || locked || used}
                       onClick={() => pick(team)}
-                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors ${
-                        picked
-                          ? "glow-ring border-primary bg-primary/15 text-primary"
-                          : used
-                            ? "border-border/60 opacity-45"
-                            : "border-border hover:border-primary/50"
+                      style={
+                        {
+                          "--pick-color": tint,
+                          ...(showTint
+                            ? {}
+                            : {
+                                backgroundImage: `linear-gradient(100deg, color-mix(in oklab, ${tint} ${won ? 10 : 14}%, transparent), transparent 62%)`,
+                              }),
+                        } as React.CSSProperties
+                      }
+                      className={`relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-3.5 text-left transition-colors disabled:opacity-100 ${
+                        won
+                          ? "glow-ring border-primary bg-primary/15"
+                          : showTint
+                            ? "pick-glow"
+                            : used
+                              ? "border-border/60 opacity-45"
+                              : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <TeamLogo team={team} size={32} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 w-[3px]"
+                        style={{ background: tint }}
+                      />
+                      <img
+                        aria-hidden
+                        src={teamLogo(team) ?? undefined}
+                        alt=""
+                        className="pointer-events-none absolute -right-4 -bottom-5 h-24 w-24 object-contain opacity-[0.13]"
+                      />
+                      <TeamLogo team={team} size={44} />
+                      <span className="relative min-w-0 flex-1">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
                           {team === game.home_team ? "Home" : "Away"}
-                          {used && <span className="ml-1 text-destructive">· used</span>}
-                          {picked && <span className="ml-1 text-primary">· your pick</span>}
+                          {used && <span className="text-destructive">· used</span>}
+                          {picked && (
+                            <span
+                              style={showTint ? { color: tint } : undefined}
+                              className={showTint ? "" : "text-primary"}
+                            >
+                              · your pick
+                            </span>
+                          )}
                         </span>
-                        <span className="stadium-heading block truncate text-lg">
-                          {teamShort(team)}
+                        <span className="flex items-center justify-between gap-2">
+                          <span
+                            style={showTint ? { color: tint } : undefined}
+                            className={`stadium-heading block truncate text-xl ${won ? "text-primary" : ""}`}
+                          >
+                            {teamShort(team)}
+                          </span>
+                          {hasScore && (
+                            <span
+                              className={`stadium-heading text-3xl leading-none tabular-nums ${
+                                won ? "text-primary" : "text-muted-foreground"
+                              }`}
+                            >
+                              {score}
+                            </span>
+                          )}
                         </span>
                       </span>
+                      {won && <Trophy size={16} className="relative shrink-0 text-primary" />}
                     </button>
                   );
                 })}
@@ -293,6 +351,7 @@ function SurvivorPage() {
             </li>
           ))}
         </ul>
+
       </section>
 
       <section className="field-panel space-y-3 rounded-2xl p-5">
