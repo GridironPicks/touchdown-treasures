@@ -621,7 +621,7 @@ function PicksPage() {
                 </div>
 
 
-                <div className="flex items-center gap-2 sm:w-28 sm:flex-col sm:items-stretch sm:gap-1">
+                <div className="flex items-center gap-2 sm:w-24 sm:flex-col sm:items-stretch sm:gap-1">
                   <span className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-center">
                     Confidence
                   </span>
@@ -632,7 +632,7 @@ function PicksPage() {
                     onChange={(e) =>
                       setConfidence(game.id, e.target.value ? Number(e.target.value) : null)
                     }
-                    className="h-14 flex-1 rounded-xl border border-border bg-input px-3 text-center text-2xl font-black tabular-nums text-foreground sm:w-full"
+                    className="h-10 flex-1 rounded-lg border border-border bg-input px-2 text-center text-lg font-black tabular-nums text-foreground sm:w-full"
                   >
                     <option value="">–</option>
                     {Array.from({ length: pointsCeiling }, (_, i) => pointsCeiling - i)
