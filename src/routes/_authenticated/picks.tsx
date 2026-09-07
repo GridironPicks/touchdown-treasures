@@ -628,7 +628,9 @@ function PicksPage() {
                     ))}
                 </select>
               </div>
+              {live && <FieldPositionBar game={live} />}
               {(() => {
+
                 const wp = winProbFor(game);
                 if (!wp || isFinal) return null;
                 return (
