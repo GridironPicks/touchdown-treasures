@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { badgeArt } from "@/lib/badge-art";
 import { BADGE_META } from "@/lib/badges";
 
 /** Lists every award in the league and how each one is earned. */
@@ -31,11 +32,23 @@ export function BadgeGlossary() {
         <ul className="space-y-3">
           {Object.entries(BADGE_META).map(([key, meta]) => {
             const Icon = badgeIcon(meta.icon);
+            const art = badgeArt(key);
             return (
               <li key={key} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
-                  <Icon size={15} />
-                </span>
+                {art ? (
+                  <img
+                    src={art}
+                    alt=""
+                    loading="lazy"
+                    width={44}
+                    height={44}
+                    className="medal-art h-11 w-11 shrink-0 object-contain"
+                  />
+                ) : (
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
+                    <Icon size={15} />
+                  </span>
+                )}
                 <div>
                   <p className="text-sm font-bold uppercase tracking-wide">{meta.label}</p>
                   <p className="text-xs text-muted-foreground">{meta.how}</p>
