@@ -1,27 +1,27 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
+import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LeagueSwitcher } from "@/components/LeagueSwitcher";
 import { InstallAppCard } from "@/components/InstallAppCard";
+import { NavIcon } from "@/components/NavIcon";
 import helmetLogo from "@/assets/helmet-logo.png";
 
 const NAV = [
-  { to: "/picks", label: "Picks", icon: ClipboardList },
-  { to: "/scoreboard", label: "Scores", icon: Radio },
-  { to: "/leaderboard", label: "Standings", icon: Trophy },
-  
-  { to: "/survivor", label: "Survivor", icon: ShieldCheck },
-  { to: "/bracket", label: "Bracket", icon: GitBranch },
-  { to: "/chat", label: "Trash Talk", icon: MessageSquare },
-  { to: "/leagues", label: "Leagues", icon: Users },
-  { to: "/trophy-case", label: "Trophies", icon: Medal },
-  { to: "/notifications", label: "Alerts", icon: Bell },
-  { to: "/profile", label: "Profile", icon: UserCircle },
-
+  { to: "/picks", label: "Picks", icon: "picks" },
+  { to: "/scoreboard", label: "Scores", icon: "scores" },
+  { to: "/leaderboard", label: "Standings", icon: "standings" },
+  { to: "/survivor", label: "Survivor", icon: "survivor" },
+  { to: "/bracket", label: "Bracket", icon: "bracket" },
+  { to: "/chat", label: "Trash Talk", icon: "chat" },
+  { to: "/leagues", label: "Leagues", icon: "leagues" },
+  { to: "/trophy-case", label: "Trophies", icon: "trophies" },
+  { to: "/notifications", label: "Alerts", icon: "alerts" },
+  { to: "/profile", label: "Profile", icon: "profile" },
 ] as const;
+
 
 
 
@@ -93,11 +93,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.to}
               to={item.to}
-              className="flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-[9px] font-semibold leading-tight text-muted-foreground"
-              activeProps={{ className: "text-primary" }}
+              className="group flex min-w-0 flex-col items-center gap-1 px-1 pb-2 pt-2 text-[9px] font-semibold leading-tight text-muted-foreground [&_img]:opacity-60"
+              activeProps={{
+                className:
+                  "text-primary [&_img]:opacity-100 [&_img]:drop-shadow-[0_0_6px_rgba(0,230,118,0.55)]",
+              }}
+
             >
-              <item.icon size={18} className="shrink-0" />
+              <NavIcon name={item.icon} size={26} className="transition-opacity" />
               <span className="w-full truncate text-center">{item.label}</span>
+
             </Link>
           ))}
         </div>
