@@ -93,11 +93,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.to}
               to={item.to}
-              className="flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-[9px] font-semibold leading-tight text-muted-foreground"
-              activeProps={{ className: "text-primary" }}
+              className="group flex min-w-0 flex-col items-center gap-1 px-1 pb-2 pt-2 text-[9px] font-semibold leading-tight text-muted-foreground [&_img]:opacity-60"
+              activeProps={{
+                className:
+                  "text-primary [&_img]:opacity-100 [&_img]:drop-shadow-[0_0_6px_hsl(var(--primary)/0.55)]",
+              }}
             >
-              <NavIcon name={item.icon} size={26} />
+              <NavIcon name={item.icon} size={26} className="transition-opacity" />
               <span className="w-full truncate text-center">{item.label}</span>
+
             </Link>
           ))}
         </div>
