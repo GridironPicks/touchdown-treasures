@@ -1,27 +1,27 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Trophy, MessageSquare, ShieldCheck, LogOut, Users, Bell, UserCircle, Radio, Medal, GitBranch } from "lucide-react";
+import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LeagueSwitcher } from "@/components/LeagueSwitcher";
 import { InstallAppCard } from "@/components/InstallAppCard";
+import { NavIcon } from "@/components/NavIcon";
 import helmetLogo from "@/assets/helmet-logo.png";
 
 const NAV = [
-  { to: "/picks", label: "Picks", icon: ClipboardList },
-  { to: "/scoreboard", label: "Scores", icon: Radio },
-  { to: "/leaderboard", label: "Standings", icon: Trophy },
-  
-  { to: "/survivor", label: "Survivor", icon: ShieldCheck },
-  { to: "/bracket", label: "Bracket", icon: GitBranch },
-  { to: "/chat", label: "Trash Talk", icon: MessageSquare },
-  { to: "/leagues", label: "Leagues", icon: Users },
-  { to: "/trophy-case", label: "Trophies", icon: Medal },
-  { to: "/notifications", label: "Alerts", icon: Bell },
-  { to: "/profile", label: "Profile", icon: UserCircle },
-
+  { to: "/picks", label: "Picks", icon: "picks" },
+  { to: "/scoreboard", label: "Scores", icon: "scores" },
+  { to: "/leaderboard", label: "Standings", icon: "standings" },
+  { to: "/survivor", label: "Survivor", icon: "survivor" },
+  { to: "/bracket", label: "Bracket", icon: "bracket" },
+  { to: "/chat", label: "Trash Talk", icon: "chat" },
+  { to: "/leagues", label: "Leagues", icon: "leagues" },
+  { to: "/trophy-case", label: "Trophies", icon: "trophies" },
+  { to: "/notifications", label: "Alerts", icon: "alerts" },
+  { to: "/profile", label: "Profile", icon: "profile" },
 ] as const;
+
 
 
 
