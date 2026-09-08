@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
+import { SurvivorTeamPool } from "@/components/SurvivorTeamPool";
 import { teamColor, teamLogo } from "@/lib/teams";
 import { Button } from "@/components/ui/button";
 import {
@@ -142,6 +143,9 @@ function SurvivorPage() {
   const mine = managers.find((m) => m.user_id === me) ?? null;
   const myRuns = mine?.runs ?? [];
   const usedTeams = new Set(myRuns.map((r) => r.team).filter(Boolean) as string[]);
+  const usedTeamWeeks = Object.fromEntries(
+    myRuns.filter((r) => r.team && r.week !== null).map((r) => [r.team as string, r.week as number]),
+  );
   const thisWeekPick = myRuns.find((r) => r.week === week)?.team ?? null;
 
   const deadline = useMemo(() => weekDeadline(games), [games]);
@@ -211,6 +215,8 @@ function SurvivorPage() {
           )}
         </div>
       </header>
+
+      <SurvivorTeamPool usedTeams={usedTeamWeeks} currentPick={thisWeekPick} />
 
       <section className="field-panel rounded-2xl border border-border p-5">
         <h2 className="stadium-heading flex items-center gap-2 text-lg">
