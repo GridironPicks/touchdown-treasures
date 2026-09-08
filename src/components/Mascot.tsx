@@ -16,6 +16,7 @@ export const MASCOT_ART: Record<string, string> = Object.fromEntries(
       "cartel-cowboyz",
       "dustin-off-my-trophy",
       "heavy-hitters",
+      "hook-em",
       "mama-bear",
       "junkyard-dogs",
       "trey-tors",
