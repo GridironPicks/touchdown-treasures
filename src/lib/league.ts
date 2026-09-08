@@ -113,6 +113,7 @@ export const MASCOTS: ReadonlyArray<{ id: string; label: string }> = MASCOT_GROU
 
 /** Premium 3D crests — optional, nobody's badge changes unless they pick one. */
 export const SIGNATURE_CRESTS = [
+  { id: "crest-bevo", label: "Bevo" },
   { id: "crest-cartel-cowboyz", label: "Cartel Cowboyz" },
   { id: "crest-dustin-off-my-trophy", label: "Dustin Off My Trophy" },
   { id: "crest-heavy-hitters", label: "Heavy Hitters" },

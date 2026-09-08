@@ -12,6 +12,7 @@ export const MASCOT_ART: Record<string, string> = Object.fromEntries(
   Object.entries(mascotModules).map(([path, module]) => {
     const id = path.split("/").pop()?.replace(".png.asset.json", "") ?? "";
     const storedId = [
+      "bevo",
       "cartel-cowboyz",
       "dustin-off-my-trophy",
       "heavy-hitters",
