@@ -117,6 +117,7 @@ export const SIGNATURE_CRESTS = [
   { id: "crest-cartel-cowboyz", label: "Cartel Cowboyz" },
   { id: "crest-dustin-off-my-trophy", label: "Dustin Off My Trophy" },
   { id: "crest-heavy-hitters", label: "Heavy Hitters" },
+  { id: "crest-hook-em", label: "Hook 'Em" },
   { id: "crest-mama-bear", label: "Mama Bear" },
   { id: "crest-junkyard-dogs", label: "Junkyard Dogs" },
   { id: "crest-trey-tors", label: "The Trey-tors" },
