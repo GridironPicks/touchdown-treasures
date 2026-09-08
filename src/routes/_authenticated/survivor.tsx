@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mascot } from "@/components/Mascot";
 import { TeamLogo } from "@/components/TeamLogo";
+import { SurvivorTeamPool } from "@/components/SurvivorTeamPool";
 import { teamColor, teamLogo } from "@/lib/teams";
 import { Button } from "@/components/ui/button";
 import {
@@ -214,6 +215,8 @@ function SurvivorPage() {
           )}
         </div>
       </header>
+
+      <SurvivorTeamPool usedTeams={usedTeamWeeks} currentPick={thisWeekPick} />
 
       <section className="field-panel rounded-2xl border border-border p-5">
         <h2 className="stadium-heading flex items-center gap-2 text-lg">
