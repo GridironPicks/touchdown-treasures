@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-[9px] font-semibold leading-tight text-muted-foreground"
               activeProps={{ className: "text-primary" }}
             >
-              <item.icon size={18} className="shrink-0" />
+              <NavIcon name={item.icon} size={26} />
               <span className="w-full truncate text-center">{item.label}</span>
             </Link>
           ))}
