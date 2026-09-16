@@ -89,6 +89,10 @@ function PicksPage() {
   const [tiebreaker, setTiebreaker] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
+  // Commissioner proxy: pick on behalf of a manager who can't get in.
+  const [proxyUserId, setProxyUserId] = useState<string | null>(null);
+  const isCommish = activeLeague?.role === "owner";
+
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
