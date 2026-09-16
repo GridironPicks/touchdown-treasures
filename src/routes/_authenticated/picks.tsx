@@ -444,6 +444,40 @@ function PicksPage() {
     <div className="space-y-5">
       <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
 
+      {isCommish && members.length > 0 ? (
+        <section
+          className={`field-panel rounded-2xl border p-4 ${
+            proxyUserId ? "border-amber-500/50 bg-amber-500/5" : "border-border"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Commissioner · making picks as
+            </span>
+            <select
+              value={proxyUserId ?? ""}
+              onChange={(e) => setProxyUserId(e.target.value || null)}
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm"
+            >
+              <option value="">Myself</option>
+              {members.map((m) => (
+                <option key={m.user_id} value={m.user_id}>
+                  {m.display_name} — {m.team_name}
+                  {m.submitted ? " (picks in)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          {proxyMember ? (
+            <p className="mt-2 text-sm font-semibold text-amber-300">
+              You're entering picks for {proxyMember.display_name}. They'll be saved to that
+              manager's account and are final once submitted.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+
       <header className="field-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
