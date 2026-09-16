@@ -537,8 +537,8 @@ function PicksPage() {
         <section className="field-panel rounded-2xl border border-border p-5">
           <h2 className="stadium-heading text-lg">Week not open yet</h2>
           <p className="text-sm text-muted-foreground">
-            Regular season picks open Monday at 12:00 AM CT of game week and lock Wednesday at
-            6:00 PM CT. Check back Monday to make this week's picks.
+            Regular season picks open Monday at 12:00 AM CT of game week and lock at 12:00 PM CT
+            on the day of the week's first game. Check back Monday to make this week's picks.
           </p>
         </section>
       ) : status === "open" ? (
