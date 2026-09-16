@@ -50,7 +50,7 @@ export function InstallAppCard() {
           <p className="text-sm font-semibold">Get the app on your phone</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Add Gridiron Confidence to your home screen and turn on deadline alerts so you never
-            miss a Wednesday lock.
+            miss a lock.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {deferred && (

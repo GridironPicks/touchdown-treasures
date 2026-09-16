@@ -8,12 +8,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Free weekly NFL confidence pick 'em: rank every matchup, Wednesday 6PM lock and a season-long trophy chase.",
+          "Free weekly NFL confidence pick 'em: rank every matchup, noon gameday lock and a season-long trophy chase.",
       },
       { property: "og:title", content: "Gridiron Confidence — NFL Confidence Pick 'Em" },
       {
         property: "og:description",
-        content: "Rank every game, beat the Wednesday lock, climb the season standings.",
+        content: "Rank every game, beat the noon gameday lock, climb the season standings.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://gridironconfidence.lovable.app/share-card.jpg" },
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
 
 const FEATURES = [
   { icon: ListOrdered, title: "Confidence ranking", body: "Assign 16 down to 1 with no duplicates." },
-  { icon: Timer, title: "Wednesday 6PM lock", body: "Live countdown, automatic pick lockout." },
+  { icon: Timer, title: "Noon gameday lock", body: "Live countdown, automatic pick lockout." },
   { icon: Wallet, title: "Always free", body: "No buy-in, no entry fee — just bragging rights." },
   { icon: Trophy, title: "Season trophy", body: "Metallic 2026 badge for the top manager." },
 ];
@@ -43,7 +43,7 @@ function Landing() {
       </h1>
       <p className="mt-5 max-w-xl text-base text-muted-foreground">
         The free NFL confidence pick 'em league for your crew. Auto-loaded weekly matchups, ranked
-        confidence points, a hard Wednesday deadline and a season-long trophy chase.
+        confidence points, a hard noon gameday deadline and a season-long trophy chase.
       </p>
 
 

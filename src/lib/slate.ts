@@ -55,7 +55,7 @@ export function useSlates() {
 /**
  * The slate to show by default: the earliest slate that still has games left
  * to play — so a week in progress stays visible until it wraps up, instead of
- * jumping ahead the moment its Wednesday lock passes.
+ * jumping ahead the moment its noon lock passes.
  */
 export function defaultSlate(slates: SlateInfo[]): Slate | null {
   if (slates.length === 0) return null;

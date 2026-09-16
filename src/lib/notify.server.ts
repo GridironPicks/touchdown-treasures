@@ -61,7 +61,7 @@ async function deadlineAlerts(slates: Slate[], now: number) {
 
       const body =
         stage === "open"
-          ? `Week ${slate.week} picks are open in ${league.name}. Lock is Wednesday 6:00 PM CT.`
+          ? `Week ${slate.week} picks are open in ${league.name}. Lock is 12:00 PM CT on the first game day.`
           : stage === "24h"
             ? `24 hours left to submit Week ${slate.week} picks in ${league.name}.`
             : `Final call — Week ${slate.week} picks in ${league.name} lock in under 2 hours.`;
