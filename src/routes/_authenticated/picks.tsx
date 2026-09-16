@@ -175,10 +175,33 @@ function PicksPage() {
 
 
 
+  // Roster for the commissioner's "picking as" selector.
+  const fetchMembers = useServerFn(listLeagueMembers);
+  const { data: members = [] } = useQuery({
+    queryKey: ["league-members", activeLeague?.id, seasonType, week],
+    enabled: !!isCommish && !!activeLeague && !!slate,
+    queryFn: async () =>
+      await fetchMembers({ data: { leagueId: activeLeague!.id, seasonType, week } }),
+  });
+  const proxyMember = members.find((m) => m.user_id === proxyUserId) ?? null;
+
+  const fetchMemberPicks = useServerFn(getMemberPicks);
+  const savePicksFor = useServerFn(submitPicksForMember);
+
   const { data: existing } = useQuery({
-    queryKey: ["my-picks", activeLeague?.id, seasonType, week],
+    queryKey: ["my-picks", activeLeague?.id, seasonType, week, proxyUserId],
     enabled: !!slate && !!activeLeague,
     queryFn: async () => {
+      if (proxyUserId) {
+        const res = await fetchMemberPicks({
+          data: { leagueId: activeLeague!.id, userId: proxyUserId, seasonType, week },
+        });
+        return {
+          uid: res.uid,
+          picks: res.picks as { game_id: string; picked_team: string; confidence: number }[],
+          tiebreaker: res.tiebreaker,
+        };
+      }
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user!.id;
       const [picks, tb] = await Promise.all([
