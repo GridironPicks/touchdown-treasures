@@ -428,3 +428,118 @@ export const addMember = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+const proxySchema = z.object({
+  leagueId: z.string().uuid(),
+  userId: z.string().uuid(),
+  seasonType: z.enum(["pre", "reg", "post"]),
+  week: z.number().int().min(1).max(22),
+});
+
+async function assertProxyAllowed(
+  supabase: { from: (t: string) => any },
+  leagueId: string,
+  callerId: string,
+  targetId: string,
+) {
+  await assertOwner(supabase as never, leagueId, callerId, { allowGlobalPool: true });
+  const { data, error } = await supabase
+    .from("league_memberships")
+    .select("user_id")
+    .eq("league_id", leagueId)
+    .eq("user_id", targetId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("That manager isn't in this league");
+}
+
+/** Owner-only read of another manager's picks for a week. */
+export const getMemberPicks = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => proxySchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertProxyAllowed(context.supabase as never, data.leagueId, context.userId, data.userId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [picks, tb] = await Promise.all([
+      supabaseAdmin
+        .from("picks")
+        .select("game_id, picked_team, confidence")
+        .eq("user_id", data.userId)
+        .eq("league_id", data.leagueId)
+        .eq("season", SEASON)
+        .eq("season_type", data.seasonType)
+        .eq("week", data.week),
+      supabaseAdmin
+        .from("tiebreakers")
+        .select("predicted_total")
+        .eq("user_id", data.userId)
+        .eq("league_id", data.leagueId)
+        .eq("season", SEASON)
+        .eq("season_type", data.seasonType)
+        .eq("week", data.week)
+        .maybeSingle(),
+    ]);
+    if (picks.error) throw picks.error;
+    return {
+      uid: data.userId,
+      picks: picks.data ?? [],
+      tiebreaker: tb.data ?? null,
+    };
+  });
+
+/** Owner-only submission of picks on behalf of a manager who can't get in. */
+export const submitPicksForMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    proxySchema
+      .extend({
+        picks: z
+          .array(
+            z.object({
+              gameId: z.string().uuid(),
+              team: z.string().min(1),
+              confidence: z.number().int().min(1).max(22),
+            }),
+          )
+          .min(1),
+        tiebreaker: z.number().int().min(0).max(200).nullable().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertProxyAllowed(context.supabase as never, data.leagueId, context.userId, data.userId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const rows = data.picks.map((p) => ({
+      user_id: data.userId,
+      league_id: data.leagueId,
+      game_id: p.gameId,
+      season: SEASON,
+      season_type: data.seasonType,
+      week: data.week,
+      picked_team: p.team,
+      confidence: p.confidence,
+    }));
+
+    // The pick-lock trigger still applies, so open/lock rules are enforced.
+    const { error } = await supabaseAdmin.from("picks").insert(rows);
+    if (error) throw error;
+
+    if (typeof data.tiebreaker === "number") {
+      const tb = await supabaseAdmin.from("tiebreakers").upsert(
+        {
+          user_id: data.userId,
+          league_id: data.leagueId,
+          season: SEASON,
+          season_type: data.seasonType,
+          week: data.week,
+          predicted_total: data.tiebreaker,
+        },
+        { onConflict: "user_id,league_id,season,season_type,week", ignoreDuplicates: true },
+      );
+      if (tb.error) throw tb.error;
+    }
+
+    return { ok: true, count: rows.length };
+  });
