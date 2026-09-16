@@ -127,50 +127,6 @@ async function resultAlerts(slates: Slate[]) {
   return sent;
 }
 
-/** Survived / eliminated once the survivor week is final. */
-async function survivorAlerts(slates: Slate[]) {
-  let sent = 0;
-  for (const slate of slates) {
-    if (slate.seasonType !== "reg") continue;
-    if (!slate.games.every((g) => g.status === "final")) continue;
-    const last = Math.max(...slate.games.map((g) => new Date(g.kickoff).getTime()));
-    if (Date.now() - last > 5 * 86400000) continue;
-
-    const { data: picks } = await supabaseAdmin
-      .from("survivor_picks")
-      .select("user_id, league_id, team")
-      .eq("season", SEASON)
-      .eq("week", slate.week);
-    if (!picks || picks.length === 0) continue;
-
-    for (const pick of picks) {
-      const game = slate.games.find(
-        (g) => g.home_team === pick.team || g.away_team === pick.team,
-      );
-      if (!game || game.home_score === null || game.away_score === null) continue;
-      const isHome = game.home_team === pick.team;
-      const mine = isHome ? game.home_score : game.away_score;
-      const theirs = isHome ? game.away_score : game.home_score;
-      const survived = mine > theirs;
-
-      sent += await sendToUsers(
-        [pick.user_id],
-        "survivor",
-        {
-          title: survived ? "You survived" : "Eliminated",
-          body: survived
-            ? `${pick.team} came through in Week ${slate.week}. Pick again next week.`
-            : `${pick.team} lost in Week ${slate.week}. Your survivor run is over.`,
-          url: "/survivor",
-          tag: `survivor-${slate.week}`,
-        },
-        `survivor-${pick.league_id}-${slate.week}`,
-      );
-    }
-  }
-  return sent;
-}
-
 export async function runNotificationSweep() {
   const { data, error } = await supabaseAdmin
     .from("games")
@@ -182,11 +138,8 @@ export async function runNotificationSweep() {
   const slates = groupSlates((data ?? []) as Game[]);
   const now = Date.now();
 
-  const [deadlines, results, survivor] = [
-    await deadlineAlerts(slates, now),
-    await resultAlerts(slates),
-    await survivorAlerts(slates),
-  ];
+  const deadlines = await deadlineAlerts(slates, now);
+  const results = await resultAlerts(slates);
 
-  return { deadlines, results, survivor };
+  return { deadlines, results };
 }

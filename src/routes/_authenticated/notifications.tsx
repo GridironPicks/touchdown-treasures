@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
       { property: "og:title", content: "Alerts & Install — Gridiron Confidence" },
       {
         property: "og:description",
-        content: "Deadline reminders, weekly results, trash talk and survivor alerts.",
+        content: "Deadline reminders, weekly results and trash talk alerts.",
       },
     ],
   }),
@@ -59,11 +59,6 @@ const TYPES = [
     key: "chat" as const,
     label: "Trash talk",
     hint: "New messages in your league chat.",
-  },
-  {
-    key: "survivor" as const,
-    label: "Survivor status",
-    hint: "Survived or eliminated, as soon as your team's week wraps.",
   },
 ];
 
@@ -93,7 +88,7 @@ function NotificationsPage() {
     deadlines: settings?.deadlines ?? true,
     results: settings?.results ?? true,
     chat: settings?.chat ?? false,
-    survivor: settings?.survivor ?? true,
+    
   };
 
   const updatePrefs = useMutation({
@@ -181,7 +176,7 @@ function NotificationsPage() {
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          We only send league activity: deadline reminders, weekly results, trash talk and survivor
+          We only send league activity: deadline reminders, weekly results and trash talk
           updates. No ads, no marketing, and nothing is shared with anyone outside your leagues. You
           can switch any of it off here at any time, and turning alerts off deletes the device
           record we use to reach you.

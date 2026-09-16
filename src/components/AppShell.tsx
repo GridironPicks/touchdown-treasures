@@ -13,7 +13,7 @@ const NAV = [
   { to: "/picks", label: "Picks", icon: "picks" },
   { to: "/scoreboard", label: "Scores", icon: "scores" },
   { to: "/leaderboard", label: "Standings", icon: "standings" },
-  { to: "/survivor", label: "Survivor", icon: "survivor" },
+  
   { to: "/bracket", label: "Bracket", icon: "bracket" },
   { to: "/chat", label: "Trash Talk", icon: "chat" },
   { to: "/leagues", label: "Leagues", icon: "leagues" },

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Crown, Flame, Share2, Skull, Target, TrendingDown } from "lucide-react";
+import { Crown, Flame, Share2, Target, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/recap")({
       {
         name: "description",
         content:
-          "The official weekly winner, tiebreakers, biggest hits and misses, and survivor casualties.",
+          "The official weekly winner, tiebreakers, and the biggest hits and misses.",
       },
       { property: "og:title", content: "Weekly Recap — Gridiron Confidence" },
       {
@@ -289,21 +289,6 @@ function RecapPage() {
           )}
 
 
-          {data.casualties.length > 0 && (
-            <section className="field-panel rounded-2xl p-5">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-destructive">
-                <Skull size={14} /> Survivor casualties
-              </p>
-              <ul className="mt-3 space-y-1 text-sm">
-                {data.casualties.map((c) => (
-                  <li key={c.user_id} className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">{c.team_name}</span>
-                    {c.team ? ` — knocked out with ${c.team}` : " — eliminated"}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </>
       )}
     </div>

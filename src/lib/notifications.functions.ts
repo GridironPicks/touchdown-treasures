@@ -7,7 +7,6 @@ export type NotificationPrefs = {
   deadlines: boolean;
   results: boolean;
   chat: boolean;
-  survivor: boolean;
   consented_at: string | null;
   consent_version: string | null;
 };
@@ -21,7 +20,7 @@ const DEFAULTS: NotificationPrefs = {
   deadlines: true,
   results: true,
   chat: false,
-  survivor: true,
+  
   consented_at: null,
   consent_version: null,
 };
@@ -42,7 +41,7 @@ export const getNotificationSettings = createServerFn({ method: "GET" })
             deadlines: prefs.deadlines,
             results: prefs.results,
             chat: prefs.chat,
-            survivor: prefs.survivor,
+            
             consented_at: prefs.consented_at,
             consent_version: prefs.consent_version,
           }
@@ -56,7 +55,7 @@ const prefsSchema = z.object({
   deadlines: z.boolean(),
   results: z.boolean(),
   chat: z.boolean(),
-  survivor: z.boolean(),
+  
   consentVersion: z.string().min(1).max(40),
 });
 
@@ -71,7 +70,7 @@ export const saveNotificationPrefs = createServerFn({ method: "POST" })
         deadlines: data.deadlines,
         results: data.results,
         chat: data.chat,
-        survivor: data.survivor,
+        
         consented_at: new Date().toISOString(),
         consent_version: data.consentVersion,
         updated_at: new Date().toISOString(),
