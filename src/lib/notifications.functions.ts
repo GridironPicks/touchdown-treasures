@@ -7,7 +7,6 @@ export type NotificationPrefs = {
   deadlines: boolean;
   results: boolean;
   chat: boolean;
-  survivor: boolean;
   consented_at: string | null;
   consent_version: string | null;
 };
