@@ -75,22 +75,6 @@ export const getWeekRecap = createServerFn({ method: "POST" })
     const allFinal =
       (games.data ?? []).length > 0 && (games.data ?? []).every((g) => g.status === "final");
 
-    let casualties: RecapCasualty[] = [];
-    if (allFinal && data.seasonType === "reg") {
-      const board = await context.supabase.rpc("survivor_board", {
-        _season: SEASON,
-        _league_id: data.leagueId,
-      });
-      if (!board.error) {
-        casualties = (board.data ?? [])
-          .filter((r) => r.week === data.week && r.result === "eliminated")
-          .map((r) => ({
-            user_id: r.user_id as string,
-            team_name: r.team_name as string,
-            team: (r.team as string | null) ?? null,
-          }));
-      }
-    }
 
     const sorted = [...(games.data ?? [])].sort((a, b) => {
       if (a.is_tiebreaker_game !== b.is_tiebreaker_game) return a.is_tiebreaker_game ? -1 : 1;
