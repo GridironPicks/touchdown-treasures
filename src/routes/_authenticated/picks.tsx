@@ -29,6 +29,11 @@ import {
 import { TeamLogo } from "@/components/TeamLogo";
 import { teamColor, teamLogo } from "@/lib/teams";
 
+import {
+  listLeagueMembers,
+  getMemberPicks,
+  submitPicksForMember,
+} from "@/lib/commissioner.functions";
 import { HowToPlay } from "@/components/HowToPlay";
 import { LeagueRules } from "@/components/LeagueRules";
 import { RosterStatus } from "@/components/RosterStatus";
@@ -84,6 +89,10 @@ function PicksPage() {
   const [tiebreaker, setTiebreaker] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
+  // Commissioner proxy: pick on behalf of a manager who can't get in.
+  const [proxyUserId, setProxyUserId] = useState<string | null>(null);
+  const isCommish = activeLeague?.role === "owner";
+
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -166,10 +175,33 @@ function PicksPage() {
 
 
 
+  // Roster for the commissioner's "picking as" selector.
+  const fetchMembers = useServerFn(listLeagueMembers);
+  const { data: members = [] } = useQuery({
+    queryKey: ["league-members", activeLeague?.id, seasonType, week],
+    enabled: !!isCommish && !!activeLeague && !!slate,
+    queryFn: async () =>
+      await fetchMembers({ data: { leagueId: activeLeague!.id, seasonType, week } }),
+  });
+  const proxyMember = members.find((m) => m.user_id === proxyUserId) ?? null;
+
+  const fetchMemberPicks = useServerFn(getMemberPicks);
+  const savePicksFor = useServerFn(submitPicksForMember);
+
   const { data: existing } = useQuery({
-    queryKey: ["my-picks", activeLeague?.id, seasonType, week],
+    queryKey: ["my-picks", activeLeague?.id, seasonType, week, proxyUserId],
     enabled: !!slate && !!activeLeague,
     queryFn: async () => {
+      if (proxyUserId) {
+        const res = await fetchMemberPicks({
+          data: { leagueId: activeLeague!.id, userId: proxyUserId, seasonType, week },
+        });
+        return {
+          uid: res.uid,
+          picks: res.picks as { game_id: string; picked_team: string; confidence: number }[],
+          tiebreaker: res.tiebreaker,
+        };
+      }
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user!.id;
       const [picks, tb] = await Promise.all([
@@ -315,7 +347,9 @@ function PicksPage() {
     if (!existing || locked) return;
     if (
       !window.confirm(
-        "Submit your picks? Picks are final — you won't be able to change them.",
+        proxyMember
+          ? `Submit these picks for ${proxyMember.display_name}? Picks are final — they can't be changed.`
+          : "Submit your picks? Picks are final — you won't be able to change them.",
       )
     ) {
       return;
@@ -323,6 +357,31 @@ function PicksPage() {
     setBusy(true);
     try {
       const uid = existing.uid;
+      const total0 = Number.parseInt(tiebreaker, 10);
+
+      if (proxyUserId) {
+        const picks = openGames
+          .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
+          .map((g) => ({
+            gameId: g.id,
+            team: selections[g.id]!.team,
+            confidence: selections[g.id]!.confidence!,
+          }));
+        await savePicksFor({
+          data: {
+            leagueId: activeLeague!.id,
+            userId: proxyUserId,
+            seasonType,
+            week,
+            picks,
+            tiebreaker: !tiebreakerLocked && !Number.isNaN(total0) ? total0 : null,
+          },
+        });
+        await queryClient.invalidateQueries();
+        toast.success(`Picks submitted for ${proxyMember?.display_name ?? "manager"}`);
+        return;
+      }
+
       const rows = openGames
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
@@ -384,6 +443,40 @@ function PicksPage() {
 
     <div className="space-y-5">
       <SlatePicker slates={slates} value={slate} onChange={selectSlate} />
+
+      {isCommish && members.length > 0 ? (
+        <section
+          className={`field-panel rounded-2xl border p-4 ${
+            proxyUserId ? "border-amber-500/50 bg-amber-500/5" : "border-border"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Commissioner · making picks as
+            </span>
+            <select
+              value={proxyUserId ?? ""}
+              onChange={(e) => setProxyUserId(e.target.value || null)}
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm"
+            >
+              <option value="">Myself</option>
+              {members.map((m) => (
+                <option key={m.user_id} value={m.user_id}>
+                  {m.display_name} — {m.team_name}
+                  {m.submitted ? " (picks in)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          {proxyMember ? (
+            <p className="mt-2 text-sm font-semibold text-amber-300">
+              You're entering picks for {proxyMember.display_name}. They'll be saved to that
+              manager's account and are final once submitted.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
 
       <header className="field-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
