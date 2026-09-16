@@ -93,7 +93,7 @@ export const getWeekRecap = createServerFn({ method: "POST" })
       ready: allFinal && rows.length > 0,
       rows,
       highlights: (highlights.data ?? []) as RecapHighlight[],
-      casualties,
+      
       finalGame,
     };
   });
