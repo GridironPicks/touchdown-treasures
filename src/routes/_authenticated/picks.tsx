@@ -347,7 +347,9 @@ function PicksPage() {
     if (!existing || locked) return;
     if (
       !window.confirm(
-        "Submit your picks? Picks are final — you won't be able to change them.",
+        proxyMember
+          ? `Submit these picks for ${proxyMember.display_name}? Picks are final — they can't be changed.`
+          : "Submit your picks? Picks are final — you won't be able to change them.",
       )
     ) {
       return;
@@ -355,6 +357,31 @@ function PicksPage() {
     setBusy(true);
     try {
       const uid = existing.uid;
+      const total0 = Number.parseInt(tiebreaker, 10);
+
+      if (proxyUserId) {
+        const picks = openGames
+          .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
+          .map((g) => ({
+            gameId: g.id,
+            team: selections[g.id]!.team,
+            confidence: selections[g.id]!.confidence!,
+          }));
+        await savePicksFor({
+          data: {
+            leagueId: activeLeague!.id,
+            userId: proxyUserId,
+            seasonType,
+            week,
+            picks,
+            tiebreaker: !tiebreakerLocked && !Number.isNaN(total0) ? total0 : null,
+          },
+        });
+        await queryClient.invalidateQueries();
+        toast.success(`Picks submitted for ${proxyMember?.display_name ?? "manager"}`);
+        return;
+      }
+
       const rows = openGames
         .filter((g) => selections[g.id]?.team && selections[g.id]?.confidence)
         .map((g) => ({
