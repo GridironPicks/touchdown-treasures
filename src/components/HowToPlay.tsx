@@ -45,7 +45,7 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
         minute: "2-digit",
         timeZoneName: "short",
       })
-    : "Wednesday 6:00 PM CT";
+    : "12:00 PM CT on gameday";
 
   return (
     <section className="field-panel rounded-2xl border border-border p-4">

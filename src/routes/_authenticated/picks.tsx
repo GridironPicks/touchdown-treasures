@@ -66,7 +66,7 @@ export const Route = createFileRoute("/_authenticated/picks")({
       {
         name: "description",
         content:
-          "Assign confidence points to every NFL matchup and submit before the Wednesday 6PM lock.",
+          "Assign confidence points to every NFL matchup and submit before the noon gameday lock.",
       },
       { property: "og:title", content: "Weekly Picks — Gridiron Confidence" },
       {
@@ -242,7 +242,7 @@ function PicksPage() {
   const hasStarted = (g: Game) => new Date(g.kickoff).getTime() <= now;
   const openGames = games.filter((g) => !hasStarted(g));
   const maxPoints = games.length;
-  // Regular season: opens Monday 12:00 AM CT, locks Wednesday 6:00 PM CT,
+  // Regular season: opens Monday 12:00 AM CT, locks 12:00 PM CT on the first game day,
   // and picks are final once submitted. Preseason stays open per game.
   const isRegular = slate?.seasonType === "reg";
   
@@ -506,7 +506,7 @@ function PicksPage() {
                 ? "Opens Mon 12:00 AM CT"
                 : status === "open"
                   ? isRegular
-                    ? "Locks Wed 6:00 PM CT"
+                    ? "Locks 12:00 PM CT gameday"
                     : "Closes at last kickoff"
                   : submitted
                     ? "Picks submitted"
@@ -537,8 +537,8 @@ function PicksPage() {
         <section className="field-panel rounded-2xl border border-border p-5">
           <h2 className="stadium-heading text-lg">Week not open yet</h2>
           <p className="text-sm text-muted-foreground">
-            Regular season picks open Monday at 12:00 AM CT of game week and lock Wednesday at
-            6:00 PM CT. Check back Monday to make this week's picks.
+            Regular season picks open Monday at 12:00 AM CT of game week and lock at 12:00 PM CT
+            on the day of the week's first game. Check back Monday to make this week's picks.
           </p>
         </section>
       ) : status === "open" ? (
@@ -548,7 +548,7 @@ function PicksPage() {
           </h2>
           <p className="text-sm text-muted-foreground">
             {isRegular
-              ? "Submit by Wednesday 6:00 PM CT. Once you hit submit your picks are final — no changes after that."
+              ? "Submit by 12:00 PM CT on the first game day. Once you hit submit your picks are final — no changes after that."
               : "Pick the games that haven't kicked off yet. Every game that starts burns the highest confidence number off your board, so the longer you wait the less you can score. Picks are final once submitted."}
           </p>
           {burnedTop > 0 ? (
@@ -569,7 +569,7 @@ function PicksPage() {
               ? "You've submitted this week's picks — they're locked in and can't be changed."
               : deadlinePassed
                 ? isRegular
-                  ? "The Wednesday 6:00 PM CT deadline has passed. Your submitted picks are shown below with scores."
+                  ? "The 12:00 PM CT gameday deadline has passed. Your submitted picks are shown below with scores."
                   : "The last game of this week has kicked off, so the week is closed. Scores are shown below."
                 : "Every game this week has kicked off. Your submitted picks are shown below with scores."}
           </p>
