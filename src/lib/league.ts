@@ -187,16 +187,15 @@ function ctWallClock(y: number, m: number, d: number, hour: number): Date {
 }
 
 /**
- * Wednesday 6:00 PM CT of the week containing the earliest kickoff — or 30
- * minutes before the first kickoff on short weeks (Thanksgiving), whichever
- * comes first. Mirrors the database lock rule exactly.
+ * 12:00 PM CT on the day of the week's first game — or 30 minutes before that
+ * kickoff if it starts before noon. Mirrors the database lock rule exactly.
  */
 export function weekDeadline(games: Game[]): Date | null {
   if (games.length === 0) return null;
   const earliestMs = Math.min(...games.map((g) => new Date(g.kickoff).getTime()));
-  const { y, m, d } = weekMondayCt(new Date(earliestMs));
-  const wednesday = ctWallClock(y, m, d + 2, 18);
-  return new Date(Math.min(wednesday.getTime(), earliestMs - 30 * 60000));
+  const cal = etCalendar(new Date(earliestMs));
+  const noon = ctWallClock(cal.year, cal.month - 1, cal.day, 12);
+  return new Date(Math.min(noon.getTime(), earliestMs - 30 * 60000));
 }
 
 /**
