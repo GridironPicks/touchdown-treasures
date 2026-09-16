@@ -2,7 +2,7 @@ import { buildPushPayload } from "@block65/webcrypto-web-push";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export type NotificationKind = "deadlines" | "results" | "chat" | "survivor";
+export type NotificationKind = "deadlines" | "results" | "chat";
 
 export type PushMessagePayload = {
   title: string;

@@ -415,7 +415,7 @@ function ProfilePage() {
           <section className="field-panel space-y-3 rounded-2xl border-destructive/40 p-5">
             <h2 className="stadium-heading text-xl text-destructive">Danger zone</h2>
             <p className="text-sm text-muted-foreground">
-              Deleting your account permanently removes your profile, picks, survivor picks,
+              Deleting your account permanently removes your profile, picks,
               messages, badges and league memberships. This cannot be undone.
             </p>
             <AlertDialog

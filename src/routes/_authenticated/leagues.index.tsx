@@ -342,7 +342,7 @@ function LeaguesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete “{pendingDelete?.name}”?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes the league along with every member, pick, survivor pick,
+              This permanently removes the league along with every member, pick,
               tiebreaker and chat message in it. This can’t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

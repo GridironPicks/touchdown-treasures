@@ -8,7 +8,7 @@ const KIND_LABELS: Record<string, string> = {
   deadlines: "Deadline reminder",
   results: "Results recap",
   chat: "Trash talk",
-  survivor: "Survivor alert",
+  
 };
 
 function when(iso: string): string {
