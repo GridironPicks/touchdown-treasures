@@ -36,13 +36,10 @@ export type RecapHighlight = {
   points: number;
 };
 
-export type RecapCasualty = { user_id: string; team_name: string; team: string | null };
-
 export type WeekRecap = {
   ready: boolean;
   rows: RecapRow[];
   highlights: RecapHighlight[];
-  casualties: RecapCasualty[];
   finalGame: { matchup: string; total: number } | null;
 };
 
