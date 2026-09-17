@@ -55,6 +55,8 @@ type Row = {
   season_points: number;
   weeks_played: number | null;
   place: number;
+  week_wins?: number;
+  tied?: boolean;
 };
 
 function LeaderboardPage() {
@@ -182,6 +184,76 @@ function LeaderboardPage() {
     return result;
   }, [winnersByWeekData, settled]);
 
+  // Season-long tiebreak inputs: correct picks and tiebreaker accuracy per manager.
+  const { data: weeklyPointsData = [] } = useQuery({
+    queryKey: ["weekly-points", activeLeague?.id, streakType],
+    enabled: !!activeLeague,
+    queryFn: async () => {
+      if (!activeLeague) return [];
+      const { data, error } = await supabase.rpc("league_weekly_points", {
+        _season: SEASON,
+        _season_type: streakType,
+        _league_id: activeLeague.id,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const seasonStats = useMemo(() => {
+    const stats = new Map<string, { wins: number; correct: number; tbDiff: number }>();
+    const get = (id: string) => {
+      let s = stats.get(id);
+      if (!s) {
+        s = { wins: 0, correct: 0, tbDiff: 0 };
+        stats.set(id, s);
+      }
+      return s;
+    };
+    for (const r of weeklyPointsData) {
+      if (!r.user_id) continue;
+      const s = get(r.user_id);
+      s.correct += r.correct_count ?? 0;
+      // Missing tiebreaker guesses count as the worst possible miss.
+      s.tbDiff += r.tiebreak_diff ?? 99;
+    }
+    for (const r of winnersByWeekData) {
+      if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
+      get(r.user_id).wins += 1;
+    }
+    return stats;
+  }, [weeklyPointsData, winnersByWeekData, settled]);
+
+  /** Season mode ranks on points, then weekly wins, correct picks and tiebreaker accuracy. */
+  const displayRows = useMemo<Row[]>(() => {
+    if (mode === "week") return rows;
+    const withStats = rows.map((r) => ({
+      row: r,
+      s: seasonStats.get(r.user_id) ?? { wins: 0, correct: 0, tbDiff: 0 },
+    }));
+    withStats.sort(
+      (a, b) =>
+        b.row.season_points - a.row.season_points ||
+        b.s.wins - a.s.wins ||
+        b.s.correct - a.s.correct ||
+        a.s.tbDiff - b.s.tbDiff,
+    );
+    const key = (x: (typeof withStats)[number]) =>
+      `${x.row.season_points}|${x.s.wins}|${x.s.correct}|${x.s.tbDiff}`;
+    return withStats.map((x, i) => {
+      const prev = i > 0 ? withStats[i - 1]! : null;
+      const next = i < withStats.length - 1 ? withStats[i + 1]! : null;
+      const tied = (prev && key(prev) === key(x)) || (next && key(next) === key(x)) || false;
+      // Ties share the higher place number.
+      let place = i + 1;
+      for (let j = i - 1; j >= 0; j--) {
+        if (key(withStats[j]!) !== key(x)) break;
+        place = j + 1;
+      }
+      return { ...x.row, place, tied, week_wins: x.s.wins };
+    });
+  }, [mode, rows, seasonStats]);
+
   const fetchBadges = useServerFn(getManagerBadges);
   const { data: badgeRows = [] } = useQuery({
     queryKey: ["badges", activeLeague?.id, streakType],
@@ -251,18 +323,24 @@ function LeaderboardPage() {
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
-        ) : rows.length === 0 ? (
+        ) : displayRows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">
             {mode === "week" ? "No scored picks for this week yet." : "No managers yet."}
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {rows.map((row, i) => {
+            {displayRows.map((row, i) => {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
-              const place = mode === "week" ? (row.place || i + 1) : i + 1;
+              const place = row.place || i + 1;
               const weekChampion =
                 mode === "week" && weekSettled && place === 1 && (row.season_points ?? 0) > 0;
+              const seasonLeader =
+                mode === "season" &&
+                board === "reg" &&
+                place === 1 &&
+                !row.tied &&
+                (row.season_points ?? 0) > 0;
 
               return (
               <li
@@ -272,7 +350,9 @@ function LeaderboardPage() {
                 {weekChampion ? (
                   <WinnerTrophy size="md" label={`Winner of ${slate ? slateLabel(slate) : "the week"}`} />
                 ) : (
-                  <span className="stadium-heading w-6 text-lg text-muted-foreground">{place}</span>
+                  <span className="stadium-heading w-6 text-lg text-muted-foreground">
+                    {mode === "season" && row.tied ? `T-${place}` : place}
+                  </span>
                 )}
                 <span className="relative">
                   <Mascot mascot={row.mascot ?? "eagle"} color={row.primary_color} size="sm" />
@@ -298,8 +378,20 @@ function LeaderboardPage() {
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
 
-                {mode === "season" && board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
-                  <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
+                {mode === "season" && (row.week_wins ?? 0) > 0 && (
+                  <span
+                    className="flex items-center gap-0.5 rounded-full bg-secondary px-2 py-1 text-[11px] font-bold text-primary"
+                    title={`${row.week_wins} week${row.week_wins === 1 ? "" : "s"} won`}
+                  >
+                    <Trophy size={12} /> {row.week_wins}
+                  </span>
+                )}
+
+                {seasonLeader && (
+                  <span
+                    className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase"
+                    title="Season points leader"
+                  >
                     <Trophy size={13} /> 2026
                   </span>
                 )}
