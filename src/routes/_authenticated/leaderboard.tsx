@@ -316,8 +316,14 @@ function LeaderboardPage() {
 
       <SlatePicker slates={slates} value={slate} onChange={setPicked} />
 
-      {mode === "week" && activeLeague && slate && (
-        <LivePoints leagueId={activeLeague.id} seasonType={slate.seasonType} week={slate.week} />
+      {/* Odds are meaningless before kickoff: the feed has no win probability yet. */}
+      {mode === "week" && activeLeague && slate && slateStarted && (
+        <LivePoints
+          leagueId={activeLeague.id}
+          seasonType={slate.seasonType}
+          week={slate.week}
+          allFinal={weekSettled}
+        />
       )}
 
       <section className="field-panel overflow-hidden rounded-2xl">
