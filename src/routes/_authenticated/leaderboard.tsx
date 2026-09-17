@@ -378,8 +378,20 @@ function LeaderboardPage() {
                   <p className="truncate text-xs text-muted-foreground">{row.display_name}</p>
                 </div>
 
-                {mode === "season" && board === "reg" && i === 0 && (row.season_points ?? 0) > 0 && (
-                  <span className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase">
+                {mode === "season" && (row.week_wins ?? 0) > 0 && (
+                  <span
+                    className="flex items-center gap-0.5 rounded-full bg-secondary px-2 py-1 text-[11px] font-bold text-primary"
+                    title={`${row.week_wins} week${row.week_wins === 1 ? "" : "s"} won`}
+                  >
+                    <Trophy size={12} /> {row.week_wins}
+                  </span>
+                )}
+
+                {seasonLeader && (
+                  <span
+                    className="trophy-badge flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase"
+                    title="Season points leader"
+                  >
                     <Trophy size={13} /> 2026
                   </span>
                 )}
