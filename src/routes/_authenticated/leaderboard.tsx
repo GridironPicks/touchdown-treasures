@@ -147,6 +147,11 @@ function LeaderboardPage() {
     [slates, streakType],
   );
   const weekSettled = slate ? settledWeeks(slates, slate.seasonType).has(slate.week) : false;
+  // True once the selected week's first game has actually kicked off.
+  const slateStarted = slate
+    ? (slates.find((s) => s.seasonType === slate.seasonType && s.week === slate.week)?.anyStarted ??
+      false)
+    : false;
 
   const { data: winnersByWeekData = [] } = useQuery({
     queryKey: ["week-winners", activeLeague?.id, streakType],
