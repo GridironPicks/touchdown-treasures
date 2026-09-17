@@ -323,18 +323,24 @@ function LeaderboardPage() {
       <section className="field-panel overflow-hidden rounded-2xl">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
-        ) : rows.length === 0 ? (
+        ) : displayRows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">
             {mode === "week" ? "No scored picks for this week yet." : "No managers yet."}
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {rows.map((row, i) => {
+            {displayRows.map((row, i) => {
               const streak = streaks[row.user_id as string] ?? 0;
               const onFire = streak >= 2;
-              const place = mode === "week" ? (row.place || i + 1) : i + 1;
+              const place = row.place || i + 1;
               const weekChampion =
                 mode === "week" && weekSettled && place === 1 && (row.season_points ?? 0) > 0;
+              const seasonLeader =
+                mode === "season" &&
+                board === "reg" &&
+                place === 1 &&
+                !row.tied &&
+                (row.season_points ?? 0) > 0;
 
               return (
               <li
