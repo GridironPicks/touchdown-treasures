@@ -55,6 +55,8 @@ type Row = {
   season_points: number;
   weeks_played: number | null;
   place: number;
+  week_wins?: number;
+  tied?: boolean;
 };
 
 function LeaderboardPage() {
@@ -181,6 +183,76 @@ function LeaderboardPage() {
     }
     return result;
   }, [winnersByWeekData, settled]);
+
+  // Season-long tiebreak inputs: correct picks and tiebreaker accuracy per manager.
+  const { data: weeklyPointsData = [] } = useQuery({
+    queryKey: ["weekly-points", activeLeague?.id, streakType],
+    enabled: !!activeLeague,
+    queryFn: async () => {
+      if (!activeLeague) return [];
+      const { data, error } = await supabase.rpc("league_weekly_points", {
+        _season: SEASON,
+        _season_type: streakType,
+        _league_id: activeLeague.id,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const seasonStats = useMemo(() => {
+    const stats = new Map<string, { wins: number; correct: number; tbDiff: number }>();
+    const get = (id: string) => {
+      let s = stats.get(id);
+      if (!s) {
+        s = { wins: 0, correct: 0, tbDiff: 0 };
+        stats.set(id, s);
+      }
+      return s;
+    };
+    for (const r of weeklyPointsData) {
+      if (!r.user_id) continue;
+      const s = get(r.user_id);
+      s.correct += r.correct_count ?? 0;
+      // Missing tiebreaker guesses count as the worst possible miss.
+      s.tbDiff += r.tiebreak_diff ?? 99;
+    }
+    for (const r of winnersByWeekData) {
+      if (!r.user_id || r.week === null || !settled.has(r.week)) continue;
+      get(r.user_id).wins += 1;
+    }
+    return stats;
+  }, [weeklyPointsData, winnersByWeekData, settled]);
+
+  /** Season mode ranks on points, then weekly wins, correct picks and tiebreaker accuracy. */
+  const displayRows = useMemo<Row[]>(() => {
+    if (mode === "week") return rows;
+    const withStats = rows.map((r) => ({
+      row: r,
+      s: seasonStats.get(r.user_id) ?? { wins: 0, correct: 0, tbDiff: 0 },
+    }));
+    withStats.sort(
+      (a, b) =>
+        b.row.season_points - a.row.season_points ||
+        b.s.wins - a.s.wins ||
+        b.s.correct - a.s.correct ||
+        a.s.tbDiff - b.s.tbDiff,
+    );
+    const key = (x: (typeof withStats)[number]) =>
+      `${x.row.season_points}|${x.s.wins}|${x.s.correct}|${x.s.tbDiff}`;
+    return withStats.map((x, i) => {
+      const prev = i > 0 ? withStats[i - 1]! : null;
+      const next = i < withStats.length - 1 ? withStats[i + 1]! : null;
+      const tied = (prev && key(prev) === key(x)) || (next && key(next) === key(x)) || false;
+      // Ties share the higher place number.
+      let place = i + 1;
+      for (let j = i - 1; j >= 0; j--) {
+        if (key(withStats[j]!) !== key(x)) break;
+        place = j + 1;
+      }
+      return { ...x.row, place, tied, week_wins: x.s.wins };
+    });
+  }, [mode, rows, seasonStats]);
 
   const fetchBadges = useServerFn(getManagerBadges);
   const { data: badgeRows = [] } = useQuery({
