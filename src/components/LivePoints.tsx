@@ -14,6 +14,8 @@ type Props = {
   seasonType: SeasonType;
   week: number;
   meId?: string | null;
+  /** Every game of the week is final — lets the header avoid claiming so too early. */
+  allFinal?: boolean;
 };
 
 /** Live chance-to-win-the-week odds for the selected week, refreshed while games run. */
