@@ -14,10 +14,12 @@ type Props = {
   seasonType: SeasonType;
   week: number;
   meId?: string | null;
+  /** Every game of the week is final — lets the header avoid claiming so too early. */
+  allFinal?: boolean;
 };
 
 /** Live chance-to-win-the-week odds for the selected week, refreshed while games run. */
-export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
+export function LivePoints({ leagueId, seasonType, week, meId, allFinal }: Props) {
   const fetchLive = useServerFn(getLiveStandings);
   const fetchOpen = useServerFn(getOpenPicks);
   const fetchProbs = useServerFn(getWinProbabilities);
@@ -73,8 +75,8 @@ export function LivePoints({ leagueId, seasonType, week, meId }: Props) {
       <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <h2 className="stadium-heading text-lg">Chance to win the week</h2>
         <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          <Radio size={12} className={inProgress ? "text-primary" : ""} />
-          {inProgress ? "Games in progress" : "All games final"}
+          <Radio size={12} className={inProgress && !allFinal ? "text-primary" : ""} />
+          {allFinal ? "All games final" : inProgress ? "Games in progress" : "Waiting on results"}
         </span>
       </header>
 

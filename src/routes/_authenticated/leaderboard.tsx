@@ -147,6 +147,11 @@ function LeaderboardPage() {
     [slates, streakType],
   );
   const weekSettled = slate ? settledWeeks(slates, slate.seasonType).has(slate.week) : false;
+  // True once the selected week's first game has actually kicked off.
+  const slateStarted = slate
+    ? (slates.find((s) => s.seasonType === slate.seasonType && s.week === slate.week)?.anyStarted ??
+      false)
+    : false;
 
   const { data: winnersByWeekData = [] } = useQuery({
     queryKey: ["week-winners", activeLeague?.id, streakType],
@@ -316,8 +321,14 @@ function LeaderboardPage() {
 
       <SlatePicker slates={slates} value={slate} onChange={setPicked} />
 
-      {mode === "week" && activeLeague && slate && (
-        <LivePoints leagueId={activeLeague.id} seasonType={slate.seasonType} week={slate.week} />
+      {/* Odds are meaningless before kickoff: the feed has no win probability yet. */}
+      {mode === "week" && activeLeague && slate && slateStarted && (
+        <LivePoints
+          leagueId={activeLeague.id}
+          seasonType={slate.seasonType}
+          week={slate.week}
+          allFinal={weekSettled}
+        />
       )}
 
       <section className="field-panel overflow-hidden rounded-2xl">
