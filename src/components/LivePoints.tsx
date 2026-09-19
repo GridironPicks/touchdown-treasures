@@ -39,7 +39,7 @@ export function LivePoints({ leagueId, seasonType, week, meId, allFinal }: Props
   const totalEligiblePotential = eligibleRows.reduce((sum, r) => sum + r.max_possible, 0);
   const clinchedUser = rows.find((r) => r.banked > bestMaxOfOthers(r.user_id))?.user_id;
   const fmtOdds = (v: number) =>
-    v >= 99.5 ? "99+%" : v > 0 && v < 1 ? "<1%" : `${Math.round(v)}%`;
+    v >= 99.5 ? "100%" : v > 0 && v < 1 ? "<1%" : `${Math.round(v)}%`;
   const oddsOrder = [...rows].sort(
     (a, b) => {
       const aPct = clinchedUser
