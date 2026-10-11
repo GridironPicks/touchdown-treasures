@@ -209,7 +209,7 @@ function ManagerPage() {
                   {game && (
                     <p className="truncate text-xs text-muted-foreground">
                       {teamShort(game.away_team)} @ {teamShort(game.home_team)}
-                      {final ? ` · ${game.away_score}-${game.home_score}` : ""}
+                      {final ? ` · ${game.away_score}-${game.home_score}${isTie ? " · Tie — no points" : ""}` : ""}
                     </p>
                   )}
                 </div>
