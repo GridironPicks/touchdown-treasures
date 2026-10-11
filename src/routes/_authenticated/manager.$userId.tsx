@@ -193,12 +193,13 @@ function ManagerPage() {
           {rows.map(({ pick, game }) => {
             const final = game?.status === "final";
             const winner =
-              final && game
-                ? (game.home_score ?? 0) >= (game.away_score ?? 0)
+              final && game && (game.home_score ?? 0) !== (game.away_score ?? 0)
+                ? (game.home_score ?? 0) > (game.away_score ?? 0)
                   ? game.home_team
                   : game.away_team
                 : null;
-            const correct = winner ? winner === pick.picked_team : null;
+            const isTie = final && game && game.home_score === game.away_score;
+            const correct = isTie ? false : winner ? winner === pick.picked_team : null;
             return (
               <li key={pick.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="stadium-heading w-8 text-xl text-primary">{pick.confidence}</span>
