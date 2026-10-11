@@ -631,6 +631,11 @@ function PicksPage() {
                       {isFinal ? `Final ${finalScore ?? ""}` : "Kicked off"}
                     </span>
                   )}
+                  {isTie && (
+                    <span className="rounded-md bg-secondary/60 px-2 py-0.5 font-semibold text-muted-foreground">
+                      Tie — no points awarded
+                    </span>
+                  )}
                 </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
