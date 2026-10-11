@@ -605,6 +605,7 @@ function PicksPage() {
             isFinal && hasScore && game.away_score !== game.home_score
               ? (game.home_score! > game.away_score! ? game.home_team : game.away_team)
               : null;
+          const isTie = isFinal && hasScore && game.away_score === game.home_score;
           const live = liveFor(game);
           return (
             <li

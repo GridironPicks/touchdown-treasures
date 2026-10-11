@@ -107,6 +107,10 @@ export function HowToPlay({ seasonType, maxPoints, opensAt, deadline }: Props) {
               Tiebreaker: predict the combined final score of the week's last-kickoff game.
               Closest guess breaks ties.
             </li>
+            <li>
+              If a game ends in a tie, neither side earns points — the confidence numbers on
+              that game are lost.
+            </li>
           </ul>
         </div>
       )}
