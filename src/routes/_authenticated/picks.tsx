@@ -605,6 +605,7 @@ function PicksPage() {
             isFinal && hasScore && game.away_score !== game.home_score
               ? (game.home_score! > game.away_score! ? game.home_team : game.away_team)
               : null;
+          const isTie = isFinal && hasScore && game.away_score === game.home_score;
           const live = liveFor(game);
           return (
             <li
@@ -628,6 +629,11 @@ function PicksPage() {
                     <span className="flex items-center gap-1">
                       <Lock size={11} />
                       {isFinal ? `Final ${finalScore ?? ""}` : "Kicked off"}
+                    </span>
+                  )}
+                  {isTie && (
+                    <span className="rounded-md bg-secondary/60 px-2 py-0.5 font-semibold text-muted-foreground">
+                      Tie — no points awarded
                     </span>
                   )}
                 </span>
