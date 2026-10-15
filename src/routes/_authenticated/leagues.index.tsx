@@ -198,7 +198,7 @@ function LeaguesPage() {
                 onCheckedChange={setDeadlineFirstGame}
               />
               <Label htmlFor="deadline-first" className="text-sm font-normal">
-                Lock at first kickoff (not the noon deadline)
+                Lock 30 minutes before the first kickoff
               </Label>
             </div>
           </div>

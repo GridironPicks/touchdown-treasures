@@ -19,7 +19,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign In — Gridiron Confidence" },
       {
         name: "description",
-        content: "Sign in to make your NFL confidence picks before the noon gameday lock.",
+        content: "Sign in to make your NFL confidence picks before the lock, 30 minutes before kickoff.",
       },
       { property: "og:title", content: "Sign In — Gridiron Confidence" },
       {

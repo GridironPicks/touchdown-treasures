@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Weekly NFL confidence pick 'em with ranked points, a noon gameday lock and a season trophy.",
+          "Weekly NFL confidence pick 'em with ranked points, a lock 30 minutes before kickoff and a season trophy.",
       },
       { property: "og:title", content: "Gridiron Confidence" },
       { property: "og:description", content: "NFL confidence pick 'em for your crew." },

@@ -48,7 +48,7 @@ const TYPES = [
   {
     key: "deadlines" as const,
     label: "Pick deadline reminders",
-    hint: "Week opens Monday, plus 24-hour and 2-hour warnings before the 12:00 PM CT gameday lock (only if you haven't submitted).",
+    hint: "Week opens Monday, plus 24-hour and 2-hour warnings before the lock (30 minutes before the first kickoff, only if you haven't submitted).",
   },
   {
     key: "results" as const,
