@@ -8,12 +8,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Free weekly NFL confidence pick 'em: rank every matchup, noon gameday lock and a season-long trophy chase.",
+          "Free weekly NFL confidence pick 'em: rank every matchup, lock in 30 minutes before kickoff and chase a season-long trophy.",
       },
       { property: "og:title", content: "Gridiron Confidence — NFL Confidence Pick 'Em" },
       {
         property: "og:description",
-        content: "Rank every game, beat the noon gameday lock, climb the season standings.",
+        content: "Rank every game, beat the lock 30 minutes before kickoff, climb the season standings.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://gridironconfidence.lovable.app/share-card.jpg" },
@@ -43,7 +43,7 @@ function Landing() {
       </h1>
       <p className="mt-5 max-w-xl text-base text-muted-foreground">
         The free NFL confidence pick 'em league for your crew. Auto-loaded weekly matchups, ranked
-        confidence points, a hard noon gameday deadline and a season-long trophy chase.
+        confidence points, a hard deadline 30 minutes before kickoff and a season-long trophy chase.
       </p>
 
 

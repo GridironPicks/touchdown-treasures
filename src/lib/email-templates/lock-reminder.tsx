@@ -62,7 +62,7 @@ function LockReminder({
 
 export const template = {
   component: LockReminder,
-  displayName: 'Gameday Noon Lock Reminder',
+  displayName: 'Kickoff Lock Reminder',
   subject: (data: Record<string, any>) =>
     `Week ${data['week'] ?? 1} picks lock 30 minutes before kickoff`,
 
