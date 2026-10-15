@@ -32,7 +32,7 @@ function LockReminder({
             Gridiron Confidence
           </Text>
           <Heading style={{ color: '#FFFFFF', fontSize: '26px', margin: '8px 0 16px' }}>
-            Week {week} locks at 12:00 PM CT on gameday
+            Week {week} locks 30 minutes before kickoff
           </Heading>
           <Text style={{ color: '#C7D0DB', fontSize: '15px', lineHeight: '22px' }}>
             {teamName}, your Week {week} confidence picks aren't in yet. It's free to play — get
@@ -64,7 +64,7 @@ export const template = {
   component: LockReminder,
   displayName: 'Gameday Noon Lock Reminder',
   subject: (data: Record<string, any>) =>
-    `Week ${data['week'] ?? 1} picks lock at noon CT on gameday`,
+    `Week ${data['week'] ?? 1} picks lock 30 minutes before kickoff`,
 
   previewData: { teamName: 'Steel Curtain', week: 1, picksUrl: 'https://gridironconfidence.com/picks' },
 } satisfies TemplateEntry
