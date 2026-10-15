@@ -25,7 +25,7 @@ function LockReminder({
   return (
     <Html>
       <Head />
-      <Preview>{`Week ${week} locks at 12:00 PM CT on gameday — your entry is unpaid`}</Preview>
+      <Preview>{`Week ${week} locks 30 minutes before kickoff — your entry is unpaid`}</Preview>
       <Body style={{ backgroundColor: '#0B162A', fontFamily: 'Helvetica, Arial, sans-serif', margin: 0 }}>
         <Container style={{ padding: '32px 24px', maxWidth: '520px' }}>
           <Text style={{ color: '#00E676', letterSpacing: '2px', fontSize: '12px', textTransform: 'uppercase', margin: 0 }}>
